@@ -27,12 +27,24 @@ namespace ESKF_VIO_BACKEND {
 
     /* 添加前端提供的特征点最新追踪结果信息 */
     bool FeatureManager::AddNewFeatures(const std::vector<uint32_t> &ids,
-        const std::vector<Eigen::Matrix<Scalar, 2, 1>> &norms,
+        const std::vector<std::shared_ptr<FeatureObserve>> &newObserves,
         const uint32_t frameID) {
-        if (ids.size() != norms.size()) {
+        if (ids.size() != newObserves.size()) {
             return false;
         }
-        
+        for (uint32_t i = 0; i < ids.size(); ++i) {
+            auto it = this->features.find(ids[i]);
+            if (it != this->features.end()) {
+                // 对应特征点已经存在时，直接添加观测
+                it->second->AddNewObserve(newObserves[i]);
+            } else {
+                // 对应特征点不存在时，构造新的特征点
+                std::vector<std::shared_ptr<FeatureObserve>> observes;
+                observes.emplace_back(newObserves[i]);
+                std::shared_ptr<Feature> newFeature(new Feature(ids[i], frameID, observes));
+                this->features.insert(std::make_pair(newFeature->id, newFeature));
+            }
+        }
         return true;
     }
     

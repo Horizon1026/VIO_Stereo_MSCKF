@@ -17,14 +17,15 @@ namespace ESKF_VIO_BACKEND {
         Eigen::Matrix<Scalar, 3, 1> p_w;
         // 此特征点的状态
         enum Status {
-            UNSOLVED = 0,   // 尚未被三角化
+            UNSOLVED = 1,   // 尚未被三角化
             IS_SOLVED,      // 三角化成功
             ERROR           // 三角化失败
         } status = UNSOLVED;
     public:
         /* 构造函数与析构函数 */
-        Feature(const uint32_t id, const uint32_t firstFrameID,
-            const std::vector<std::shared_ptr<FeatureObserve>> &observes) :
+        Feature(const uint32_t id,
+                const uint32_t firstFrameID,
+                const std::vector<std::shared_ptr<FeatureObserve>> &observes) :
             id(id), firstFrameID(firstFrameID), observes(observes) {}
         ~Feature() {}
     public:
@@ -49,7 +50,7 @@ namespace ESKF_VIO_BACKEND {
     public:
         /* 添加前端提供的特征点最新追踪结果信息 */
         bool AddNewFeatures(const std::vector<uint32_t> &ids,
-            const std::vector<Eigen::Matrix<Scalar, 2, 1>> &norms,
+            const std::vector<std::shared_ptr<FeatureObserve>> &newObserves,
             const uint32_t frameID);
         /* 移除指定关键帧所观测到的特征点。但此关键帧之后的观测帧 ID 会依次向前偏移 */
         void RemoveByFrameID(const uint32_t frameID, bool offset);
