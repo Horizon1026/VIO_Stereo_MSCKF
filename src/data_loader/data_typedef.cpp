@@ -1,10 +1,6 @@
 #include <include/data_loader/data_typedef.hpp>
 
-<<<<<<< HEAD
 namespace ESKF_VIO_BACKEND {
-=======
-namespace VIOBackend {
->>>>>>> ec4648d36e57bca7225ae718fdd7d02dd6800131
     /* 清空保存的数据 */
     void FeatureObserve::Clear(void) {
         this->uv.clear();
