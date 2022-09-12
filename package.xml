@@ -2,7 +2,7 @@
 <package format="2">
   <name>ESKF_Estimator</name>
   <version>0.0.0</version>
-  <description>eskf_estimator</description>
+  <description>ESKF_Estimator</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

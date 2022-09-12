@@ -13,8 +13,7 @@ namespace VIOBackend {
     /* 输入一帧特征点追踪结果 */
     bool DataLoader::PushFeaturesMessage(const std::shared_ptr<FeaturesMessage> &newFeatMeas) {
         // 检查 newFeatMeas 中数据是否合规
-        if (newFeatMeas->ids.size() != newFeatMeas->left.size() ||
-            newFeatMeas->ids.size() != newFeatMeas->flag.size()) {
+        if (newFeatMeas->ids.size() != newFeatMeas->observes.size()) {
             return false;
         }
         // 校准时间戳

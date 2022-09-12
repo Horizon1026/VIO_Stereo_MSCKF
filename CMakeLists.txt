@@ -1,7 +1,7 @@
 # cmake工程最低版本为3.10
 cmake_minimum_required( VERSION 3.10 )
 # cmake工程名
-project(eskf_estimator)
+project(ESKF_Estimator)
 # 设置编译类型为发布
 set(CMAKE_BUILD_TYPE "Release")
 # 添加c++ 17标准的支持
@@ -30,15 +30,15 @@ include_directories( ${Pangolin_INCLUDE_DIRS} )
 include_directories( ${PROJECT_SOURCE_DIR} )
 
 # 添加输出的可执行文件
-add_executable( test_eskf_estimator
+add_executable( ESKF_Estimator
     apps/test_eskf_estimator.cpp
 
-    src/data_loader/data_typedef.cpp
     src/data_loader/data_loader.cpp
+    src/data_loader/data_typedef.cpp
 )
 
 # 为可执行文件链接相关的库
-target_link_libraries( test_eskf_estimator
+target_link_libraries( ESKF_Estimator
     ${catkin_LIBRARIES}
     pangolin GL GLEW    # pangolin和OpenGL的库
     TBB::tbb

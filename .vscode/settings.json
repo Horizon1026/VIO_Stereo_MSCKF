@@ -62,6 +62,10 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "bit": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "clocale": "cpp",
+        "condition_variable": "cpp",
+        "thread": "cpp",
+        "core": "cpp"
     }
 }

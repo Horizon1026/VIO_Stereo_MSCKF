@@ -1,25 +1,31 @@
 #pragma once
 /* 外部依赖 */
-#include <vector>
-#include <list>
-#include <memory>
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
 /* 内部依赖 */
 #include <include/utility/typedef.hpp>
 
 /* 后端的数据加载器仅仅支持特征点追踪结果，以及IMU量测信息 */
 namespace VIOBackend {
+    /* 某一个特征点于同一时刻在多个相机中的观测 */
+    class FeatureObserve {
+    public:
+        // 特征点在对应 camera ID 中的归一化平面坐标观测
+        std::unordered_map<uint32_t, Eigen::Vector2f> uv;
+    public:
+        FeatureObserve() {}
+        ~FeatureObserve() {}
+    public:
+        /* 清空保存的数据 */
+        void Clear(void);
+    };
+
+
     /* 特征点追踪结果数据类型定义，保存一帧双目图像的追踪结果 */
     class FeaturesMessage {
     public:
         // 特征点的索引
         std::vector<uint32_t> ids;
-        // 左目归一化平面坐标
-        std::vector<Eigen::Vector2f> left;
-        // 右目归一化平面坐标（单目时此项为空）
-        std::vector<Eigen::Vector2f> right;
+        // 归一化平面坐标观测
+        std::vector<std::shared_ptr<FeatureObserve>> observes;
         // 标志位
         std::vector<uint8_t> flag;
         // 时间戳（单位 s）
@@ -28,8 +34,7 @@ namespace VIOBackend {
         FeaturesMessage() {}
         ~FeaturesMessage() {}
         FeaturesMessage(const std::vector<uint32_t> &ids,
-                        const std::vector<Eigen::Vector2f> &left,
-                        const std::vector<Eigen::Vector2f> &right,
+                        const std::vector<std::shared_ptr<FeatureObserve>> &observes,
                         const std::vector<uint8_t> &flag,
                         const fp64 &timeStamp);
     public:
