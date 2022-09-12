@@ -2,6 +2,8 @@
 /* 外部依赖 */
 /* 内部依赖 */
 #include <include/data_manager/data_loader.hpp>
+#include <include/data_manager/feature_manager.hpp>
+#include <include/data_manager/frame_manager.hpp>
 #include <include/propagate/sequence_propagator.hpp>
 
 namespace ESKF_VIO_BACKEND {
@@ -12,6 +14,8 @@ namespace ESKF_VIO_BACKEND {
         // TODO:
         // 数据管理
         DataLoader dataloader;
+        FeatureManager featureManager;
+        FrameManager frameManager;
         
         // 序列递推
         PropagateQueue queue;

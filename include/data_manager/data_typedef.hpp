@@ -45,6 +45,8 @@ namespace ESKF_VIO_BACKEND {
     public:
         /* 清空保存的数据 */
         void Clear(void);
+        /* 自我打印保存信息 */
+        void Information(void);
     };
 
 
@@ -63,6 +65,9 @@ namespace ESKF_VIO_BACKEND {
         IMUMessage(const Eigen::Matrix<Scalar, 3, 1> &gyro,
                    const Eigen::Matrix<Scalar, 3, 1> &acc,
                    const fp64 &timeStamp);
+    public:
+        /* 自我打印保存信息 */
+        void Information(void);
     };
 
 
@@ -81,5 +86,7 @@ namespace ESKF_VIO_BACKEND {
     public:
         /* 清空保存的数据 */
         void Clear(void);
+        /* 自我打印保存信息 */
+        void Information(void);
     };
 }

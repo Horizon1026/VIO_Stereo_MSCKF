@@ -12,7 +12,7 @@ namespace ESKF_VIO_BACKEND {
         std::deque<std::shared_ptr<FeaturesMessage>> featMeas;
         std::deque<std::shared_ptr<IMUMessage>> imuMeas;
         // 时间戳起点
-        double timeStampOffset;
+        double timeStampOffset = -1.0;
     public:
         /* 构造函数与析构函数 */
         DataLoader() { this->Clear(); }

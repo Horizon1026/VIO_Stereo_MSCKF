@@ -40,6 +40,10 @@ namespace ESKF_VIO_BACKEND {
 
     /* 按时间戳输出下一个数据 */
     bool DataLoader::PopOneMessage(std::shared_ptr<CombinedMessage> &output) {
+        if (output == nullptr) {
+            std::shared_ptr<CombinedMessage> msg(new CombinedMessage());
+            output = msg;
+        }
         output->Clear();
         // 如果队列都不为空，则输出时间戳最旧的数据
         if (!this->imuMeas.empty() && !this->featMeas.empty()) {

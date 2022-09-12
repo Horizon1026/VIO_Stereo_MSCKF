@@ -24,11 +24,11 @@ namespace ESKF_VIO_BACKEND {
         IMUFullState() {}
         ~IMUFullState() {}
         IMUFullState(const Eigen::Matrix<Scalar, 3, 1> &p_wb,
-                        const Eigen::Quaternion<Scalar> &q_wb,
-                        const Eigen::Matrix<Scalar, 3, 1> &v_wb,
-                        const Eigen::Matrix<Scalar, 3, 1> &bias_a,
-                        const Eigen::Matrix<Scalar, 3, 1> &bias_g,
-                        const Eigen::Matrix<Scalar, 3, 1> &gravity) :
+                     const Eigen::Quaternion<Scalar> &q_wb,
+                     const Eigen::Matrix<Scalar, 3, 1> &v_wb,
+                     const Eigen::Matrix<Scalar, 3, 1> &bias_a,
+                     const Eigen::Matrix<Scalar, 3, 1> &bias_g,
+                     const Eigen::Matrix<Scalar, 3, 1> &gravity) :
             p_wb(p_wb), q_wb(q_wb), v_wb(v_wb), bias_a(bias_a), bias_g(bias_g), gravity(gravity) {}
     };
 
@@ -47,8 +47,8 @@ namespace ESKF_VIO_BACKEND {
         IMUMotionState() {}
         ~IMUMotionState() {}
         IMUMotionState(const Eigen::Matrix<Scalar, 3, 1> &p_wb,
-                        const Eigen::Quaternion<Scalar> &q_wb,
-                        const Eigen::Matrix<Scalar, 3, 1> &v_wb) :
+                       const Eigen::Quaternion<Scalar> &q_wb,
+                       const Eigen::Matrix<Scalar, 3, 1> &v_wb) :
             p_wb(p_wb), q_wb(q_wb), v_wb(v_wb) {}
     };
 
