@@ -4,12 +4,20 @@
 #include <include/utility/typedef.hpp>
 
 /* 后端的数据加载器仅仅支持特征点追踪结果，以及IMU量测信息 */
+<<<<<<< HEAD
 namespace ESKF_VIO_BACKEND {
+=======
+namespace VIOBackend {
+>>>>>>> ec4648d36e57bca7225ae718fdd7d02dd6800131
     /* 某一个特征点于同一时刻在多个相机中的观测 */
     class FeatureObserve {
     public:
         // 特征点在对应 camera ID 中的归一化平面坐标观测
+<<<<<<< HEAD
         std::unordered_map<uint32_t, Eigen::Matrix<Scalar, 2, 1>> uv;
+=======
+        std::unordered_map<uint32_t, Eigen::Vector2f> uv;
+>>>>>>> ec4648d36e57bca7225ae718fdd7d02dd6800131
     public:
         FeatureObserve() {}
         ~FeatureObserve() {}
