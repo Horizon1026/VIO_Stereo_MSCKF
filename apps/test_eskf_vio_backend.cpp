@@ -1,5 +1,8 @@
+/* 外部依赖 */
 #include <iostream>
 #include <ros/ros.h>
+
+/* 内部依赖 */
 #include <include/propagate/sequence_propagator.hpp>
 
 int main() {

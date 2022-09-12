@@ -10,13 +10,17 @@ namespace ESKF_VIO_BACKEND {
     class FeatureObserve {
     public:
         // 特征点在对应 camera ID 中的归一化平面坐标观测
-        std::unordered_map<uint32_t, Eigen::Matrix<Scalar, 2, 1>> uv;
+        std::unordered_map<uint32_t, Eigen::Matrix<Scalar, 2, 1>> norms;
     public:
         FeatureObserve() {}
         ~FeatureObserve() {}
+        FeatureObserve(const std::unordered_map<uint32_t, Eigen::Matrix<Scalar, 2, 1>> &norms) :
+            norms(norms) {}
     public:
         /* 清空保存的数据 */
         void Clear(void);
+        /* 获取指定 camera ID 的观测 */
+        bool GetNorm(const uint32_t cameraID, Eigen::Matrix<Scalar, 2, 1> &norm);
     };
 
 

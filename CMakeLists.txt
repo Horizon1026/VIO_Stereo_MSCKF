@@ -33,8 +33,11 @@ include_directories( ${PROJECT_SOURCE_DIR} )
 add_executable( ESKF_Estimator
     apps/test_eskf_vio_backend.cpp
 
-    src/data_loader/data_typedef.cpp
-    src/data_loader/data_loader.cpp
+    src/backend.cpp
+
+    src/data_manager/data_typedef.cpp
+    src/data_manager/data_loader.cpp
+    src/data_manager/feature_manager.cpp
 
     src/propagate/sequence_propagator.cpp
 )

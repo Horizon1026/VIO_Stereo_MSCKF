@@ -21,4 +21,5 @@ namespace ESKF_VIO_BACKEND {
     using fp64 = double;
 
     using Scalar = float;
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
 }

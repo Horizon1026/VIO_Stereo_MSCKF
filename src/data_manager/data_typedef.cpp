@@ -1,9 +1,21 @@
-#include <include/data_loader/data_typedef.hpp>
+#include <include/data_manager/data_typedef.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* 清空保存的数据 */
     void FeatureObserve::Clear(void) {
-        this->uv.clear();
+        this->norms.clear();
+    }
+
+
+    /* 获取指定 camera ID 的观测 */
+    bool FeatureObserve::GetNorm(const uint32_t cameraID, Eigen::Matrix<Scalar, 2, 1> &norm) {
+        auto it = this->norms.find(cameraID);
+        if (it == this->norms.end()) {
+            return false;
+        } else {
+            norm = (*it).second;
+            return true;
+        }
     }
 
 
