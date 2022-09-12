@@ -1,19 +1,21 @@
 #include <include/data_loader/data_typedef.hpp>
 
-namespace VIOBackend {
+namespace ESKF_VIO_BACKEND {
+    /* 清空保存的数据 */
+    void FeatureObserve::Clear(void) {
+        this->uv.clear();
+    }
+
+
     /* 带参数的构造函数 */
     FeaturesMessage::FeaturesMessage(const std::vector<uint32_t> &ids,
-                                     const std::vector<Eigen::Vector2f> &left,
-                                     const std::vector<Eigen::Vector2f> &right,
+                                     const std::vector<std::shared_ptr<FeatureObserve>> &observes,
                                      const std::vector<uint8_t> &flag,
                                      const fp64 &timeStamp) :
-        ids(ids), left(left), right(right), flag(flag), timeStamp(timeStamp) {
-        if (this->ids.size() != this->left.size() || this->ids.size() != this->flag.size()) {
+        ids(ids), observes(observes), flag(flag), timeStamp(timeStamp) {
+        if (this->ids.size() != this->observes.size()) {
             this->Clear();
             return;
-        }
-        if (this->left.size() != this->right.size()) {
-            this->right.clear();
         }
     }
 
@@ -22,15 +24,14 @@ namespace VIOBackend {
     void FeaturesMessage::Clear(void) {
         this->flag.clear();
         this->ids.clear();
-        this->left.clear();
-        this->right.clear();
+        this->observes.clear();
         this->timeStamp = static_cast<fp64>(0);
     }
 
 
     /* 带参数的构造函数 */
-    IMUMessage::IMUMessage(const Eigen::Vector3f &gyro,
-                           const Eigen::Vector3f &acc,
+    IMUMessage::IMUMessage(const Eigen::Matrix<Scalar, 3, 1> &gyro,
+                           const Eigen::Matrix<Scalar, 3, 1> &acc,
                            const fp64 &timeStamp) :
         gyro(gyro), acc(acc), timeStamp(timeStamp) {}
 
