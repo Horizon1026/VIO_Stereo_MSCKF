@@ -10,8 +10,9 @@ namespace ESKF_VIO_BACKEND {
     private:
         // 参数配置
         // TODO:
-        // 数据加载
+        // 数据管理
         DataLoader dataloader;
+        
         // 序列递推
         PropagateQueue queue;
         // 观测更新

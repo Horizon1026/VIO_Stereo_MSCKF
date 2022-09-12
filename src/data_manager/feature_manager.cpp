@@ -50,12 +50,67 @@ namespace ESKF_VIO_BACKEND {
     
     /* 移除指定关键帧所观测到的特征点。但此关键帧之后的观测帧 ID 会依次向前偏移 */
     void FeatureManager::RemoveByFrameID(const uint32_t frameID, bool offset) {
+        // 记录失去所有观测的特征点的 ID，预先分配内存
+        std::vector<uint32_t> needDelete;
+        needDelete.reserve(this->features.size() / 2);
 
+        // 根据 offset 决定关键帧的 ID 是否发生了偏移（是否进行了调整）
+        if (offset) {
+            // 滑动窗口内的帧 ID 发生了调整，对应着 marg subnew 的情况
+            // 需要删除的观测一般位于中间，直接删除此观测即可
+            // 如果需要删除的观测是第一个观测，则删除之后首次观测不变
+            // 如果需要删除的观测是最后一个观测，直接删除即可
+            for (auto &item : this->features) {
+                auto &feature = item.second;
+                if (feature->firstFrameID <= frameID && frameID <= feature->FinalFrameID()) {
+                    // 如果此特征点只有这一个观测，则准备删除
+                    if (feature->observes.size()  == 1) {
+                        feature->observes.clear();
+                        needDelete.emplace_back(feature->id);
+                        continue;
+                    }
+                    // 如果此特征点有多个观测，则删除对应观测
+                    for (uint32_t i = frameID - feature->firstFrameID; i < feature->observes.size() - 1; ++i) {
+                        feature->observes[i] = feature->observes[i + 1];
+                    }
+                    feature->observes.resize(feature->observes.size() - 1);
+                } else if (frameID < feature->firstFrameID) {
+                    // 如果需要删除的观测，在这个特征点的所有观测之前，需要调整其首次观测
+                    --feature->firstFrameID;
+                }
+            }
+        } else {
+            // 滑动窗口内的帧 ID 没有发生调整，对应着 marg oldest 的情况
+            // 只需要关注 feature 的首次观测帧。去掉首次观测帧的观测之后，首次观测帧的 ID 需要加一
+            for (auto &item : this->features) {
+                auto &feature = item.second;
+                if (feature->firstFrameID == frameID) {
+                    // 如果此特征点只有这一个观测，则准备删除
+                    if (feature->observes.size()  == 1) {
+                        feature->observes.clear();
+                        needDelete.emplace_back(feature->id);
+                        continue;
+                    }
+                    // 如果此特征点有多个观测，则删除对应观测
+                    for (uint32_t i = 0; i < feature->observes.size() - 1; ++i) {
+                        feature->observes[i] = feature->observes[i + 1];
+                    }
+                    feature->observes.resize(feature->observes.size() - 1);
+                    // 调整首帧观测的 ID
+                    ++feature->firstFrameID;
+                }
+            }
+        }
+
+        // 剔除掉失去所有观测的特征点
+        for (uint32_t i = 0; i < needDelete.size(); ++i) {
+            this->features.erase(needDelete[i]);
+        }
     }
 
     /* 移除指定 ID 的特征点 */
-    void FeatureManager::RemoveByID(const uint32_t landmarkID) {
-
+    void FeatureManager::RemoveByID(const uint32_t featureID) {
+        this->features.erase(featureID);
     }
 
 }

@@ -66,6 +66,9 @@
         "clocale": "cpp",
         "condition_variable": "cpp",
         "thread": "cpp",
-        "core": "cpp"
+        "core": "cpp",
+        "fstream": "cpp",
+        "complex": "cpp",
+        "*.txx": "cpp"
     }
 }
