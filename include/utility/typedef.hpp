@@ -1,8 +1,7 @@
 #pragma once
 #include <vector>
-#include <map>
 #include <unordered_map>
-#include <list>
+#include <deque>
 #include <memory>
 #include <Eigen/Core>
 #include <Eigen/Dense>

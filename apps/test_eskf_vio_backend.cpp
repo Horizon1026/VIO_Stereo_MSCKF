@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ros/ros.h>
+#include <include/propagate/sequence_propagator.hpp>
 
 int main() {
 

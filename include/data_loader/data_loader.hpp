@@ -9,8 +9,8 @@ namespace ESKF_VIO_BACKEND {
     class DataLoader {
     private:
         // 特征点追踪数据和 IMU 量测数据
-        std::list<std::shared_ptr<FeaturesMessage>> featMeas;
-        std::list<std::shared_ptr<IMUMessage>> imuMeas;
+        std::deque<std::shared_ptr<FeaturesMessage>> featMeas;
+        std::deque<std::shared_ptr<IMUMessage>> imuMeas;
         // 时间戳起点
         double timeStampOffset;
     public:
