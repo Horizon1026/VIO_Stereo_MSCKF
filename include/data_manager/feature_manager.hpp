@@ -18,7 +18,7 @@ namespace ESKF_VIO_BACKEND {
         // 此特征点的状态
         enum Status {
             UNSOLVED = 1,   // 尚未被三角化
-            IS_SOLVED,      // 三角化成功
+            SOLVED,         // 三角化成功
             ERROR           // 三角化失败
         } status = UNSOLVED;
     public:
@@ -35,6 +35,8 @@ namespace ESKF_VIO_BACKEND {
         bool GetNorm(const uint32_t frameID, const uint32_t cameraID, Eigen::Matrix<Scalar, 2, 1> &norm);
         /* 获取最后一个观测到此特征点的 Frame ID */
         uint32_t FinalFrameID(void);
+        /* 打印出当前特征点的信息 */
+        void Information(void);
     };
 
 
@@ -56,5 +58,7 @@ namespace ESKF_VIO_BACKEND {
         void RemoveByFrameID(const uint32_t frameID, bool offset);
         /* 移除指定 ID 的特征点 */
         void RemoveByID(const uint32_t landmarkID);
+        /* 打印出当前管理的所有特征点的信息 */
+        void Information(void);
     };
 }

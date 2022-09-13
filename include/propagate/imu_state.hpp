@@ -9,8 +9,9 @@ namespace ESKF_VIO_BACKEND {
     public:
         // 位置
         Eigen::Matrix<Scalar, 3, 1> p_wb;
-        // 姿态
+        // 姿态（名义状态与误差状态二选一）
         Eigen::Quaternion<Scalar> q_wb;
+        Eigen::Matrix<Scalar, 3, 1> theta_wb;
         // 速度
         Eigen::Matrix<Scalar, 3, 1> v_wb;
         // 加速度偏差
@@ -30,6 +31,13 @@ namespace ESKF_VIO_BACKEND {
                      const Eigen::Matrix<Scalar, 3, 1> &bias_g,
                      const Eigen::Matrix<Scalar, 3, 1> &gravity) :
             p_wb(p_wb), q_wb(q_wb), v_wb(v_wb), bias_a(bias_a), bias_g(bias_g), gravity(gravity) {}
+        IMUFullState(const Eigen::Matrix<Scalar, 3, 1> &p_wb,
+                     const Eigen::Matrix<Scalar, 3, 1> &theta_wb,
+                     const Eigen::Matrix<Scalar, 3, 1> &v_wb,
+                     const Eigen::Matrix<Scalar, 3, 1> &bias_a,
+                     const Eigen::Matrix<Scalar, 3, 1> &bias_g,
+                     const Eigen::Matrix<Scalar, 3, 1> &gravity) :
+            p_wb(p_wb), theta_wb(theta_wb), v_wb(v_wb), bias_a(bias_a), bias_g(bias_g), gravity(gravity) {}
     };
 
 
