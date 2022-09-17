@@ -1,12 +1,8 @@
+/* 内部依赖 */
 #include <include/backend.hpp>
+/* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {
-    /* 后端优化器读取配置并初始化 */
-    bool Backend::Initialize(const std::string &configFile) {
-        return true;
-    }
-
-
     /* 输入一帧 IMU 数据 */
     bool Backend::GetIMUMessage(const std::shared_ptr<IMUMessage> &newImuMeas) {
         this->dataloader.PushIMUMessage(newImuMeas);
@@ -26,12 +22,20 @@ namespace ESKF_VIO_BACKEND {
         bool res = true;
         // 提取一个数据，可能是单个 IMU 数据，也可能是 IMU 和 features 的捆绑数据
         std::shared_ptr<CombinedMessage> msg;
-        this->dataloader.PopOneMessage(msg);
+        res = this->dataloader.PopOneMessage(msg);
+        if (res == false) {
+            return false;
+        }
         // msg->Information();
 
         // 当存在特征点追踪结果输入时
         if (msg->featMeas != nullptr) {
             res = this->UpdateFeatureFrameManager(msg->featMeas);
+        }
+
+        // 当滑动窗口数量达到上限，则丢弃一帧以及相关特征点
+        if (this->frameManager.NeedMarginalize() == true) {
+            this->MarginalizeFeatureFrameManager(MARG_OLDEST);
         }
 
         return res;
@@ -75,6 +79,45 @@ namespace ESKF_VIO_BACKEND {
 
         // TODO: 
         this->featureManager.Information();
+        this->frameManager.Information();
         return true;
+    }
+
+
+    /* 基于 marg 策略调整特征点管理器和帧管理器 */
+    bool Backend::MarginalizeFeatureFrameManager(MargPolicy policy) {
+        switch (policy) {
+            case MARG_NEWEST:
+                // 剔除最新帧以及相关特征点
+                this->featureManager.RemoveByFrameID(this->frameManager.frames.back()->id, true);
+                this->frameManager.RemoveFrame(this->frameManager.frames.size() - 1);
+                break;
+            case MARG_OLDEST:
+                // 剔除最旧帧以及相关特征点
+                this->featureManager.RemoveByFrameID(this->frameManager.frames.front()->id, false);
+                this->frameManager.RemoveFrame(0);
+                break;
+            case MARG_SUBNEW:
+                // 剔除次新帧以及相关特征点
+                this->featureManager.RemoveByFrameID(this->frameManager.frames.back()->id - 1, true);
+                this->frameManager.RemoveFrame(this->frameManager.frames.size() - 2);
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
+
+    /* 设置相机与 IMU 之间的外参 */
+    bool Backend::SetExtrinsic(const std::vector<Eigen::Quaternion<Scalar>> &q_bc,
+        const std::vector<Eigen::Matrix<Scalar, 3, 1>> &p_bc) {
+        if (q_bc.size() != p_bc.size()) {
+            return false;
+        } else {
+            this->q_bc = q_bc;
+            this->p_bc = p_bc;
+            return true;
+        }
     }
 }

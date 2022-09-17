@@ -1,4 +1,9 @@
+/* 内部依赖 */
 #include <include/data_manager/frame_manager.hpp>
+/* 外部依赖 */
+#if STD_COUT_INFO
+    #include <iostream>
+#endif
 
 namespace ESKF_VIO_BACKEND {
     /* 初始化关键帧 */
@@ -46,26 +51,24 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+    /* 打印出此帧所有信息 */
+    void Frame::Information(void) {
+    #if STD_COUT_INFO
+        std::cout << ">> Frame id " << this->id << " at time " << this->timeStamp << "s observes " <<
+            this->features.size() << " features.\n";
+        std::cout << "     q_wb is [" << this->q_wb.w() << ", " << this->q_wb.x() << ", " <<
+            this->q_wb.y() << ", " << this->q_wb.z() << "] (s, v)\n";
+        std::cout << "     p_wb is [" << this->p_wb.transpose() << "]\n";
+        std::cout << "     v_wb is [" << this->v_wb.transpose() << "]\n";
+    #endif
+    }
+
+
     /* 帧管理器初始化 */
     bool FrameManager::Initialize(const uint32_t maxWindowSize) {
         this->frames.clear();
         this->maxWindowSize = maxWindowSize;
-        this->q_bc.clear();
-        this->p_bc.clear();
         return true;
-    }
-
-
-    /* 设置相机与 IMU 之间的外参 */
-    bool FrameManager::SetExtrinsic(const std::vector<Eigen::Quaternion<Scalar>> &q_bc,
-        const std::vector<Eigen::Matrix<Scalar, 3, 1>> &p_bc) {
-        if (q_bc.size() != p_bc.size()) {
-            return false;
-        } else {
-            this->q_bc = q_bc;
-            this->p_bc = p_bc;
-            return true;
-        }
     }
 
 
@@ -110,9 +113,10 @@ namespace ESKF_VIO_BACKEND {
                 ++removeTarget;
                 --cnt;
             }
-            while (removeTarget != this->frames.end()) {
-                --(*removeTarget)->id;
-                ++removeTarget;
+            auto needAdjustID = removeTarget;
+            while (needAdjustID != this->frames.end()) {
+                --(*needAdjustID)->id;
+                ++needAdjustID;
             }
         }
         this->frames.erase(removeTarget);
@@ -144,5 +148,30 @@ namespace ESKF_VIO_BACKEND {
         } else {
             return this->frames.back()->id;
         }
+    }
+
+
+    /* 判断滑动窗口是否需要进行边缘化操作 */
+    bool FrameManager::NeedMarginalize(void) {
+        if (this->frames.size() >= this->maxWindowSize) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    /* 打印出滑动窗口内所有关键帧的信息 */
+    void FrameManager::Information(void) {
+    #if STD_COUT_INFO
+        if (this->frames.empty()) {
+            std::cout << ">> Frame manager has no featuers." << std::endl;
+        } else {
+            for (auto it = this->frames.begin(); it != this->frames.end(); ++it) {
+                (*it)->Information();
+            }
+            std::cout << std::endl;
+        }
+    #endif
     }
 }

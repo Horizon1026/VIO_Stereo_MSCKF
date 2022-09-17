@@ -1,4 +1,6 @@
+/* 内部依赖 */
 #include <include/data_manager/data_typedef.hpp>
+/* 外部依赖 */
 #if STD_COUT_INFO
     #include <iostream>
 #endif

@@ -1,4 +1,5 @@
 #pragma once
+/* 外部依赖 */
 #include <vector>
 #include <unordered_map>
 #include <deque>
@@ -6,6 +7,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+/* 内部依赖 */
 
 /* 是否允许 std::cout 形式的 log 输出 */
 #define STD_COUT_INFO (1)
@@ -25,4 +27,11 @@ namespace ESKF_VIO_BACKEND {
 
     using Scalar = float;
     using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+
+    // 边缘化策略定义
+    enum MargPolicy {
+        MARG_OLDEST = 1,
+        MARG_NEWEST,
+        MARG_SUBNEW
+    };
 }

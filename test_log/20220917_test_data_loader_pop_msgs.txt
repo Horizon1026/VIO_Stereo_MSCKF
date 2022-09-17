@@ -1,0 +1,350 @@
+This is a vio backend with filter estimator.
+>> Load imu data from ../simulate/imu_pose.txt
+   4001 imu raw data loaded.
+>> Load pts data from ../simulate/all_points.txt
+>> Load camera and features data from ../simulate/cam_pose.txt
+   600 features track data loaded.
+>> IMU Message at time stamp 0s:     gyro [       0 0.230364 0.292623]
+     acc  [-1.48044 0.979366  9.76099]
+>> Features Message at time stamp 0s:
+     feature id 0 is observed in:
+       camera id 0 [  0.27502 -0.224731]
+     feature id 1 is observed in:
+       camera id 0 [ 0.242655 0.0978388]
+     feature id 2 is observed in:
+       camera id 0 [ 0.548674 -0.448345]
+     feature id 3 is observed in:
+       camera id 0 [0.484105 0.195191]
+     feature id 4 is observed in:
+       camera id 0 [ -0.44138 -0.547679]
+     feature id 5 is observed in:
+       camera id 0 [-0.505949 0.0958561]
+     feature id 6 is observed in:
+       camera id 0 [-0.221241 -0.274523]
+     feature id 7 is observed in:
+       camera id 0 [-0.253606 0.0480476]
+     feature id 8 is observed in:
+       camera id 0 [-0.0229025   0.246635]
+     feature id 9 is observed in:
+       camera id 0 [-0.0456893   0.492042]
+     feature id 10 is observed in:
+       camera id 0 [-0.0227366  -0.254606]
+     feature id 11 is observed in:
+       camera id 0 [-0.121989 -0.264564]
+     feature id 12 is observed in:
+       camera id 0 [ -0.146885 -0.0164335]
+     feature id 13 is observed in:
+       camera id 0 [ -0.0476326 -0.00647525]
+     feature id 14 is observed in:
+       camera id 0 [  0.16332 -0.110624]
+     feature id 15 is observed in:
+       camera id 0 [0.0640677 -0.120582]
+     feature id 16 is observed in:
+       camera id 0 [ 0.0516197 0.00348303]
+     feature id 17 is observed in:
+       camera id 0 [ 0.150872 0.0134413]
+     feature id 18 is observed in:
+       camera id 0 [ 0.25916 -0.25848]
+     feature id 19 is observed in:
+       camera id 0 [ 0.225967 0.0723401]
+     feature id 20 is observed in:
+       camera id 0 [0.530534 -0.52914]
+     feature id 21 is observed in:
+       camera id 0 [0.462584 0.148089]
+     feature id 22 is observed in:
+       camera id 0 [-0.511357 -0.633675]
+     feature id 23 is observed in:
+       camera id 0 [-0.579305 0.0435535]
+     feature id 24 is observed in:
+       camera id 0 [-0.249794 -0.309544]
+     feature id 25 is observed in:
+       camera id 0 [-0.282986 0.0212755]
+     feature id 26 is observed in:
+       camera id 0 [-0.0463826   0.224942]
+     feature id 27 is observed in:
+       camera id 0 [-0.0949488   0.460482]
+     feature id 28 is observed in:
+       camera id 0 [-0.0462124  -0.289119]
+     feature id 29 is observed in:
+       camera id 0 [-0.148003 -0.299332]
+     feature id 30 is observed in:
+       camera id 0 [ -0.173536 -0.0448546]
+     feature id 31 is observed in:
+       camera id 0 [-0.0717452 -0.0346417]
+     feature id 32 is observed in:
+       camera id 0 [ 0.144603 -0.141454]
+     feature id 33 is observed in:
+       camera id 0 [0.0428119 -0.151667]
+     feature id 34 is observed in:
+       camera id 0 [ 0.0300454 -0.0244288]
+     feature id 35 is observed in:
+       camera id 0 [  0.131836 -0.0142158]
+>> IMU Message at time stamp 0.005s:     gyro [-0.000814156     0.230362     0.292623]
+     acc  [ -1.4901 0.962958  9.60534]
+>> IMU Message at time stamp 0.01s:     gyro [-0.00162829    0.230353    0.292625]
+     acc  [-1.49944 0.946529  9.44972]
+>> IMU Message at time stamp 0.015s:     gyro [-0.00244238    0.230339    0.292627]
+     acc  [-1.50848 0.930085  9.29417]
+>> IMU Message at time stamp 0.02s:     gyro [-0.00325642    0.230319    0.292629]
+     acc  [-1.51721 0.913631  9.13873]
+>> IMU Message at time stamp 0.025s:     gyro [-0.00407037    0.230293    0.292633]
+     acc  [-1.52563 0.897172  8.98344]
+>> IMU Message at time stamp 0.03s:     gyro [-0.00488421    0.230261    0.292637]
+     acc  [-1.53374 0.880712  8.82833]
+>> Features Message at time stamp 0.0333333s:
+     feature id 0 is observed in:
+       camera id 0 [ 0.275929 -0.236349]
+     feature id 1 is observed in:
+       camera id 0 [0.243087 0.085739]
+     feature id 2 is observed in:
+       camera id 0 [ 0.559638 -0.463438]
+     feature id 3 is observed in:
+       camera id 0 [0.493106 0.178111]
+     feature id 4 is observed in:
+       camera id 0 [-0.433018 -0.568368]
+     feature id 5 is observed in:
+       camera id 0 [-0.495948 0.0803483]
+     feature id 6 is observed in:
+       camera id 0 [-0.221016 -0.287531]
+     feature id 7 is observed in:
+       camera id 0 [-0.252953 0.0363538]
+     feature id 8 is observed in:
+       camera id 0 [-0.0216697   0.234448]
+     feature id 9 is observed in:
+       camera id 0 [-0.0334832   0.474556]
+     feature id 10 is observed in:
+       camera id 0 [-0.0216135  -0.266994]
+     feature id 11 is observed in:
+       camera id 0 [ -0.12121 -0.277251]
+     feature id 12 is observed in:
+       camera id 0 [  -0.14593 -0.0282628]
+     feature id 13 is observed in:
+       camera id 0 [-0.0464734 -0.0182824]
+     feature id 14 is observed in:
+       camera id 0 [0.164376 -0.12236]
+     feature id 15 is observed in:
+       camera id 0 [ 0.065265 -0.132437]
+     feature id 16 is observed in:
+       camera id 0 [  0.0527758 -0.00832268]
+     feature id 17 is observed in:
+       camera id 0 [  0.151818 0.00161617]
+     feature id 18 is observed in:
+       camera id 0 [ 0.260469 -0.270281]
+     feature id 19 is observed in:
+       camera id 0 [ 0.226809 0.0602375]
+     feature id 20 is observed in:
+       camera id 0 [ 0.543099 -0.544939]
+     feature id 21 is observed in:
+       camera id 0 [0.473118 0.130949]
+     feature id 22 is observed in:
+       camera id 0 [-0.503125 -0.656415]
+     feature id 23 is observed in:
+       camera id 0 [-0.569105 0.0274324]
+     feature id 24 is observed in:
+       camera id 0 [-0.249549 -0.322983]
+     feature id 25 is observed in:
+       camera id 0 [ -0.282256 0.00942731]
+     feature id 26 is observed in:
+       camera id 0 [-0.0448503   0.212772]
+     feature id 27 is observed in:
+       camera id 0 [-0.0814996   0.442995]
+     feature id 28 is observed in:
+       camera id 0 [-0.0448842  -0.301834]
+     feature id 29 is observed in:
+       camera id 0 [-0.147107 -0.312397]
+     feature id 30 is observed in:
+       camera id 0 [ -0.172427 -0.0568585]
+     feature id 31 is observed in:
+       camera id 0 [-0.0703517 -0.0465876]
+     feature id 32 is observed in:
+       camera id 0 [ 0.146012 -0.153335]
+     feature id 33 is observed in:
+       camera id 0 [0.0443006 -0.163707]
+     feature id 34 is observed in:
+       camera id 0 [ 0.0315045 -0.0363385]
+     feature id 35 is observed in:
+       camera id 0 [  0.133143 -0.0261115]
+>> IMU Message at time stamp 0.035s:     gyro [-0.00569793    0.230224    0.292642]
+     acc  [-1.54154 0.864257  8.67344]
+>> IMU Message at time stamp 0.04s:     gyro [-0.00651151    0.230181    0.292647]
+     acc  [-1.54904 0.847812  8.51881]
+>> IMU Message at time stamp 0.045s:     gyro [-0.00732492    0.230132    0.292654]
+     acc  [-1.55623 0.831382  8.36449]
+>> IMU Message at time stamp 0.05s:     gyro [-0.00813815    0.230078    0.292661]
+     acc  [-1.56311 0.814972   8.2105]
+>> IMU Message at time stamp 0.055s:     gyro [-0.00895117    0.230017    0.292669]
+     acc  [ -1.5697 0.798586  8.05688]
+>> IMU Message at time stamp 0.06s:     gyro [-0.00976396    0.229951    0.292678]
+     acc  [-1.57598 0.782231  7.90368]
+>> IMU Message at time stamp 0.065s:     gyro [-0.0105765    0.22988   0.292687]
+     acc  [-1.58196 0.765909  7.75093]
+>> Features Message at time stamp 0.0666667s:
+     feature id 0 is observed in:
+       camera id 0 [ 0.276799 -0.247958]
+     feature id 1 is observed in:
+       camera id 0 [ 0.243514 0.0737159]
+     feature id 2 is observed in:
+       camera id 0 [ 0.570448 -0.478477]
+     feature id 3 is observed in:
+       camera id 0 [ 0.50196 0.161224]
+     feature id 4 is observed in:
+       camera id 0 [-0.424548 -0.589155]
+     feature id 5 is observed in:
+       camera id 0 [-0.485828 0.0649503]
+     feature id 6 is observed in:
+       camera id 0 [-0.220825 -0.300538]
+     feature id 7 is observed in:
+       camera id 0 [-0.252299 0.0247382]
+     feature id 8 is observed in:
+       camera id 0 [-0.0204241   0.222375]
+     feature id 9 is observed in:
+       camera id 0 [-0.0213197    0.45729]
+     feature id 10 is observed in:
+       camera id 0 [-0.020522 -0.279374]
+     feature id 11 is observed in:
+       camera id 0 [-0.120463 -0.289934]
+     feature id 12 is observed in:
+       camera id 0 [ -0.144982 -0.0400307]
+     feature id 13 is observed in:
+       camera id 0 [-0.0453227 -0.0300284]
+     feature id 14 is observed in:
+       camera id 0 [ 0.165408 -0.134062]
+     feature id 15 is observed in:
+       camera id 0 [0.0664396 -0.144256]
+     feature id 16 is observed in:
+       camera id 0 [ 0.0539208 -0.0200679]
+     feature id 17 is observed in:
+       camera id 0 [  0.152751 -0.0101489]
+     feature id 18 is observed in:
+       camera id 0 [ 0.261735 -0.282078]
+     feature id 19 is observed in:
+       camera id 0 [ 0.227642 0.0482076]
+     feature id 20 is observed in:
+       camera id 0 [ 0.555512 -0.560687]
+     feature id 21 is observed in:
+       camera id 0 [0.483491 0.113995]
+     feature id 22 is observed in:
+       camera id 0 [-0.494767 -0.679317]
+     feature id 23 is observed in:
+       camera id 0 [-0.558756 0.0114068]
+     feature id 24 is observed in:
+       camera id 0 [-0.249341 -0.336431]
+     feature id 25 is observed in:
+       camera id 0 [  -0.281525 -0.00234695]
+     feature id 26 is observed in:
+       camera id 0 [-0.0433071   0.200713]
+     feature id 27 is observed in:
+       camera id 0 [-0.0680816    0.42572]
+     feature id 28 is observed in:
+       camera id 0 [-0.0435891   -0.31455]
+     feature id 29 is observed in:
+       camera id 0 [-0.146243 -0.325467]
+     feature id 30 is observed in:
+       camera id 0 [ -0.171325 -0.0688053]
+     feature id 31 is observed in:
+       camera id 0 [-0.0689681 -0.0584763]
+     feature id 32 is observed in:
+       camera id 0 [ 0.147393 -0.165186]
+     feature id 33 is observed in:
+       camera id 0 [0.0457649 -0.175717]
+     feature id 34 is observed in:
+       camera id 0 [ 0.0329504 -0.0481915]
+     feature id 35 is observed in:
+       camera id 0 [  0.134433 -0.0379506]
+>> IMU Message at time stamp 0.07s:     gyro [-0.0113888   0.229802   0.292698]
+     acc  [-1.58764 0.749628  7.59867]
+>> IMU Message at time stamp 0.075s:     gyro [-0.0122008   0.229719   0.292709]
+     acc  [-1.59303  0.73339  7.44694]
+>> IMU Message at time stamp 0.08s:     gyro [-0.0130124    0.22963    0.29272]
+     acc  [-1.59812 0.717202  7.29577]
+>> IMU Message at time stamp 0.085s:     gyro [-0.0138238   0.229536   0.292733]
+     acc  [-1.60292 0.701068   7.1452]
+>> IMU Message at time stamp 0.09s:     gyro [-0.0146348   0.229435   0.292746]
+     acc  [-1.60743 0.684993  6.99527]
+>> IMU Message at time stamp 0.095s:     gyro [-0.0154454   0.229329    0.29276]
+     acc  [-1.61166 0.668982  6.84601]
+>> IMU Message at time stamp 0.1s:     gyro [-0.0162556   0.229218   0.292775]
+     acc  [ -1.6156 0.653039  6.69746]
+>> Features Message at time stamp 0.1s:
+     feature id 0 is observed in:
+       camera id 0 [ 0.277619 -0.259497]
+     feature id 1 is observed in:
+       camera id 0 [ 0.243926 0.0618306]
+     feature id 2 is observed in:
+       camera id 0 [ 0.581087 -0.493349]
+     feature id 3 is observed in:
+       camera id 0 [0.510654 0.144639]
+     feature id 4 is observed in:
+       camera id 0 [-0.415988 -0.609926]
+     feature id 5 is observed in:
+       camera id 0 [-0.475609 0.0497794]
+     feature id 6 is observed in:
+       camera id 0 [-0.220679 -0.313483]
+     feature id 7 is observed in:
+       camera id 0 [-0.251657 0.0132639]
+     feature id 8 is observed in:
+       camera id 0 [-0.0191783   0.210477]
+     feature id 9 is observed in:
+       camera id 0 [-0.00921897    0.440358]
+     feature id 10 is observed in:
+       camera id 0 [-0.019474 -0.291684]
+     feature id 11 is observed in:
+       camera id 0 [-0.119758 -0.302549]
+     feature id 12 is observed in:
+       camera id 0 [ -0.144053 -0.0516742]
+     feature id 13 is observed in:
+       camera id 0 [-0.0441925  -0.041651]
+     feature id 14 is observed in:
+       camera id 0 [ 0.166402 -0.145667]
+     feature id 15 is observed in:
+       camera id 0 [  0.06758 -0.155979]
+     feature id 16 is observed in:
+       camera id 0 [  0.055043 -0.0316906]
+     feature id 17 is observed in:
+       camera id 0 [  0.153659 -0.0217922]
+     feature id 18 is observed in:
+       camera id 0 [ 0.262948 -0.293807]
+     feature id 19 is observed in:
+       camera id 0 [ 0.228453 0.0363135]
+     feature id 20 is observed in:
+       camera id 0 [ 0.567754 -0.576267]
+     feature id 21 is observed in:
+       camera id 0 [ 0.493689 0.0973429]
+     feature id 22 is observed in:
+       camera id 0 [-0.486296 -0.702262]
+     feature id 23 is observed in:
+       camera id 0 [   -0.54828 -0.00440045]
+     feature id 24 is observed in:
+       camera id 0 [-0.249181 -0.349825]
+     feature id 25 is observed in:
+       camera id 0 [ -0.280807 -0.0139824]
+     feature id 26 is observed in:
+       camera id 0 [-0.0417656   0.188827]
+     feature id 27 is observed in:
+       camera id 0 [-0.0547169   0.408777]
+     feature id 28 is observed in:
+       camera id 0 [-0.0423386    -0.3272]
+     feature id 29 is observed in:
+       camera id 0 [-0.145424 -0.338476]
+     feature id 30 is observed in:
+       camera id 0 [ -0.170243 -0.0806308]
+     feature id 31 is observed in:
+       camera id 0 [-0.0676064  -0.070244]
+     feature id 32 is observed in:
+       camera id 0 [ 0.148735 -0.176943]
+     feature id 33 is observed in:
+       camera id 0 [ 0.047193 -0.187633]
+     feature id 34 is observed in:
+       camera id 0 [ 0.0343711 -0.0599241]
+     feature id 35 is observed in:
+       camera id 0 [  0.135695 -0.0496702]
+>> IMU Message at time stamp 0.105s:     gyro [-0.0170655     0.2291   0.292791]
+     acc  [-1.61926 0.637168  6.54967]
+>> IMU Message at time stamp 0.11s:     gyro [-0.0178749   0.228977   0.292807]
+     acc  [-1.62264 0.621376  6.40266]
+>> IMU Message at time stamp 0.115s:     gyro [-0.0186838   0.228848   0.292824]
+     acc  [-1.62575 0.605665  6.25647]
+>> IMU Message at time stamp 0.12s:     gyro [-0.0194922   0.228714   0.292842]
+     acc  [-1.62859 0.590042  6.11114]
+>> IMU Message at time stamp 0.125s:     gyro [-0.0203002   0.228574    0.29286]
+     acc  [-1.63116  0.57451   5.9667]

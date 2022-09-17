@@ -42,6 +42,11 @@ namespace ESKF_VIO_BACKEND {
         std::shared_ptr<IMUFullState> start;
         // propagate 的起点时间戳
         fp64 startTimeStamp;
+        // IMU 的噪声
+        Scalar noise_accel;
+        Scalar noise_gyro;
+        Scalar random_walk_accel;
+        Scalar random_walk_gyro;
     public:
         /* 构造函数与析构函数 */
         PropagateQueue() {}

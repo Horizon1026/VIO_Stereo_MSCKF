@@ -69,6 +69,7 @@
         "core": "cpp",
         "fstream": "cpp",
         "complex": "cpp",
-        "*.txx": "cpp"
+        "*.txx": "cpp",
+        "locale": "cpp"
     }
 }

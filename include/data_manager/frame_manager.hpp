@@ -35,6 +35,8 @@ namespace ESKF_VIO_BACKEND {
         bool AddFeatures(const std::vector<std::shared_ptr<Feature>> &newFeatures);
         /* 提取当前帧与某一帧之间的共视特征点 */
         std::vector<std::shared_ptr<Feature>> GetCovisibleFeatures(const std::shared_ptr<Frame> &target);
+        /* 打印出此帧所有信息 */
+        void Information(void);
     };
 
 
@@ -44,10 +46,7 @@ namespace ESKF_VIO_BACKEND {
         // 滑动窗口内所有关键帧
         std::deque<std::shared_ptr<Frame>> frames;
         // 滑动窗口的大小限制
-        uint32_t maxWindowSize = 10;
-        // 每一个 camera 和 IMU 之间的相对位姿，脚标即为对应 camera 的 ID
-        std::vector<Eigen::Quaternion<Scalar>> q_bc;
-        std::vector<Eigen::Matrix<Scalar, 3, 1>> p_bc;
+        uint32_t maxWindowSize = 5;
     public:
         /* 构造函数与析构函数 */
         FrameManager() {}
@@ -55,9 +54,6 @@ namespace ESKF_VIO_BACKEND {
     public:
         /* 帧管理器初始化 */
         bool Initialize(const uint32_t maxWindowSize);
-        /* 设置相机与 IMU 之间的外参 */
-        bool SetExtrinsic(const std::vector<Eigen::Quaternion<Scalar>> &q_bc,
-            const std::vector<Eigen::Matrix<Scalar, 3, 1>> &p_bc);
         /* 增加新一帧，检查滑窗内 ID 的合法性，并返回新加入帧的 ID */
         bool AddNewFrame(const std::shared_ptr<Frame> &newFrame);
         /* 移除一帧，给定待移动帧在滑动窗口内的索引 (0 -> max window size - 1) */
@@ -66,5 +62,9 @@ namespace ESKF_VIO_BACKEND {
         std::shared_ptr<Frame> GetFrame(const uint32_t frameID);
         /* 获取滑动窗口内最大的 frame ID */
         uint32_t GetMaxFrameID(void);
+        /* 判断滑动窗口是否需要进行边缘化操作 */
+        bool NeedMarginalize(void);
+        /* 打印出滑动窗口内所有关键帧的信息 */
+        void Information(void);
     };
 }

@@ -1,0 +1,11 @@
+This is a vio backend with filter estimator.
+>> Load imu noise...
+     imu accel noise : 0.25
+     imu gyro noise : 0.08
+     imu accel random walk : 0.0004
+     imu gyro random walk : 0.0005
+>> Load multi-view camera extrinsic...
+     camera 0 extrinsic q_bc is [1, 0, 0, 0], p_bc is [0.5 0.5 0.5]
+     camera 1 extrinsic q_bc is [1, 0, 0, 0], p_bc is [0.6 0.6 0.6]
+     camera 2 extrinsic q_bc is [1, 0, 0, 0], p_bc is [0.8 0.8 0.8]
+>> Sliding window size set to 5.
