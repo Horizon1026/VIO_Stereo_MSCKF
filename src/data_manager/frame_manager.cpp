@@ -20,6 +20,19 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+    /* 为此帧添加一组特征点关联 */
+    bool Frame::AddFeatures(const std::vector<std::shared_ptr<Feature>> &newFeatures) {
+        bool res = true;
+        for (uint32_t i = 0; i < newFeatures.size(); ++i) {
+            res = this->AddFeature(newFeatures[i]);
+            if (res == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     /* 提取当前帧与某一帧之间的共视特征点 */
     std::vector<std::shared_ptr<Feature>> Frame::GetCovisibleFeatures(const std::shared_ptr<Frame> &target) {
         std::vector<std::shared_ptr<Feature>> ret;
@@ -56,10 +69,23 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
-    /* 增加新一帧，并检查滑窗内 ID 的合法性 */
+    /* 增加新一帧，检查滑窗内 ID 的合法性，并返回新加入帧的 ID */
     bool FrameManager::AddNewFrame(const std::shared_ptr<Frame> &newFrame) {
-        newFrame->id = this->frames.back()->id + 1;
+        // 设置 new frame 的 ID 和 pose 初值
+        if (this->frames.empty()) {
+            newFrame->id = FIRST_FRAME_ID;
+            newFrame->q_wb.setIdentity();
+            newFrame->p_wb.setZero();
+            newFrame->v_wb.setZero();
+        } else {
+            newFrame->id = this->frames.back()->id + 1;
+            newFrame->q_wb = this->frames.back()->q_wb;
+            newFrame->p_wb = this->frames.back()->p_wb;
+            newFrame->v_wb = this->frames.back()->v_wb;
+        }
         this->frames.emplace_back(newFrame);
+
+        // 检查 frame ID 是否为递增 1 的等差数列
         uint32_t idx = this->frames.front()->id;
         for (auto it = this->frames.begin(); it != this->frames.end(); ++it) {
             if ((*it)->id != idx) {
@@ -108,5 +134,15 @@ namespace ESKF_VIO_BACKEND {
             }
         }
         return nullptr;
+    }
+
+
+    /* 获取滑动窗口内最大的 frame ID */
+    uint32_t FrameManager::GetMaxFrameID(void) {
+        if (this->frames.empty()) {
+            return 0;
+        } else {
+            return this->frames.back()->id;
+        }
     }
 }

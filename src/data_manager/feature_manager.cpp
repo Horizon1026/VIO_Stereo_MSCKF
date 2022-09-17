@@ -1,4 +1,7 @@
 #include <include/data_manager/feature_manager.hpp>
+#if STD_COUT_INFO
+#include <iostream>
+#endif
 
 namespace ESKF_VIO_BACKEND {
     /* 为此特征点添加一个观测 */
@@ -25,24 +28,43 @@ namespace ESKF_VIO_BACKEND {
         return this->firstFrameID + this->observes.size() - 1;
     }
 
-    /* 添加前端提供的特征点最新追踪结果信息 */
+    /* 打印出当前特征点的信息 */
+    void Feature::Information(void) {
+    #if STD_COUT_INFO
+        std::cout << ">> Feature id " << this->id << " is observed in frame [" << this->firstFrameID <<
+            ", " << this->FinalFrameID() << "]\n";
+        for (uint32_t i = 0; i < this->observes.size(); ++i) {
+            for (auto it = this->observes[i]->norms.begin(); it != this->observes[i]->norms.end(); ++it) {
+                std::cout << "     frame " << this->firstFrameID + i << " camera " << it->first << " observe [" <<
+                    it->second.transpose() << "]\n";
+            }
+        }
+    #endif
+    }
+
+    /* 添加前端提供的特征点最新追踪结果信息，返回有所变动的特征点 */
     bool FeatureManager::AddNewFeatures(const std::vector<uint32_t> &ids,
         const std::vector<std::shared_ptr<FeatureObserve>> &newObserves,
-        const uint32_t frameID) {
+        const uint32_t frameID,
+        std::vector<std::shared_ptr<Feature>> &changedFeatures) {
+        changedFeatures.clear();
         if (ids.size() != newObserves.size()) {
             return false;
         }
+        changedFeatures.reserve(ids.size());
         for (uint32_t i = 0; i < ids.size(); ++i) {
             auto it = this->features.find(ids[i]);
             if (it != this->features.end()) {
                 // 对应特征点已经存在时，直接添加观测
                 it->second->AddNewObserve(newObserves[i]);
+                changedFeatures.emplace_back(it->second);
             } else {
                 // 对应特征点不存在时，构造新的特征点
                 std::vector<std::shared_ptr<FeatureObserve>> observes;
                 observes.emplace_back(newObserves[i]);
                 std::shared_ptr<Feature> newFeature(new Feature(ids[i], frameID, observes));
                 this->features.insert(std::make_pair(newFeature->id, newFeature));
+                changedFeatures.emplace_back(newFeature);
             }
         }
         return true;
@@ -111,6 +133,19 @@ namespace ESKF_VIO_BACKEND {
     /* 移除指定 ID 的特征点 */
     void FeatureManager::RemoveByID(const uint32_t featureID) {
         this->features.erase(featureID);
+    }
+
+    /* 打印出当前管理的所有特征点的信息 */
+    void FeatureManager::Information(void) {
+    #if STD_COUT_INFO
+        if (this->features.empty()) {
+            std::cout << ">> Feature manager has no featuers." << std::endl;
+        } else {
+            for (auto it = this->features.begin(); it != this->features.end(); ++it) {
+                it->second->Information();
+            }
+        }
+    #endif
     }
 
 }

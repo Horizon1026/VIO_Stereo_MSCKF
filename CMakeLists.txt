@@ -13,19 +13,21 @@ find_package( TBB REQUIRED )
 # 寻找 Pangolin 库并添加其路径
 # find_package( Pangolin REQUIRED )
 # include_directories( ${Pangolin_INCLUDE_DIRS} )
-# 添加工程路径
+# 添加路径
 include_directories( ${PROJECT_SOURCE_DIR} )
-# 添加输出的可执行文件
+# 添加源文件
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/data_manager DATA_MANAGER)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/propagate    PROPAGATE)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/update       UPDATE)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src              BACKEND)
+# 链接源文件
 add_executable( ESKF_Estimator
     apps/test_eskf_vio_backend.cpp
 
-    src/backend.cpp
-
-    src/data_manager/data_typedef.cpp
-    src/data_manager/data_loader.cpp
-    src/data_manager/feature_manager.cpp
-
-    src/propagate/sequence_propagator.cpp
+    ${DATA_MANAGER}
+    ${PROPAGATE}
+    ${UPDATE}
+    ${BACKEND}
 )
 
 # 为可执行文件链接相关的库

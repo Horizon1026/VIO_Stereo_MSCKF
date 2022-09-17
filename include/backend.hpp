@@ -41,6 +41,11 @@ namespace ESKF_VIO_BACKEND {
         bool PublishUpdataState(IMUFullState &state);
         /* 重置 */
         void Reset(void);
+
+    /* 对内接口 interface */
+    public:
+        /* 将新输入的 feature message 更新到特征点管理器和帧管理器中 */
+        bool UpdateFeatureFrameManager(const std::shared_ptr<FeaturesMessage> &featMeas);
     };
 
 }
