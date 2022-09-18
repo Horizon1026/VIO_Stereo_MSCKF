@@ -18,8 +18,8 @@ namespace ESKF_VIO_BACKEND {
         // IMU 与 Camera 的协方差矩阵
         Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> imuCamCov;
         // 当前时刻点对应的 IMU 量测值
-        Eigen::Matrix<Scalar, 3, 1> accel;
-        Eigen::Matrix<Scalar, 3, 1> gyro;
+        Vector3 accel;
+        Vector3 gyro;
         // 当前时间戳
         double timeStamp;
     public:
@@ -39,9 +39,9 @@ namespace ESKF_VIO_BACKEND {
         // 滑动窗口内 camera pose 的协方差矩阵
         Matrix camCov;
         // 无 update 时的 IMU bias 和 gravity
-        Eigen::Matrix<Scalar, 3, 1> bias_a;
-        Eigen::Matrix<Scalar, 3, 1> bias_g;
-        Eigen::Matrix<Scalar, 3, 1> gravity;
+        Vector3 bias_a;
+        Vector3 bias_g;
+        Vector3 gravity;
         // 联系 IMU 和 Camera 协方差的 Fai 矩阵
         Matrix fai;
         // IMU 的噪声
@@ -55,28 +55,29 @@ namespace ESKF_VIO_BACKEND {
         ~PropagateQueue() {}
     public:
         /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
-        bool Propagate(const Eigen::Matrix<Scalar, 3, 1> &accel,
-                       const Eigen::Matrix<Scalar, 3, 1> &gyro,
+        bool Propagate(const Vector3 &accel,
+                       const Vector3 &gyro,
                        const fp64 timeStamp);
         /* 中值积分法 propagate 运动相关名义状态 */
         void PropagateMotionNominalState(const IMUMotionState &state_0,
                                          IMUMotionState &state_1,
-                                         const Eigen::Matrix<Scalar, 3, 1> &accel_0,
-                                         const Eigen::Matrix<Scalar, 3, 1> &gyro_0,
-                                         const Eigen::Matrix<Scalar, 3, 1> &accel_1,
-                                         const Eigen::Matrix<Scalar, 3, 1> &gyro_1,
-                                         const Eigen::Matrix<Scalar, 3, 1> &bias_a,
-                                         const Eigen::Matrix<Scalar, 3, 1> &bias_g,
+                                         const Vector3 &accel_0,
+                                         const Vector3 &gyro_0,
+                                         const Vector3 &accel_1,
+                                         const Vector3 &gyro_1,
+                                         const Vector3 &bias_a,
+                                         const Vector3 &bias_g,
+                                         const Vector3 &gravity_w,
                                          const Scalar dt);
         /* 基于离散误差状态过程方程 propagate 完整误差状态以及误差状态对应协方差矩阵 */
-        void PropagateFullErrorStateCovariance(const IMUFullState &d_state_0,
-                                               IMUFullState &d_state_1,
-                                               const Eigen::Matrix<Scalar, 3, 1> &accel_0,
-                                               const Eigen::Matrix<Scalar, 3, 1> &gyro_0,
-                                               const Eigen::Matrix<Scalar, 3, 1> &accel_1,
-                                               const Eigen::Matrix<Scalar, 3, 1> &gyro_1,
-                                               const Eigen::Matrix<Scalar, 3, 1> &bias_a,
-                                               const Eigen::Matrix<Scalar, 3, 1> &bias_g,
+        void PropagateFullErrorStateCovariance(const IMUFullState &errorState_0,
+                                               IMUFullState &errorState_1,
+                                               const Vector3 &accel_0,
+                                               const Vector3 &gyro_0,
+                                               const Vector3 &accel_1,
+                                               const Vector3 &gyro_1,
+                                               const Vector3 &bias_a,
+                                               const Vector3 &bias_g,
                                                const Scalar dt);
     };
 }

@@ -18,8 +18,8 @@ namespace ESKF_VIO_BACKEND {
         FeatureManager featureManager;
         FrameManager frameManager;
         // 每一个 camera 和 IMU 之间的相对位姿，脚标即为对应 camera 的 ID
-        std::vector<Eigen::Quaternion<Scalar>> q_bc;
-        std::vector<Eigen::Matrix<Scalar, 3, 1>> p_bc;
+        std::vector<Quaternion> q_bc;
+        std::vector<Vector3> p_bc;
         
         // 序列递推
         PropagateQueue queue;
@@ -56,8 +56,8 @@ namespace ESKF_VIO_BACKEND {
         /* 基于 marg 策略调整特征点管理器和帧管理器 */
         bool MarginalizeFeatureFrameManager(MargPolicy policy);
         /* 设置相机与 IMU 之间的外参 */
-        bool SetExtrinsic(const std::vector<Eigen::Quaternion<Scalar>> &q_bc,
-            const std::vector<Eigen::Matrix<Scalar, 3, 1>> &p_bc);
+        bool SetExtrinsic(const std::vector<Quaternion> &q_bc,
+            const std::vector<Vector3> &p_bc);
     };
 
 }

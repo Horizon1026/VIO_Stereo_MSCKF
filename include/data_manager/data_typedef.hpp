@@ -54,16 +54,16 @@ namespace ESKF_VIO_BACKEND {
     class IMUMessage {
     public:
         // body 系角速度量测（单位 rad/s）
-        Eigen::Matrix<Scalar, 3, 1> gyro;
+        Vector3 gyro;
         // body 系加速度量测（单位 m/s^2）
-        Eigen::Matrix<Scalar, 3, 1> acc;
+        Vector3 accel;
         // 时间戳（单位 s）
         fp64 timeStamp;
     public:
         IMUMessage() {}
         ~IMUMessage() {}
-        IMUMessage(const Eigen::Matrix<Scalar, 3, 1> &gyro,
-                   const Eigen::Matrix<Scalar, 3, 1> &acc,
+        IMUMessage(const Vector3 &gyro,
+                   const Vector3 &accel,
                    const fp64 &timeStamp);
     public:
         /* 自我打印保存信息 */

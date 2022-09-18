@@ -14,7 +14,7 @@ namespace ESKF_VIO_BACKEND {
         // 此特征点在以第 firstFrameID 帧为起始的连续几帧中的观测
         std::vector<std::shared_ptr<FeatureObserve>> observes;
         // 此特征点在世界坐标系中的位置
-        Eigen::Matrix<Scalar, 3, 1> p_w;
+        Vector3 p_w;
         // 此特征点的状态
         enum Status {
             UNSOLVED = 1,   // 尚未被三角化

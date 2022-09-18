@@ -9,7 +9,7 @@ using Scalar = ESKF_VIO_BACKEND::Scalar;
 
 /* 测试用相关定义 */
 std::string simPath = "../simulate/";
-double maxTimeStamp = 10;
+double maxTimeStamp = 100;
 
 /* 载入 IMU 数据 */
 void LoadIMUData(const std::shared_ptr<Backend> &backend) {
@@ -23,8 +23,8 @@ void LoadIMUData(const std::shared_ptr<Backend> &backend) {
     }
     std::string oneLine;
     double timeStamp;
-    Eigen::Matrix<Scalar, 3, 1> acc, gyr, pos;
-    Eigen::Quaternion<Scalar> q;
+    Vector3 acc, gyr, pos;
+    Quaternion q;
     uint32_t cnt = 0;
     while (std::getline(fsIMU, oneLine) && !oneLine.empty()) {
         std::istringstream imuData(oneLine);
@@ -34,6 +34,9 @@ void LoadIMUData(const std::shared_ptr<Backend> &backend) {
         std::shared_ptr<IMUMessage> imuMsg(new IMUMessage(gyr, acc, timeStamp));
         backend->GetIMUMessage(imuMsg);
         ++cnt;
+        if (imuMsg->timeStamp > maxTimeStamp) {
+            break;
+        }
     }
     std::cout << "   " << cnt << " imu raw data loaded.\n";
 }
@@ -41,7 +44,7 @@ void LoadIMUData(const std::shared_ptr<Backend> &backend) {
 /* 载入特征点追踪数据 */
 void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
     /* 读取所有特征点 */
-    std::vector<Eigen::Matrix<Scalar, 3, 1>> allPoints;
+    std::vector<Vector3> allPoints;
     std::string pts_file = simPath + "all_points.txt";
     std::cout << ">> Load pts data from " << pts_file << std::endl;
     std::ifstream fsPts;
@@ -51,7 +54,7 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
         return;
     }
     std::string oneLine;
-    Eigen::Matrix<Scalar, 3, 1> pos;
+    Vector3 pos;
     while (std::getline(fsPts, oneLine) && !oneLine.empty()) {
         std::istringstream ptsData(oneLine);
         Scalar unused;
@@ -69,20 +72,20 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
         std::cout << "   failed." << std::endl;
         return;
 	}
-	Eigen::Quaternion<Scalar> q_wc;
-	Eigen::Matrix<Scalar, 3, 1> p_wc;
+	Quaternion q_wc;
+	Vector3 p_wc;
 	double timeStamp;
     uint32_t cnt = 0;
 
 	// 提取对应时间戳的相机位姿，计算此时的观测
-	while (std::getline(fsCam, oneLine) && !oneLine.empty()){
+	while (std::getline(fsCam, oneLine) && !oneLine.empty()) {
 		std::vector<Eigen::Matrix<Scalar, 2, 1>> features;
 		std::istringstream camData(oneLine);
 		camData >> timeStamp >> q_wc.w() >> q_wc.x() >> q_wc.y() >> q_wc.z() >> p_wc.x() >> p_wc.y() >> p_wc.z();
 
 		// 将世界坐标系的 points 投影到归一化平面
 		for (unsigned long i = 0; i < allPoints.size(); i++) {
-			Eigen::Matrix<Scalar, 3, 1> pc = q_wc.inverse() * (allPoints[i] - p_wc);
+			Vector3 pc = q_wc.inverse() * (allPoints[i] - p_wc);
 			Eigen::Matrix<Scalar, 2, 1> feature = Eigen::Matrix<Scalar, 2, 1>(pc(0, 0) / pc(2, 0), pc(1, 0) / pc(2, 0));
 			features.emplace_back(feature);
 		}
@@ -104,6 +107,9 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
         std::shared_ptr<FeaturesMessage> featuresMsg(new FeaturesMessage(ids, obs, flag, timeStamp));
         backend->GetFeaturesMessage(featuresMsg);
         ++cnt;
+        if (featuresMsg->timeStamp > maxTimeStamp) {
+            break;
+        }
     }
     std::cout << "   " << cnt << " features track data loaded.\n";
 
@@ -111,8 +117,8 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
 int main() {
     // 配置 std::cout 打印到指定文件
-    // std::ofstream logFile("../test_log/20220917_test_load_config_file.txt");
-    // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
+    std::ofstream logFile("../test_log/20220918_test_imu_nominal_state_propagate.txt");
+    std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     std::cout << "This is a vio backend with filter estimator." << std::endl;
     std::shared_ptr<Backend> backend(new Backend());
@@ -121,8 +127,11 @@ int main() {
     LoadIMUData(backend);
     LoadFeaturesData(backend);
 
-    for (uint32_t i = 0; i < 15; ++i) {
+    for (uint32_t i = 0; i < 4000; ++i) {
         backend->RunOnce();
+        ESKF_VIO_BACKEND::IMUFullState state;
+        backend->PublishPropagateState(state);
+        std::cout << state.p_wb.transpose() << std::endl;
     }
     return 0;
 }

@@ -28,6 +28,15 @@ namespace ESKF_VIO_BACKEND {
         }
         // msg->Information();
 
+        // 当存在 IMU 量测输入时
+        if (msg->imuMeas.size() > 0) {
+            if (msg->imuMeas.front() != nullptr) {
+                res = this->queue.Propagate(msg->imuMeas.front()->accel,
+                                            msg->imuMeas.front()->gyro,
+                                            msg->imuMeas.front()->timeStamp);
+            }
+        }
+
         // 当存在特征点追踪结果输入时
         if (msg->featMeas != nullptr) {
             res = this->UpdateFeatureFrameManager(msg->featMeas);
@@ -44,12 +53,30 @@ namespace ESKF_VIO_BACKEND {
 
     /* 输出最新 Propagate 点估计 */
     bool Backend::PublishPropagateState(IMUFullState &state) {
+        if (this->queue.items.empty()) {
+            return false;
+        }
+        state.p_wb = this->queue.items.back()->nominalState.p_wb;
+        state.q_wb = this->queue.items.back()->nominalState.q_wb;
+        state.v_wb = this->queue.items.back()->nominalState.v_wb;
+        state.bias_a = this->queue.bias_a;
+        state.bias_g = this->queue.bias_g;
+        state.gravity = this->queue.gravity;
         return true;
     }
 
 
     /* 输出最新 Update 点估计 */
     bool Backend::PublishUpdataState(IMUFullState &state) {
+        if (this->queue.items.empty()) {
+            return false;
+        }
+        state.p_wb = this->queue.items.front()->nominalState.p_wb;
+        state.q_wb = this->queue.items.front()->nominalState.q_wb;
+        state.v_wb = this->queue.items.front()->nominalState.v_wb;
+        state.bias_a = this->queue.bias_a;
+        state.bias_g = this->queue.bias_g;
+        state.gravity = this->queue.gravity;
         return true;
     }
 
@@ -78,8 +105,8 @@ namespace ESKF_VIO_BACKEND {
         newFrame->AddFeatures(newObserveFeatures);
 
         // TODO: 
-        this->featureManager.Information();
-        this->frameManager.Information();
+        // this->featureManager.Information();
+        // this->frameManager.Information();
         return true;
     }
 
@@ -110,8 +137,8 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 设置相机与 IMU 之间的外参 */
-    bool Backend::SetExtrinsic(const std::vector<Eigen::Quaternion<Scalar>> &q_bc,
-        const std::vector<Eigen::Matrix<Scalar, 3, 1>> &p_bc) {
+    bool Backend::SetExtrinsic(const std::vector<Quaternion> &q_bc,
+        const std::vector<Vector3> &p_bc) {
         if (q_bc.size() != p_bc.size()) {
             return false;
         } else {

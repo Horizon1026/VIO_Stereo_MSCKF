@@ -108,7 +108,7 @@ namespace ESKF_VIO_BACKEND {
             std::shared_ptr<IMUMessage> right = this->imuMeas.front();
             double rate = (mid->timeStamp - left->timeStamp) / (right->timeStamp - left->timeStamp);
             mid->gyro = left->gyro * (1 - rate) + right->gyro * rate;
-            mid->acc = left->acc * (1 - rate) + right->acc * rate;
+            mid->accel = left->accel * (1 - rate) + right->accel * rate;
             // 添加时间戳与 features 时间戳同步的 IMU 量测
             output->imuMeas.emplace_back(mid);
             // 给下一帧相机量测设置起点

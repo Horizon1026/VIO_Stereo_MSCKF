@@ -27,6 +27,10 @@ namespace ESKF_VIO_BACKEND {
 
     using Scalar = float;
     using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using Quaternion = Eigen::Quaternion<Scalar>;
+    using Matrix33 = Eigen::Matrix<Scalar, 3, 3>;
+    using Matrix44 = Eigen::Matrix<Scalar, 4, 4>;
+    using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
 
     // 边缘化策略定义
     enum MargPolicy {

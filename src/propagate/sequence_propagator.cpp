@@ -4,11 +4,11 @@
 
 namespace ESKF_VIO_BACKEND {
     /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
-    bool PropagateQueue::Propagate(const Eigen::Matrix<Scalar, 3, 1> &accel,
-                                   const Eigen::Matrix<Scalar, 3, 1> &gyro,
+    bool PropagateQueue::Propagate(const Vector3 &accel,
+                                   const Vector3 &gyro,
                                    const fp64 timeStamp) {
         // 获取 IMU 和 Cam 的状态维度
-        uint32_t imuSize = 18;
+        uint32_t imuSize = IMU_FULL_ERROR_STATE_SIZE;
         uint32_t camSize = this->slidingWindow->frames.size() * 6;
 
         // 如果序列为空，则构造新的起点
@@ -36,32 +36,60 @@ namespace ESKF_VIO_BACKEND {
         }
 
         // 当序列不为空时，触发一次中值积分的 propagate 过程
-        std::shared_ptr<IMUPropagateQueueItem> newItem(new IMUPropagateQueueItem());
+        std::shared_ptr<IMUPropagateQueueItem> item_1(new IMUPropagateQueueItem());
+        auto item_0 = this->items.back();
+        this->items.emplace_back(item_1);
+        item_1->accel = accel;
+        item_1->gyro = gyro;
+        item_1->timeStamp = timeStamp;
+        // 中值积分递推名义状态
+        this->PropagateMotionNominalState(item_0->nominalState, item_1->nominalState,
+                                          item_0->accel, item_0->gyro,
+                                          item_1->accel, item_1->gyro,
+                                          this->bias_a, this->bias_g, this->gravity,
+                                          static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
+        // 中值积分递推误差状态方程，更新 covariance
         // TODO: 
 
         return true;
     }
+
+
     /* 中值积分法 propagate 运动相关名义状态 */
     void PropagateQueue::PropagateMotionNominalState(const IMUMotionState &state_0,
                                                      IMUMotionState &state_1,
-                                                     const Eigen::Matrix<Scalar, 3, 1> &accel_0,
-                                                     const Eigen::Matrix<Scalar, 3, 1> &gyro_0,
-                                                     const Eigen::Matrix<Scalar, 3, 1> &accel_1,
-                                                     const Eigen::Matrix<Scalar, 3, 1> &gyro_1,
-                                                     const Eigen::Matrix<Scalar, 3, 1> &bias_a,
-                                                     const Eigen::Matrix<Scalar, 3, 1> &bias_g,
+                                                     const Vector3 &accel_0,
+                                                     const Vector3 &gyro_0,
+                                                     const Vector3 &accel_1,
+                                                     const Vector3 &gyro_1,
+                                                     const Vector3 &bias_a,
+                                                     const Vector3 &bias_g,
+                                                     const Vector3 &gravity_w,
                                                      const Scalar dt) {
-        
+        // 计算 gyro 中值，propagate 姿态
+        Vector3 midGyro = Scalar(0.5) * (gyro_0 + gyro_1) - bias_g;
+        Quaternion dq(Scalar(1), midGyro.x() * Scalar(0.5) * dt,
+                                 midGyro.y() * Scalar(0.5) * dt,
+                                 midGyro.z() * Scalar(0.5) * dt);
+        state_1.q_wb = state_0.q_wb * dq;
+        state_1.q_wb.normalize();
+        // 计算 accel 中值，propagate 速度
+        Vector3 midAccel = Scalar(0.5) * (state_0.q_wb * (accel_0 - bias_a) + state_1.q_wb * (accel_1 - bias_a)) - gravity_w;
+        state_1.v_wb = state_0.v_wb + midAccel * dt;
+        // propagate 位置
+        state_1.p_wb = state_0.p_wb + Scalar(0.5) * (state_0.v_wb + state_1.v_wb) * dt;
     }
+
+
     /* 基于离散误差状态过程方程 propagate 完整误差状态以及误差状态对应协方差矩阵 */
-    void PropagateQueue::PropagateFullErrorStateCovariance(const IMUFullState &d_state_0,
-                                                           IMUFullState &d_state_1,
-                                                           const Eigen::Matrix<Scalar, 3, 1> &accel_0,
-                                                           const Eigen::Matrix<Scalar, 3, 1> &gyro_0,
-                                                           const Eigen::Matrix<Scalar, 3, 1> &accel_1,
-                                                           const Eigen::Matrix<Scalar, 3, 1> &gyro_1,
-                                                           const Eigen::Matrix<Scalar, 3, 1> &bias_a,
-                                                           const Eigen::Matrix<Scalar, 3, 1> &bias_g,
+    void PropagateQueue::PropagateFullErrorStateCovariance(const IMUFullState &errorState_0,
+                                                           IMUFullState &errorSstate_1,
+                                                           const Vector3 &accel_0,
+                                                           const Vector3 &gyro_0,
+                                                           const Vector3 &accel_1,
+                                                           const Vector3 &gyro_1,
+                                                           const Vector3 &bias_a,
+                                                           const Vector3 &bias_g,
                                                            const Scalar dt) {
         
     }

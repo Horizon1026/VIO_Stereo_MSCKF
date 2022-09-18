@@ -61,10 +61,10 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 带参数的构造函数 */
-    IMUMessage::IMUMessage(const Eigen::Matrix<Scalar, 3, 1> &gyro,
-                           const Eigen::Matrix<Scalar, 3, 1> &acc,
+    IMUMessage::IMUMessage(const Vector3 &gyro,
+                           const Vector3 &accel,
                            const fp64 &timeStamp) :
-        gyro(gyro), acc(acc), timeStamp(timeStamp) {}
+        gyro(gyro), accel(accel), timeStamp(timeStamp) {}
 
     
     /* 自我打印保存信息 */
@@ -72,7 +72,7 @@ namespace ESKF_VIO_BACKEND {
     #if STD_COUT_INFO
         std::cout << ">> IMU Message at time stamp " << this->timeStamp << "s:";
         std::cout << "     gyro [" << this->gyro.transpose() << "]\n";
-        std::cout << "     acc  [" << this->acc.transpose() << "]\n";
+        std::cout << "     accel  [" << this->accel.transpose() << "]\n";
     #endif
     }
 

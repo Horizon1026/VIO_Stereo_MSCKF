@@ -12,9 +12,9 @@ namespace ESKF_VIO_BACKEND {
         // 此帧所有 camera 观测到的所有特征点，保存为 <feature ID, ptr of feature>
         std::unordered_map<uint32_t, std::shared_ptr<Feature>> features;
         // 此帧对应的 IMU 系的位姿和速度
-        Eigen::Quaternion<Scalar> q_wb;
-        Eigen::Matrix<Scalar, 3, 1> p_wb;
-        Eigen::Matrix<Scalar, 3, 1> v_wb;
+        Quaternion q_wb;
+        Vector3 p_wb;
+        Vector3 v_wb;
         // 此帧的全局索引
         uint32_t id;
         // 此帧对应的时间戳

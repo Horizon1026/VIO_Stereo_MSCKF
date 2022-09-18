@@ -49,8 +49,8 @@ namespace ESKF_VIO_BACKEND {
         this->p_bc.clear();
         uint32_t camNum = 0;
         while (this->LoadMatrix(configPath + "/T_bc" + std::to_string(camNum) + ".txt", 4, 4, tempMat) == true) {
-            Eigen::Quaternion<Scalar> q_bc(tempMat.topLeftCorner<3, 3>());
-            Eigen::Matrix<Scalar, 3, 1> p_bc(tempMat.topRightCorner<3, 1>());
+            Quaternion q_bc(tempMat.topLeftCorner<3, 3>());
+            Vector3 p_bc(tempMat.topRightCorner<3, 1>());
             this->q_bc.emplace_back(q_bc);
             this->p_bc.emplace_back(p_bc);
             std::cout << "     camera " << camNum << " extrinsic q_bc is [" << q_bc.w() << ", " << q_bc.x() << ", " <<
