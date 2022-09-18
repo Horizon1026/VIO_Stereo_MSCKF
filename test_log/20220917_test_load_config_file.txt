@@ -4,6 +4,11 @@ This is a vio backend with filter estimator.
      imu gyro noise : 0.08
      imu accel random walk : 0.0004
      imu gyro random walk : 0.0005
+>> Load imu bias_a/g initial value...
+     imu bias_a init : 0.01 0.02 0.03
+     imu bias_g init : 0.04 0.05 0.01
+>> Load gravity in w frame...
+     gravity in w frame init :       0       0 9.80665
 >> Load multi-view camera extrinsic...
      camera 0 extrinsic q_bc is [1, 0, 0, 0], p_bc is [0.5 0.5 0.5]
      camera 1 extrinsic q_bc is [1, 0, 0, 0], p_bc is [0.6 0.6 0.6]

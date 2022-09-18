@@ -111,18 +111,18 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
 int main() {
     // 配置 std::cout 打印到指定文件
-    std::ofstream logFile("../test_log/20220917_test_load_config_file.txt");
-    std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
+    // std::ofstream logFile("../test_log/20220917_test_load_config_file.txt");
+    // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     std::cout << "This is a vio backend with filter estimator." << std::endl;
     std::shared_ptr<Backend> backend(new Backend());
     backend->Initialize("../config");
 
-    // LoadIMUData(backend);
-    // LoadFeaturesData(backend);
+    LoadIMUData(backend);
+    LoadFeaturesData(backend);
 
-    for (uint32_t i = 0; i < 80; ++i) {
-        // backend->RunOnce();
+    for (uint32_t i = 0; i < 15; ++i) {
+        backend->RunOnce();
     }
     return 0;
 }

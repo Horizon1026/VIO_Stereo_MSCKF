@@ -22,6 +22,22 @@ namespace ESKF_VIO_BACKEND {
             std::cout << "     imu gyro random walk : " << this->queue.random_walk_gyro << "\n";
         }
 
+        // 加载 IMU bias 初值
+        std::cout << ">> Load imu bias_a/g initial value...\n";
+        if (this->LoadMatrix(configPath + "/imu_bias_a_g_init.txt", 2, 3, tempMat) == true) {
+            this->queue.startNominalState.bias_a = tempMat.block<1, 3>(0, 0).transpose();
+            this->queue.startNominalState.bias_g = tempMat.block<1, 3>(1, 0).transpose();
+            std::cout << "     imu bias_a init : " << this->queue.startNominalState.bias_a.transpose() << "\n";
+            std::cout << "     imu bias_g init : " << this->queue.startNominalState.bias_g.transpose() << "\n";
+        }
+
+        // 加载 w 系的重力加速度初值
+        std::cout << ">> Load gravity in w frame...\n";
+        if (this->LoadMatrix(configPath + "/gravity_in_w_init.txt", 1, 3, tempMat) == true) {
+            this->queue.startNominalState.gravity = tempMat.transpose();
+            std::cout << "     gravity in w frame init : " << this->queue.startNominalState.gravity.transpose() << "\n";
+        }
+
         // 加载多目相机外参
         std::cout << ">> Load multi-view camera extrinsic...\n";
         this->q_bc.clear();
@@ -42,6 +58,9 @@ namespace ESKF_VIO_BACKEND {
             this->frameManager.maxWindowSize = tempMat(0, 0);
             std::cout << ">> Sliding window size set to " << this->frameManager.maxWindowSize << ".\n";
         }
+
+        // 给序列管理器挂载帧管理器
+        // this->queue.slidingWindow.reset(&this->frameManager);
         return true;
     }
 
