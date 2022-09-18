@@ -40,11 +40,16 @@ namespace ESKF_VIO_BACKEND {
         // 当存在特征点追踪结果输入时
         if (msg->featMeas != nullptr) {
             res = this->UpdateFeatureFrameManager(msg->featMeas);
+            // TODO: 
+            // update
+            // re propagate from update point to newest time
         }
 
         // 当滑动窗口数量达到上限，则丢弃一帧以及相关特征点
         if (this->frameManager.NeedMarginalize() == true) {
             this->MarginalizeFeatureFrameManager(MARG_OLDEST);
+            // TODO:
+            // covariance expand or cut
         }
 
         return res;
@@ -59,6 +64,8 @@ namespace ESKF_VIO_BACKEND {
         state.p_wb = this->queue.items.back()->nominalState.p_wb;
         state.q_wb = this->queue.items.back()->nominalState.q_wb;
         state.v_wb = this->queue.items.back()->nominalState.v_wb;
+        state.v_wb = this->queue.items.back()->nominalState.v_wb;
+        state.v_wb = this->queue.items.back()->nominalState.v_wb;
         state.bias_a = this->queue.bias_a;
         state.bias_g = this->queue.bias_g;
         state.gravity = this->queue.gravity;
@@ -67,7 +74,7 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 输出最新 Update 点估计 */
-    bool Backend::PublishUpdataState(IMUFullState &state) {
+    bool Backend::PublishUpdateState(IMUFullState &state) {
         if (this->queue.items.empty()) {
             return false;
         }

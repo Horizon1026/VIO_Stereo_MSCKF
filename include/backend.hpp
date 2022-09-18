@@ -43,7 +43,7 @@ namespace ESKF_VIO_BACKEND {
         /* 输出最新 Propagate 点估计 */
         bool PublishPropagateState(IMUFullState &state);
         /* 输出最新 Update 点估计 */
-        bool PublishUpdataState(IMUFullState &state);
+        bool PublishUpdateState(IMUFullState &state);
         /* 重置 */
         void Reset(void);
 

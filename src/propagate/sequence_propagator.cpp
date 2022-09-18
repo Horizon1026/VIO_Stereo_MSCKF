@@ -29,15 +29,15 @@ namespace ESKF_VIO_BACKEND {
             newItem->errorState.Reset();
             // 从零开始创建的 propagate 起点，名义运动状态归零
             newItem->nominalState.p_wb.setZero();
-            newItem->nominalState.q_wb.setIdentity();
+            newItem->nominalState.q_wb = Quaternion(0.99875, 0.0499792, 0, 0);
             newItem->nominalState.v_wb.setZero();
 
             return true;
         }
 
         // 当序列不为空时，触发一次中值积分的 propagate 过程
-        std::shared_ptr<IMUPropagateQueueItem> item_1(new IMUPropagateQueueItem());
         auto item_0 = this->items.back();
+        std::shared_ptr<IMUPropagateQueueItem> item_1(new IMUPropagateQueueItem());
         this->items.emplace_back(item_1);
         item_1->accel = accel;
         item_1->gyro = gyro;
@@ -49,6 +49,9 @@ namespace ESKF_VIO_BACKEND {
                                           this->bias_a, this->bias_g, this->gravity,
                                           static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
         // 中值积分递推误差状态方程，更新 covariance
+        // TODO: 
+
+        // update fai matrix
         // TODO: 
 
         return true;
@@ -83,7 +86,7 @@ namespace ESKF_VIO_BACKEND {
 
     /* 基于离散误差状态过程方程 propagate 完整误差状态以及误差状态对应协方差矩阵 */
     void PropagateQueue::PropagateFullErrorStateCovariance(const IMUFullState &errorState_0,
-                                                           IMUFullState &errorSstate_1,
+                                                           IMUFullState &errorState_1,
                                                            const Vector3 &accel_0,
                                                            const Vector3 &gyro_0,
                                                            const Vector3 &accel_1,
