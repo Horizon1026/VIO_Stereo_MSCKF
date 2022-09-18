@@ -14,9 +14,9 @@ namespace ESKF_VIO_BACKEND {
         // 运动相关名义状态
         IMUMotionState nominalState;
         // IMU 完整状态协方差矩阵
-        Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> imuCov;
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_FULL_ERROR_STATE_SIZE> imuCov;
         // IMU 与 Camera 的协方差矩阵
-        Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> imuCamCov;
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, Eigen::Dynamic> imuCamCov;
         // 当前时刻点对应的 IMU 量测值
         Vector3 accel;
         Vector3 gyro;
@@ -45,7 +45,7 @@ namespace ESKF_VIO_BACKEND {
         // 无 update 且无 item 时的 motion state 初值
         IMUMotionState initState;
         // 联系 IMU 和 Camera 协方差的 Fai 矩阵
-        Matrix fai;
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_FULL_ERROR_STATE_SIZE> fai;
         // 离散时间状态方程
         Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_FULL_ERROR_STATE_SIZE> F;
         Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_NOISE_SIZE> G;
@@ -56,32 +56,25 @@ namespace ESKF_VIO_BACKEND {
         PropagateQueue() {}
         ~PropagateQueue() {}
     public:
-        /* 重置过程方程 */
-        void ResetProcessFunction(void);
         /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
         bool Propagate(const Vector3 &accel,
                        const Vector3 &gyro,
                        const fp64 timeStamp);
         /* 中值积分法 propagate 运动相关名义状态 */
-        void PropagateMotionNominalState(const IMUMotionState &state_0,
-                                         IMUMotionState &state_1,
-                                         const Vector3 &accel_0,
-                                         const Vector3 &gyro_0,
-                                         const Vector3 &accel_1,
-                                         const Vector3 &gyro_1,
+        void PropagateMotionNominalState(const std::shared_ptr<IMUPropagateQueueItem> &item_0,
+                                         std::shared_ptr<IMUPropagateQueueItem> &item_1,
                                          const Vector3 &bias_a,
                                          const Vector3 &bias_g,
                                          const Vector3 &gravity_w,
-                                         const Scalar dt,
                                          Vector3 &midAccel,
                                          Vector3 &midGyro);
         /* 基于离散误差状态过程方程 propagate 完整误差状态以及误差状态对应协方差矩阵 */
-        void PropagateFullErrorStateCovariance(const IMUFullState &errorState_0,
-                                               IMUFullState &errorState_1,
-                                               const Matrix33 &R_wb_0,
+        void PropagateFullErrorStateCovariance(const std::shared_ptr<IMUPropagateQueueItem> &item_0,
+                                               std::shared_ptr<IMUPropagateQueueItem> &item_1,
                                                const Vector3 &midAccel,
-                                               const Vector3 &midGyro,
-                                               const Scalar dt);
+                                               const Vector3 &midGyro);
+        /* 重置过程方程 */
+        void ResetProcessFunction(void);
         /* 误差状态合并与分裂 */
         Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> ErrorStateConvert(const IMUFullState &errorState);
         IMUFullState ErrorStateConvert(const Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> &delta_x);

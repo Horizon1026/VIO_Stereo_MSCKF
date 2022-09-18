@@ -131,7 +131,7 @@ int main() {
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
         backend->PublishPropagateState(state);
-        // std::cout << state.p_wb.transpose() << std::endl;
+        std::cout << state.p_wb.transpose() << std::endl;
     }
     return 0;
 }

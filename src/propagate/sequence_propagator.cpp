@@ -6,14 +6,6 @@
 #include <iostream>
 
 namespace ESKF_VIO_BACKEND {
-
-    /* 重置过程方程 */
-    void PropagateQueue::ResetProcessFunction(void) {
-        this->F.setIdentity();
-        this->G.setZero();
-    }
-
-
     /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
     bool PropagateQueue::Propagate(const Vector3 &accel,
                                    const Vector3 &gyro,
@@ -32,11 +24,11 @@ namespace ESKF_VIO_BACKEND {
             newItem->accel = accel;
             newItem->gyro = gyro;
             newItem->timeStamp = timeStamp;
-            newItem->imuCov.setZero(imuSize, imuSize);
+            newItem->imuCov.setZero();
             if (camSize > 0) {
                 newItem->imuCamCov.setZero(imuSize, camSize);
                 this->camCov.setZero(camSize, camSize);
-                this->fai.setIdentity(imuSize, camSize);
+                this->fai.setIdentity();
             }
             newItem->errorState.Reset();
 
@@ -60,80 +52,87 @@ namespace ESKF_VIO_BACKEND {
         item_1->timeStamp = timeStamp;
         // 中值积分递推名义状态，同时计算出 accel 和 gyro 的中值
         Vector3 midAccel, midGyro;
-        this->PropagateMotionNominalState(item_0->nominalState, item_1->nominalState,
-                                          item_0->accel, item_0->gyro,
-                                          item_1->accel, item_1->gyro,
+        this->PropagateMotionNominalState(item_0, item_1,
                                           this->bias_a, this->bias_g, this->gravity,
-                                          static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp),
                                           midAccel, midGyro);
 
         // 中值积分递推误差状态方程，更新 covariance
-        this->PropagateFullErrorStateCovariance(item_0->errorState, item_1->errorState,
-                                                Matrix33(item_0->nominalState.q_wb),
-                                                midAccel, midGyro,
-                                                static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
-
-        // update fai matrix
-        // TODO: 
+        this->PropagateFullErrorStateCovariance(item_0, item_1, midAccel, midGyro);
 
         return true;
     }
 
 
     /* 中值积分法 propagate 运动相关名义状态 */
-    void PropagateQueue::PropagateMotionNominalState(const IMUMotionState &state_0,
-                                                     IMUMotionState &state_1,
-                                                     const Vector3 &accel_0,
-                                                     const Vector3 &gyro_0,
-                                                     const Vector3 &accel_1,
-                                                     const Vector3 &gyro_1,
+    void PropagateQueue::PropagateMotionNominalState(const std::shared_ptr<IMUPropagateQueueItem> &item_0,
+                                                     std::shared_ptr<IMUPropagateQueueItem> &item_1,
                                                      const Vector3 &bias_a,
                                                      const Vector3 &bias_g,
                                                      const Vector3 &gravity_w,
-                                                     const Scalar dt,
                                                      Vector3 &midAccel,
                                                      Vector3 &midGyro) {
+        Scalar dt = static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp);
         // 计算 gyro 中值，propagate 姿态
-        midGyro = Scalar(0.5) * (gyro_0 + gyro_1) - bias_g;
+        midGyro = Scalar(0.5) * (item_0->gyro + item_1->gyro) - bias_g;
         Quaternion dq(Scalar(1), midGyro.x() * Scalar(0.5) * dt,
                                  midGyro.y() * Scalar(0.5) * dt,
                                  midGyro.z() * Scalar(0.5) * dt);
-        state_1.q_wb = state_0.q_wb * dq;
-        state_1.q_wb.normalize();
+        item_1->nominalState.q_wb = item_0->nominalState.q_wb * dq;
+        item_1->nominalState.q_wb.normalize();
         // 计算 accel 中值，propagate 速度
-        midAccel = Scalar(0.5) * (state_0.q_wb * (accel_0 - bias_a) + state_1.q_wb * (accel_1 - bias_a));
-        state_1.v_wb = state_0.v_wb + (midAccel - gravity_w) * dt;
+        midAccel = Scalar(0.5) * (item_0->nominalState.q_wb * (item_0->accel - bias_a) +
+            item_1->nominalState.q_wb * (item_1->accel - bias_a));
+        item_1->nominalState.v_wb = item_0->nominalState.v_wb + (midAccel - gravity_w) * dt;
         // propagate 位置
-        state_1.p_wb = state_0.p_wb + Scalar(0.5) * (state_0.v_wb + state_1.v_wb) * dt;
+        item_1->nominalState.p_wb = item_0->nominalState.p_wb +
+            Scalar(0.5) * (item_0->nominalState.v_wb + item_1->nominalState.v_wb) * dt;
     }
 
 
     /* 基于离散误差状态过程方程 propagate 完整误差状态以及误差状态对应协方差矩阵 */
-    void PropagateQueue::PropagateFullErrorStateCovariance(const IMUFullState &errorState_0,
-                                                           IMUFullState &errorState_1,
-                                                           const Matrix33 &R_wb_0,
+    void PropagateQueue::PropagateFullErrorStateCovariance(const std::shared_ptr<IMUPropagateQueueItem> &item_0,
+                                                           std::shared_ptr<IMUPropagateQueueItem> &item_1,
                                                            const Vector3 &midAccel,
-                                                           const Vector3 &midGyro,
-                                                           const Scalar dt) {
+                                                           const Vector3 &midGyro) {
+
         // midAccel = 0.5 * (R_wb0 * (accel0 - ba) + R_wb1 * (accel1 - ba))
         // midGyro = 0.5 * (gyro0 + gyro1) - bg
+        Scalar dt = static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp);
+        Matrix33 R_wb_0(item_0->nominalState.q_wb);
+        Matrix33 I3_dt = dt * Matrix33::Identity();
+        Scalar sqrt_dt = std::sqrt(dt);
+        Matrix33 I3_sqrt_dt = sqrt_dt * Matrix33::Identity();
+
         // 构造离散过程方程 F 矩阵
-        this->F.block<3, 3>(INDEX_P, INDEX_V) = dt * Matrix33::Identity();
+        this->F.block<3, 3>(INDEX_P, INDEX_V) = I3_dt;
         this->F.block<3, 3>(INDEX_V, INDEX_R) = - dt * SkewSymmetricMatrix(midAccel);
         this->F.block<3, 3>(INDEX_V, INDEX_BA) = - dt * R_wb_0;
-        this->F.block<3, 3>(INDEX_V, INDEX_G) = dt * Matrix33::Identity();
+        this->F.block<3, 3>(INDEX_V, INDEX_G) = I3_dt;
         this->F.block<3, 3>(INDEX_R, INDEX_R) = - dt * SkewSymmetricMatrix(midGyro);
-        this->F.block<3, 3>(INDEX_R, INDEX_BG) = - dt * Matrix33::Identity();
+        this->F.block<3, 3>(INDEX_R, INDEX_BG) = - I3_dt;
 
         // 构造离散过程方程 G 矩阵
-        Scalar sqrt_dt = std::sqrt(dt);
         this->G.block<3, 3>(INDEX_V, INDEX_NA) = dt * R_wb_0;
-        this->G.block<3, 3>(INDEX_R, INDEX_NG) = dt * Matrix33::Identity();
-        this->G.block<3, 3>(INDEX_BA, INDEX_NWA) = sqrt_dt * Matrix33::Identity();
-        this->G.block<3, 3>(INDEX_BG, INDEX_NWG) = sqrt_dt * Matrix33::Identity();
+        this->G.block<3, 3>(INDEX_R, INDEX_NG) = I3_dt;
+        this->G.block<3, 3>(INDEX_BA, INDEX_NWA) = I3_sqrt_dt;
+        this->G.block<3, 3>(INDEX_BG, INDEX_NWG) = I3_sqrt_dt;
 
-        // TODO: propagate delta_x with cov
+        // propagate 误差状态以及对应的 IMU 协方差矩阵
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> error_x_0 = this->ErrorStateConvert(item_0->errorState);
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> error_x_1 = this->F * error_x_0;
+        item_1->errorState = this->ErrorStateConvert(error_x_1);
+        item_1->imuCov = this->F * item_0->imuCov * this->F.transpose() + this->G * this->Q * this->G.transpose();
 
+        // propagate IMU 与相机之间的协方差矩阵
+        this->fai = this->F * this->fai;
+        item_1->imuCamCov = this->fai * item_0->imuCamCov;
+    }
+
+
+    /* 重置过程方程 */
+    void PropagateQueue::ResetProcessFunction(void) {
+        this->F.setIdentity();
+        this->G.setZero();
     }
 
 
