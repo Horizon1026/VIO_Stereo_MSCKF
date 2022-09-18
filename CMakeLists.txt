@@ -3,9 +3,9 @@ cmake_minimum_required( VERSION 3.10 )
 # cmake工程名
 project(ESKF_Estimator)
 # 设置编译类型为发布
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 # 添加c++ 17标准的支持
-set(CMAKE_CXX_FLAGS "-std=c++17 -O3")
+set(CMAKE_CXX_FLAGS "-std=c++17 -g")
 # 寻找Eigen库并添加其路径
 include_directories( "/usr/include/eigen3" )
 # 寻找 TBB 库

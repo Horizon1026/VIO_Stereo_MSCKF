@@ -38,6 +38,9 @@ namespace ESKF_VIO_BACKEND {
                      const Eigen::Matrix<Scalar, 3, 1> &bias_g,
                      const Eigen::Matrix<Scalar, 3, 1> &gravity) :
             p_wb(p_wb), theta_wb(theta_wb), v_wb(v_wb), bias_a(bias_a), bias_g(bias_g), gravity(gravity) {}
+    public:
+        /* 状态清零 */
+        void Reset(void);
     };
 
 

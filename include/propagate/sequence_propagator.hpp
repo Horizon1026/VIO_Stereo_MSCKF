@@ -3,7 +3,7 @@
 /* 内部依赖 */
 #include <include/utility/typedef.hpp>
 #include <include/propagate/imu_state.hpp>
-// #include <include/data_manager/frame_manager.hpp>
+#include <include/data_manager/frame_manager.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* IMU propagate 序列中的元素 */
@@ -22,6 +22,10 @@ namespace ESKF_VIO_BACKEND {
         Eigen::Matrix<Scalar, 3, 1> gyro;
         // 当前时间戳
         double timeStamp;
+    public:
+        /* 构造函数与析构函数 */
+        IMUPropagateQueueItem() {}
+        ~IMUPropagateQueueItem() {}
     };
 
 
@@ -31,20 +35,15 @@ namespace ESKF_VIO_BACKEND {
         // propagate 之后需要记录的变化的相关元素
         std::deque<std::shared_ptr<IMUPropagateQueueItem>> items;
         // 滑动窗口内的关键帧
-        // std::shared_ptr<FrameManager> slidingWindow;
-        // items 中首个 state 中值积分时的上一时刻 IMU 量测值，以及对应的时间戳
-        Eigen::Matrix<Scalar, 3, 1> accel_0;
-        Eigen::Matrix<Scalar, 3, 1> gyro_0;
-        double timeStamp_0;
-        // 无 update 时的 IMU bias
+        FrameManager *slidingWindow;
+        // 滑动窗口内 camera pose 的协方差矩阵
+        Matrix camCov;
+        // 无 update 时的 IMU bias 和 gravity
         Eigen::Matrix<Scalar, 3, 1> bias_a;
         Eigen::Matrix<Scalar, 3, 1> bias_g;
+        Eigen::Matrix<Scalar, 3, 1> gravity;
         // 联系 IMU 和 Camera 协方差的 Fai 矩阵
         Matrix fai;
-        // propagate 的起点名义状态
-        IMUFullState startNominalState;
-        // propagate 的起点时间戳
-        fp64 startTimeStamp;
         // IMU 的噪声
         Scalar noise_accel;
         Scalar noise_gyro;
