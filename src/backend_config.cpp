@@ -12,14 +12,11 @@ namespace ESKF_VIO_BACKEND {
         // 加载 IMU 噪声参数
         std::cout << ">> Load imu noise...\n";
         if (this->LoadMatrix(configPath + "/imu_na_ng_nwa_nwg.txt", 1, 4, tempMat) == true) {
-            this->queue.noise_accel = tempMat(0, 0);
-            this->queue.noise_gyro = tempMat(0, 1);
-            this->queue.random_walk_accel = tempMat(0, 2);
-            this->queue.random_walk_gyro = tempMat(0, 3);
-            std::cout << "     imu accel noise : " << this->queue.noise_accel << "\n";
-            std::cout << "     imu gyro noise : " << this->queue.noise_gyro << "\n";
-            std::cout << "     imu accel random walk : " << this->queue.random_walk_accel << "\n";
-            std::cout << "     imu gyro random walk : " << this->queue.random_walk_gyro << "\n";
+            this->queue.InitializeProcessNoiseMatrix(tempMat(0, 0), tempMat(0, 1), tempMat(0, 2), tempMat(0, 3));
+            std::cout << "     imu accel noise : " << this->queue.Q(INDEX_NA, INDEX_NA) << "\n";
+            std::cout << "     imu gyro noise : " << this->queue.Q(INDEX_NG, INDEX_NG) << "\n";
+            std::cout << "     imu accel random walk : " << this->queue.Q(INDEX_NWA, INDEX_NWA) << "\n";
+            std::cout << "     imu gyro random walk : " << this->queue.Q(INDEX_NWG, INDEX_NA) << "\n";
         }
 
         // 加载 IMU bias 初值

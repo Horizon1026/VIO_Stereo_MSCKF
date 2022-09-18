@@ -117,8 +117,8 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
 int main() {
     // 配置 std::cout 打印到指定文件
-    std::ofstream logFile("../test_log/20220918_test_imu_nominal_state_propagate.txt");
-    std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
+    // std::ofstream logFile("../test_log/20220918_test_imu_nominal_state_propagate.txt");
+    // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     std::cout << "This is a vio backend with filter estimator." << std::endl;
     std::shared_ptr<Backend> backend(new Backend());
@@ -131,7 +131,7 @@ int main() {
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
         backend->PublishPropagateState(state);
-        std::cout << state.p_wb.transpose() << std::endl;
+        // std::cout << state.p_wb.transpose() << std::endl;
     }
     return 0;
 }

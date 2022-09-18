@@ -46,16 +46,18 @@ namespace ESKF_VIO_BACKEND {
         IMUMotionState initState;
         // 联系 IMU 和 Camera 协方差的 Fai 矩阵
         Matrix fai;
-        // IMU 的噪声
-        Scalar noise_accel;
-        Scalar noise_gyro;
-        Scalar random_walk_accel;
-        Scalar random_walk_gyro;
+        // 离散时间状态方程
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_FULL_ERROR_STATE_SIZE> F;
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_NOISE_SIZE> G;
+        Eigen::Matrix<Scalar, IMU_NOISE_SIZE, IMU_NOISE_SIZE> Q;
+
     public:
         /* 构造函数与析构函数 */
         PropagateQueue() {}
         ~PropagateQueue() {}
     public:
+        /* 重置过程方程 */
+        void ResetProcessFunction(void);
         /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
         bool Propagate(const Vector3 &accel,
                        const Vector3 &gyro,
@@ -70,16 +72,23 @@ namespace ESKF_VIO_BACKEND {
                                          const Vector3 &bias_a,
                                          const Vector3 &bias_g,
                                          const Vector3 &gravity_w,
-                                         const Scalar dt);
+                                         const Scalar dt,
+                                         Vector3 &midAccel,
+                                         Vector3 &midGyro);
         /* 基于离散误差状态过程方程 propagate 完整误差状态以及误差状态对应协方差矩阵 */
         void PropagateFullErrorStateCovariance(const IMUFullState &errorState_0,
                                                IMUFullState &errorState_1,
-                                               const Vector3 &accel_0,
-                                               const Vector3 &gyro_0,
-                                               const Vector3 &accel_1,
-                                               const Vector3 &gyro_1,
-                                               const Vector3 &bias_a,
-                                               const Vector3 &bias_g,
+                                               const Matrix33 &R_wb_0,
+                                               const Vector3 &midAccel,
+                                               const Vector3 &midGyro,
                                                const Scalar dt);
+        /* 误差状态合并与分裂 */
+        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> ErrorStateConvert(const IMUFullState &errorState);
+        IMUFullState ErrorStateConvert(const Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> &delta_x);
+        /* 初始化过程噪声矩阵 */
+        void InitializeProcessNoiseMatrix(const Scalar noise_accel,
+                                          const Scalar noise_gyro,
+                                          const Scalar random_walk_accel,
+                                          const Scalar random_walk_gyro);
     };
 }
