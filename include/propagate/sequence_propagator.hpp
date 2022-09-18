@@ -42,6 +42,8 @@ namespace ESKF_VIO_BACKEND {
         Vector3 bias_a;
         Vector3 bias_g;
         Vector3 gravity;
+        // 无 update 且无 item 时的 motion state 初值
+        IMUMotionState initState;
         // 联系 IMU 和 Camera 协方差的 Fai 矩阵
         Matrix fai;
         // IMU 的噪声

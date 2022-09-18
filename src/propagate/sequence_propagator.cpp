@@ -1,6 +1,8 @@
 /* 内部依赖 */
 #include <include/propagate/sequence_propagator.hpp>
 /* 外部依赖 */
+// TODO: 
+#include <iostream>
 
 namespace ESKF_VIO_BACKEND {
     /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
@@ -28,9 +30,9 @@ namespace ESKF_VIO_BACKEND {
             }
             newItem->errorState.Reset();
             // 从零开始创建的 propagate 起点，名义运动状态归零
-            newItem->nominalState.p_wb.setZero();
-            newItem->nominalState.q_wb = Quaternion(0.99875, 0.0499792, 0, 0);
-            newItem->nominalState.v_wb.setZero();
+            newItem->nominalState.p_wb = this->initState.p_wb;
+            newItem->nominalState.q_wb = this->initState.q_wb;
+            newItem->nominalState.v_wb = this->initState.v_wb;
 
             return true;
         }
@@ -81,6 +83,7 @@ namespace ESKF_VIO_BACKEND {
         state_1.v_wb = state_0.v_wb + midAccel * dt;
         // propagate 位置
         state_1.p_wb = state_0.p_wb + Scalar(0.5) * (state_0.v_wb + state_1.v_wb) * dt;
+        // state_1.p_wb = state_0.p_wb + state_0.v_wb * dt + Scalar(0.5) * dt * dt * midAccel;
     }
 
 

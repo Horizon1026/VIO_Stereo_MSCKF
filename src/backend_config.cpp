@@ -34,6 +34,29 @@ namespace ESKF_VIO_BACKEND {
         std::cout << "     imu bias_a init : " << this->queue.bias_a.transpose() << "\n";
         std::cout << "     imu bias_g init : " << this->queue.bias_g.transpose() << "\n";
 
+        // 加载 IMU propagate 的初值
+        std::cout << ">> Load imu nominal state init value...\n";
+        if (this->LoadMatrix(configPath + "/imu_init_p_wb.txt", 1, 3, tempMat) == true) {
+            this->queue.initState.p_wb = tempMat.transpose();
+        } else {
+            this->queue.initState.p_wb.setZero();
+        }
+        if (this->LoadMatrix(configPath + "/imu_init_v_wb.txt", 1, 3, tempMat) == true) {
+            this->queue.initState.v_wb = tempMat.transpose();
+        } else {
+            this->queue.initState.v_wb.setZero();
+        }
+        if (this->LoadMatrix(configPath + "/imu_init_q_wb.txt", 1, 4, tempMat) == true) {
+            this->queue.initState.q_wb = Quaternion(tempMat(0, 0), tempMat(0, 1), tempMat(0, 2), tempMat(0, 3));
+        } else {
+            this->queue.initState.q_wb.setIdentity();
+        }
+        std::cout << "     imu init nominal p_wb : " << this->queue.initState.p_wb.transpose() << "\n";
+        std::cout << "     imu init nominal v_wb : " << this->queue.initState.v_wb.transpose() << "\n";
+        std::cout << "     imu init nominal q_wb : [" << this->queue.initState.q_wb.w() << ", " <<
+            this->queue.initState.q_wb.x() << ", " << this->queue.initState.q_wb.y() << ", " <<
+            this->queue.initState.q_wb.z() << "]\n";
+
         // 加载 w 系的重力加速度初值
         std::cout << ">> Load gravity in w frame...\n";
         if (this->LoadMatrix(configPath + "/gravity_in_w_init.txt", 1, 3, tempMat) == true) {
