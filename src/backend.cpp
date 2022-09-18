@@ -31,7 +31,7 @@ namespace ESKF_VIO_BACKEND {
         // 当存在 IMU 量测输入时
         if (msg->imuMeas.size() > 0) {
             if (msg->imuMeas.front() != nullptr) {
-                res = this->queue.Propagate(msg->imuMeas.front()->accel,
+                res = this->propagator.Propagate(msg->imuMeas.front()->accel,
                                             msg->imuMeas.front()->gyro,
                                             msg->imuMeas.front()->timeStamp);
             }
@@ -58,32 +58,32 @@ namespace ESKF_VIO_BACKEND {
 
     /* 输出最新 Propagate 点估计 */
     bool Backend::PublishPropagateState(IMUFullState &state) {
-        if (this->queue.items.empty()) {
+        if (this->propagator.items.empty()) {
             return false;
         }
-        state.p_wb = this->queue.items.back()->nominalState.p_wb;
-        state.q_wb = this->queue.items.back()->nominalState.q_wb;
-        state.v_wb = this->queue.items.back()->nominalState.v_wb;
-        state.v_wb = this->queue.items.back()->nominalState.v_wb;
-        state.v_wb = this->queue.items.back()->nominalState.v_wb;
-        state.bias_a = this->queue.bias_a;
-        state.bias_g = this->queue.bias_g;
-        state.gravity = this->queue.gravity;
+        state.p_wb = this->propagator.items.back()->nominalState.p_wb;
+        state.q_wb = this->propagator.items.back()->nominalState.q_wb;
+        state.v_wb = this->propagator.items.back()->nominalState.v_wb;
+        state.v_wb = this->propagator.items.back()->nominalState.v_wb;
+        state.v_wb = this->propagator.items.back()->nominalState.v_wb;
+        state.bias_a = this->propagator.bias_a;
+        state.bias_g = this->propagator.bias_g;
+        state.gravity = this->propagator.gravity;
         return true;
     }
 
 
     /* 输出最新 Update 点估计 */
     bool Backend::PublishUpdateState(IMUFullState &state) {
-        if (this->queue.items.empty()) {
+        if (this->propagator.items.empty()) {
             return false;
         }
-        state.p_wb = this->queue.items.front()->nominalState.p_wb;
-        state.q_wb = this->queue.items.front()->nominalState.q_wb;
-        state.v_wb = this->queue.items.front()->nominalState.v_wb;
-        state.bias_a = this->queue.bias_a;
-        state.bias_g = this->queue.bias_g;
-        state.gravity = this->queue.gravity;
+        state.p_wb = this->propagator.items.front()->nominalState.p_wb;
+        state.q_wb = this->propagator.items.front()->nominalState.q_wb;
+        state.v_wb = this->propagator.items.front()->nominalState.v_wb;
+        state.bias_a = this->propagator.bias_a;
+        state.bias_g = this->propagator.bias_g;
+        state.gravity = this->propagator.gravity;
         return true;
     }
 
