@@ -31,6 +31,7 @@ namespace ESKF_VIO_BACKEND {
     using Matrix33 = Eigen::Matrix<Scalar, 3, 3>;
     using Matrix44 = Eigen::Matrix<Scalar, 4, 4>;
     using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
+    using Vector2 = Eigen::Matrix<Scalar, 3, 1>;
 
     // 边缘化策略定义
     enum MargPolicy {

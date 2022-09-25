@@ -89,6 +89,7 @@ namespace ESKF_VIO_BACKEND {
         this->propagator.slidingWindow = &this->frameManager;
         this->visionUpdator.featureManager = &this->featureManager;
         this->visionUpdator.frameManager = &this->frameManager;
+        this->visionUpdator.trianglator = &this->trianglator;
         this->trianglator.featureManager = &this->featureManager;
         this->trianglator.frameManager = &this->frameManager;
         return true;
