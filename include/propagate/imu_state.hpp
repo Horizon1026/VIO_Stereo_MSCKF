@@ -36,6 +36,8 @@ namespace ESKF_VIO_BACKEND {
         Vector3 bias_g;
         // 重力加速度
         Vector3 gravity;
+        // 在 w 系下的重力加速度
+        static Vector3 gravity_w;
     public:
         /* 构造函数与析构函数 */
         IMUFullState() {}

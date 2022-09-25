@@ -14,20 +14,21 @@ namespace ESKF_VIO_BACKEND {
     class Backend {
     private:
         /* 数据管理相关 */
-        DataLoader dataloader;
-        FeatureManager featureManager;
-        FrameManager frameManager;
-        // 每一个 camera 和 IMU 之间的相对位姿，脚标即为对应 camera 的 ID
-        std::vector<Quaternion> q_bc;
+        DataLoader dataloader;                  // 数据加载器，控制数据流按时间戳顺序输入
+        FeatureManager featureManager;          // 视觉特征点管理器
+        FrameManager frameManager;              // 视觉关键帧管理器
+        std::vector<Quaternion> q_bc;           // 每一个 camera 和 IMU 之间的相对位姿，脚标即为对应 camera 的 ID
         std::vector<Vector3> p_bc;
         
         /* 序列递推与观测更新相关 */
-        AttitudeEstimate attitudeEstimator;
-        PropagateQueue propagator;
-        Trianglator trianglator;
-        MultiViewVisionUpdate visionUpdator;
-
-
+        AttitudeEstimate attitudeEstimator;     // 姿态解算求解器
+        PropagateQueue propagator;              // IMU 状态递推过程管理器
+        Trianglator trianglator;                // 视觉特征点三角测量求解器
+        MultiViewVisionUpdate visionUpdator;    // 视觉 Update 过程管理器
+    
+    public:
+        // 当前 Backend 的状态
+        Status status = NEED_INIT;
     public:
         /* 构造函数与析构函数 */
         Backend() {}

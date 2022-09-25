@@ -110,7 +110,7 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 计算位置误差的量级，输出单位等于输入单位 */
-    // Scalar ComputeTranslationMagnitude(Vector3 &delta_t) {
+    // Scalar ComputeTranslationMagnitude(const Vector3 &delta_t) {
     //     return delta_t.norm();
     // }
 }

@@ -32,8 +32,11 @@ namespace ESKF_VIO_BACKEND {
         if (msg->imuMeas.size() > 0) {
             if (msg->imuMeas.front() != nullptr) {
                 res = this->propagator.Propagate(msg->imuMeas.front()->accel,
-                                            msg->imuMeas.front()->gyro,
-                                            msg->imuMeas.front()->timeStamp);
+                                                 msg->imuMeas.front()->gyro,
+                                                 msg->imuMeas.front()->timeStamp);
+                res = this->attitudeEstimator.Propagate(msg->imuMeas.front()->accel,
+                                                        msg->imuMeas.front()->gyro,
+                                                        msg->imuMeas.front()->timeStamp);
             }
         }
 

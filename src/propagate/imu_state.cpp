@@ -3,6 +3,9 @@
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {
+    /* 定义静态变量，重力加速度默认为 9.8 */
+    Vector3 IMUFullState::gravity_w = Vector3(0.0, 0.0, 9.8);
+
     /* 状态清零 */
     void IMUFullState::Reset(void) {
         this->p_wb.setZero();

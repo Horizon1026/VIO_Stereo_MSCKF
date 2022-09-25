@@ -38,4 +38,11 @@ namespace ESKF_VIO_BACKEND {
         MARG_NEWEST,
         MARG_SUBNEW
     };
+
+    // 状态估计器的 status 定义
+    enum Status {
+        NEED_INIT = 1,
+        INITIALIZING,
+        INITIALIZED
+    };
 }

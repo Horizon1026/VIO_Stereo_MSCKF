@@ -8,7 +8,7 @@ namespace ESKF_VIO_BACKEND {
     class AttitudeEstimateItem {
     public:
         // 解算所得姿态
-        Quaternion atti;
+        Quaternion q_wb;
         // 当前时刻点对应的 IMU 量测值
         Vector3 accel;
         Vector3 gyro;
@@ -26,14 +26,23 @@ namespace ESKF_VIO_BACKEND {
     public:
         // 姿态解算结果维护为一个队列
         std::deque<std::shared_ptr<AttitudeEstimateItem>> items;
+        // IMU bias，由 update 过程进行更新
+        Vector3 bias_a = Vector3::Zero();
+        Vector3 bias_g = Vector3::Zero();
+        // 姿态解算的 PI 控制器，积分部分的误差累加值
+        Scalar Kp = Scalar(0.5);
+        Scalar Ki = Scalar(0.0001);
+        Vector3 errInt = Vector3::Zero();
     public:
         /* 构造函数与析构函数 */
         AttitudeEstimate() {}
         ~AttitudeEstimate() {}
     public:
         /* 姿态解算进行一步更新 */
-        bool Propate(const Vector3 &accel, const Vector3 &gyro, const fp64 timeStamp);
+        bool Propagate(const Vector3 &accel, const Vector3 &gyro, const fp64 timeStamp);
         /* 提取出指定时刻点附近的姿态估计结果 */
-        bool GetAttitude(const fp64 timeStamp, Quaternion &atti);
+        bool GetAttitude(const fp64 timeStamp, Quaternion &q_wb);
+        /* 设置 bias */
+        bool SetBias(const Vector3 &bias_a, const Vector3 &bias_g);
     };
 }

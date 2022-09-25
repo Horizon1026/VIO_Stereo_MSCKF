@@ -2,8 +2,6 @@
 #include <include/propagate/sequence_propagator.hpp>
 #include <include/utility/math_lib.hpp>
 /* 外部依赖 */
-// TODO: 
-#include <iostream>
 
 namespace ESKF_VIO_BACKEND {
     /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
