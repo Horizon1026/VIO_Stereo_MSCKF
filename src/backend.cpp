@@ -26,7 +26,6 @@ namespace ESKF_VIO_BACKEND {
         if (res == false) {
             return false;
         }
-        // msg->Information();
 
         // 当存在 IMU 量测输入时
         if (msg->imuMeas.size() > 0) {

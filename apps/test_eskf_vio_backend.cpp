@@ -4,6 +4,7 @@
 
 /* 内部依赖 */
 #include <include/backend.hpp>
+#include <include/utility/math_lib.hpp>
 using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
@@ -79,15 +80,20 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
 	// 提取对应时间戳的相机位姿，计算此时的观测
 	while (std::getline(fsCam, oneLine) && !oneLine.empty()) {
-		std::vector<Eigen::Matrix<Scalar, 2, 1>> features;
-		std::istringstream camData(oneLine);
-		camData >> timeStamp >> q_wc.w() >> q_wc.x() >> q_wc.y() >> q_wc.z() >> p_wc.x() >> p_wc.y() >> p_wc.z();
+		std::vector<Eigen::Matrix<Scalar, 2, 1>> features_0;
+		std::vector<Eigen::Matrix<Scalar, 2, 1>> features_1;    // p_c0c1 = [0.1, 0, 0]
+		std::istringstream camData_0(oneLine);
+		camData_0 >> timeStamp >> q_wc.w() >> q_wc.x() >> q_wc.y() >> q_wc.z() >> p_wc.x() >> p_wc.y() >> p_wc.z();
 
 		// 将世界坐标系的 points 投影到归一化平面
 		for (unsigned long i = 0; i < allPoints.size(); i++) {
-			Vector3 pc = q_wc.inverse() * (allPoints[i] - p_wc);
-			Eigen::Matrix<Scalar, 2, 1> feature = Eigen::Matrix<Scalar, 2, 1>(pc(0, 0) / pc(2, 0), pc(1, 0) / pc(2, 0));
-			features.emplace_back(feature);
+			Vector3 pc_0 = q_wc.inverse() * (allPoints[i] - p_wc);
+			Eigen::Matrix<Scalar, 2, 1> feature_0 = Eigen::Matrix<Scalar, 2, 1>(pc_0(0, 0) / pc_0(2, 0), pc_0(1, 0) / pc_0(2, 0));
+			features_0.emplace_back(feature_0);
+
+            Vector3 pc_1 = q_wc.inverse() * (allPoints[i] - p_wc - q_wc * Vector3(0.1, 0, 0));
+			Eigen::Matrix<Scalar, 2, 1> feature_1 = Eigen::Matrix<Scalar, 2, 1>(pc_1(0, 0) / pc_1(2, 0), pc_1(1, 0) / pc_1(2, 0));
+			features_1.emplace_back(feature_1);
 		}
 
         // 构造所需输入
@@ -98,7 +104,8 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
             ids.emplace_back(i);
 
             std::unordered_map<uint32_t, Eigen::Matrix<Scalar, 2, 1>> norms;
-            norms.insert(std::make_pair(0, features[i]));
+            norms.insert(std::make_pair(0, features_0[i]));
+            norms.insert(std::make_pair(1, features_1[i]));
             std::shared_ptr<FeatureObserve> ob(new FeatureObserve(norms));
             obs.emplace_back(ob);
 
@@ -132,10 +139,9 @@ int main() {
         ESKF_VIO_BACKEND::IMUFullState state;
         backend->PublishPropagateState(state);
 
-        Matrix33 R(state.q_wb.inverse());
-        std::cout << std::atan2(R(1, 2), R(2, 2)) * 57.3 << " " << std::asin(- R(0, 2)) * 57.3 <<
-            " " << std::atan2(R(0, 1), R(0, 0)) * 57.3 << " ";
-        std::cout << state.p_wb.transpose() << std::endl;
+        // Vector3 pitch_roll_yaw = ESKF_VIO_BACKEND::Utility::QuaternionToEuler(state.q_wb);
+        // std::cout << pitch_roll_yaw.x() << " " << pitch_roll_yaw.y() << " " << pitch_roll_yaw.z() << " ";
+        // std::cout << state.p_wb.transpose() << std::endl;
     }
     return 0;
 }
