@@ -5,13 +5,13 @@
 
 namespace ESKF_VIO_BACKEND {
     /* 计算三维向量的反对称矩阵 */
-    Matrix33 SkewSymmetricMatrix(const Vector3 &v) {
-        Matrix33 M;
-        M << 0, - v.z(), v.y(),
-             v.z(), 0, - v.x(),
-             - v.y(), v.x(), 0;
-        return M;
-    }
+    // Matrix33 SkewSymmetricMatrix(const Vector3 &v) {
+    //     Matrix33 M;
+    //     M << 0, - v.z(), v.y(),
+    //          v.z(), 0, - v.x(),
+    //          - v.y(), v.x(), 0;
+    //     return M;
+    // }
     template<typename Derived>
     Eigen::Matrix<typename Derived::Scalar, 3, 3> SkewSymmetricMatrix(const Eigen::MatrixBase<Derived> &v) {
         Eigen::Matrix<typename Derived::Scalar, 3, 3> ans;
@@ -43,16 +43,16 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 计算四元数的左乘矩阵 */
-    Matrix44 Qleft(const Quaternion &q) {
-        Matrix44 Q;
-        Q.template block<1, 3>(0, 1) = - q.vec().transpose();
-        Q.template block<3, 1>(1, 0) = q.vec();
-        Q.template block<3, 3>(1, 1) = SkewSymmetricMatrix(q.vec());
-        for (uint32_t i = 0; i < 4; ++i) {
-            Q(i, i) = q.w();
-        }
-        return Q;
-    }
+    // Matrix44 Qleft(const Quaternion &q) {
+    //     Matrix44 Q;
+    //     Q.template block<1, 3>(0, 1) = - q.vec().transpose();
+    //     Q.template block<3, 1>(1, 0) = q.vec();
+    //     Q.template block<3, 3>(1, 1) = SkewSymmetricMatrix(q.vec());
+    //     for (uint32_t i = 0; i < 4; ++i) {
+    //         Q(i, i) = q.w();
+    //     }
+    //     return Q;
+    // }
     template <typename Derived>
     Eigen::Matrix<typename Derived::Scalar, 4, 4> Qleft(const Eigen::QuaternionBase<Derived> &q) {
         Eigen::Quaternion<typename Derived::Scalar> qq = Positify(q);
@@ -66,16 +66,16 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 计算四元数的右乘矩阵 */
-    Matrix44 Qright(const Quaternion &q) {
-        Matrix44 Q;
-        Q.template block<1, 3>(0, 1) = - q.vec().transpose();
-        Q.template block<3, 1>(1, 0) = q.vec();
-        Q.template block<3, 3>(1, 1) = - SkewSymmetricMatrix(q.vec());
-        for (uint32_t i = 0; i < 4; ++i) {
-            Q(i, i) = q.w();
-        }
-        return Q;
-    }
+    // Matrix44 Qright(const Quaternion &q) {
+    //     Matrix44 Q;
+    //     Q.template block<1, 3>(0, 1) = - q.vec().transpose();
+    //     Q.template block<3, 1>(1, 0) = q.vec();
+    //     Q.template block<3, 3>(1, 1) = - SkewSymmetricMatrix(q.vec());
+    //     for (uint32_t i = 0; i < 4; ++i) {
+    //         Q(i, i) = q.w();
+    //     }
+    //     return Q;
+    // }
     template <typename Derived>
     Eigen::Matrix<typename Derived::Scalar, 4, 4> Qright(const Eigen::QuaternionBase<Derived> &p) {
         Eigen::Quaternion<typename Derived::Scalar> pp = Positify(p);
@@ -89,28 +89,28 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 计算旋转误差的量级，输出单位为 rad 的误差角 */
-    Scalar ComputeRotationMagnitude(Matrix33 &delta_R) {
-        Scalar magnitude = std::fabs(std::acos(
-            (delta_R.trace() - Scalar(1.0)) / Scalar(2.0)
-        ));
-        return magnitude;
-    }
-    Scalar ComputeRotationMagnitude(Quaternion &delta_q) {
-        Matrix33 delta_R(delta_q);
-        return ComputeRotationMagnitude(delta_R);
-    }
-    Scalar ComputeRotationMagnitude(Vector3 &delta_r) {
-        Quaternion delta_q(
-            Scalar(1.0), 
-            Scalar(0.5) * delta_r(0),
-            Scalar(0.5) * delta_r(1),
-            Scalar(0.5) * delta_r(2));
-        return ComputeRotationMagnitude(delta_q);
-    }
+    // Scalar ComputeRotationMagnitude(Matrix33 &delta_R) {
+    //     Scalar magnitude = std::fabs(std::acos(
+    //         (delta_R.trace() - Scalar(1.0)) / Scalar(2.0)
+    //     ));
+    //     return magnitude;
+    // }
+    // Scalar ComputeRotationMagnitude(Quaternion &delta_q) {
+    //     Matrix33 delta_R(delta_q);
+    //     return ComputeRotationMagnitude(delta_R);
+    // }
+    // Scalar ComputeRotationMagnitude(Vector3 &delta_r) {
+    //     Quaternion delta_q(
+    //         Scalar(1.0), 
+    //         Scalar(0.5) * delta_r(0),
+    //         Scalar(0.5) * delta_r(1),
+    //         Scalar(0.5) * delta_r(2));
+    //     return ComputeRotationMagnitude(delta_q);
+    // }
 
 
     /* 计算位置误差的量级，输出单位等于输入单位 */
-    Scalar ComputeTranslationMagnitude(Vector3 &delta_t) {
-        return delta_t.norm();
-    }
+    // Scalar ComputeTranslationMagnitude(Vector3 &delta_t) {
+    //     return delta_t.norm();
+    // }
 }

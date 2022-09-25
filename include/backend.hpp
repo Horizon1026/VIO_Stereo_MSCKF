@@ -5,13 +5,15 @@
 #include <include/data_manager/feature_manager.hpp>
 #include <include/data_manager/frame_manager.hpp>
 #include <include/propagate/sequence_propagator.hpp>
+#include <include/propagate/attitude_estimate.hpp>
 #include <include/update/multi_view_vision_update.hpp>
+#include <include/update/trianglation.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* ESKF VIO 后端控制器 */
     class Backend {
     private:
-        /* 数据管理 */
+        /* 数据管理相关 */
         DataLoader dataloader;
         FeatureManager featureManager;
         FrameManager frameManager;
@@ -19,9 +21,12 @@ namespace ESKF_VIO_BACKEND {
         std::vector<Quaternion> q_bc;
         std::vector<Vector3> p_bc;
         
-        /* 序列递推与观测更新 */
+        /* 序列递推与观测更新相关 */
+        AttitudeEstimate attitudeEstimator;
         PropagateQueue propagator;
+        Trianglator trianglator;
         MultiViewVisionUpdate visionUpdator;
+
 
     public:
         /* 构造函数与析构函数 */

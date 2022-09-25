@@ -17,4 +17,5 @@ A state estimator for robots using ESKF
 + 已完成 backend config 部分，用于相关参数配置，不依赖 opencv 或 yaml-cpp（已验证）
 + 已完成 feature/frame manager 部分，以及三种边缘化策略对应的数据管理操作，用于管理视觉特征点与关键帧（已验证）
 + 已完成 imu propagate queue 部分，属于 ESKF 的 propagate 部分（名义状态已经验证，误差状态及协方差待验证）
++ TODO: Multi-View VIO 初始化（需要一个姿态估计器来估计姿态，需要至少一个双目系统来估计初始速度）
 + TODO: 多目视觉 update 部分，属于ESKF 的 update 部分（包括特征点选择、特征点三角化、量测方程构造、ESKF update、queue repropagate、关键帧选择、滑动窗口维度扩展或裁剪）

@@ -21,7 +21,7 @@ namespace ESKF_VIO_BACKEND {
         Vector3 accel;
         Vector3 gyro;
         // 当前时间戳
-        double timeStamp;
+        fp64 timeStamp;
     public:
         /* 构造函数与析构函数 */
         IMUPropagateQueueItem() {}
