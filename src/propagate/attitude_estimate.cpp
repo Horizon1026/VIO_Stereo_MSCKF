@@ -3,8 +3,6 @@
 #include <include/propagate/imu_state.hpp>
 #include <include/utility/math_lib.hpp>
 /* 外部依赖 */
-// TODO
-// #include <iostream>
 
 namespace ESKF_VIO_BACKEND {
     /* 姿态解算进行一步更新 */
@@ -18,7 +16,7 @@ namespace ESKF_VIO_BACKEND {
             Vector3 u = g_cross / norm;
             Scalar theta = std::atan2(norm, g_imu.transpose() * g_word);
             Vector3 dq_v = u * theta;
-            Quaternion q_wb = DeltaQ(dq_v);
+            Quaternion q_wb = Utility::DeltaQ(dq_v);
             // 构造新的 item
             std::shared_ptr<AttitudeEstimateItem> newItem(new AttitudeEstimateItem());
             this->items.emplace_back(newItem);
@@ -47,16 +45,9 @@ namespace ESKF_VIO_BACKEND {
             Vector3 gyrCorrect = gyrMid + err * this->Kp + this->errInt;
 
             // 更新姿态
-            Quaternion dq = DeltaQ(gyrCorrect * static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
+            Quaternion dq = Utility::DeltaQ(gyrCorrect * static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
             item_1->q_wb = item_0->q_wb * dq;
             item_1->q_wb.normalize();
-
-            // TODO:
-            // Vector3 g = item_1->q_wb * acc_b_measure;
-            // std::cout << "translated g in w is " << g.transpose() << std::endl;
-            // Matrix33 R(item_1->q_wb.inverse());
-            // std::cout << timeStamp << " " << std::atan2(R(1, 2), R(2, 2)) * 57.3 << " " << std::asin(- R(0, 2)) * 57.3 <<
-            //     " " << std::atan2(R(0, 1), R(0, 0)) * 57.3 << "\n";
         }
         return true;
     }

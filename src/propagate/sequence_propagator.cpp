@@ -72,9 +72,7 @@ namespace ESKF_VIO_BACKEND {
         Scalar dt = static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp);
         // 计算 gyro 中值，propagate 姿态
         midGyro = Scalar(0.5) * (item_0->gyro + item_1->gyro) - bias_g;
-        Quaternion dq(Scalar(1), midGyro.x() * Scalar(0.5) * dt,
-                                 midGyro.y() * Scalar(0.5) * dt,
-                                 midGyro.z() * Scalar(0.5) * dt);
+        Quaternion dq = Utility::DeltaQ(midGyro * dt);
         item_1->nominalState.q_wb = item_0->nominalState.q_wb * dq;
         item_1->nominalState.q_wb.normalize();
         // 计算 accel 中值，propagate 速度
@@ -103,10 +101,10 @@ namespace ESKF_VIO_BACKEND {
 
         // 构造离散过程方程 F 矩阵
         this->F.block<3, 3>(INDEX_P, INDEX_V) = I3_dt;
-        this->F.block<3, 3>(INDEX_V, INDEX_R) = - dt * SkewSymmetricMatrix(midAccel);
+        this->F.block<3, 3>(INDEX_V, INDEX_R) = - dt * Utility::SkewSymmetricMatrix(midAccel);
         this->F.block<3, 3>(INDEX_V, INDEX_BA) = - dt * R_wb_0;
-        this->F.block<3, 3>(INDEX_V, INDEX_G) = I3_dt;
-        this->F.block<3, 3>(INDEX_R, INDEX_R) = - dt * SkewSymmetricMatrix(midGyro);
+        this->F.block<3, 3>(INDEX_V, INDEX_G) = - I3_dt;    // g_w > 0, propagate is -g (not +g)
+        this->F.block<3, 3>(INDEX_R, INDEX_R) = - dt * Utility::SkewSymmetricMatrix(midGyro);
         this->F.block<3, 3>(INDEX_R, INDEX_BG) = - I3_dt;
 
         // 构造离散过程方程 G 矩阵
