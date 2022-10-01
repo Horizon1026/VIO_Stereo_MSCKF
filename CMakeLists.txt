@@ -19,23 +19,26 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 # 添加路径
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src/data_manager)
+include_directories(${PROJECT_SOURCE_DIR}/src/geometry)
 include_directories(${PROJECT_SOURCE_DIR}/src/propagate)
 include_directories(${PROJECT_SOURCE_DIR}/src/update)
 include_directories(${PROJECT_SOURCE_DIR}/src/utility)
 # 添加源文件
 aux_source_directory(${PROJECT_SOURCE_DIR}/src              BACKEND)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/data_manager DATA_MANAGER)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/geometry     GEOMETRY)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/propagate    PROPAGATE)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/update       UPDATE)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/utility      UTILITY)
 # 链接源文件
 add_executable( ESKF_Estimator
     apps/test_eskf_vio_backend.cpp
+    ${BACKEND}
     ${DATA_MANAGER}
+    ${GEOMETRY}
     ${PROPAGATE}
     ${UPDATE}
     ${UTILITY}
-    ${BACKEND}
 )
 
 # 为可执行文件链接相关的库
