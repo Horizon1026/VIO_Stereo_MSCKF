@@ -70,7 +70,6 @@ namespace ESKF_VIO_BACKEND {
         state.v_wb = this->propagator.items.back()->nominalState.v_wb;
         state.bias_a = this->propagator.bias_a;
         state.bias_g = this->propagator.bias_g;
-        state.gravity = this->propagator.gravity;
         return true;
     }
 
@@ -85,7 +84,6 @@ namespace ESKF_VIO_BACKEND {
         state.v_wb = this->propagator.items.front()->nominalState.v_wb;
         state.bias_a = this->propagator.bias_a;
         state.bias_g = this->propagator.bias_g;
-        state.gravity = this->propagator.gravity;
         return true;
     }
 

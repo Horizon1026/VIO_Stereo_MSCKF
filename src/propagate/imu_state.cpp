@@ -14,6 +14,10 @@ namespace ESKF_VIO_BACKEND {
         this->v_wb.setZero();
         this->bias_a.setZero();
         this->bias_g.setZero();
-        this->gravity.setZero();
+    }
+
+    /* 设置重力加速度的模长 */
+    void IMUFullState::SetGravityNorm(Scalar norm) {
+        IMUFullState::gravity_w = Vector3(0.0, 0.0, norm);
     }
 }

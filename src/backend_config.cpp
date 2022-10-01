@@ -57,13 +57,12 @@ namespace ESKF_VIO_BACKEND {
 
         // 加载 w 系的重力加速度初值
         Log(">> Load gravity in w frame...");
-        if (this->LoadMatrix(configPath + "/gravity_in_w_init.txt", 1, 3, tempMat) == true) {
-            IMUFullState::gravity_w = tempMat.transpose();
+        if (this->LoadMatrix(configPath + "/gravity_in_w_init.txt", 1, 1, tempMat) == true) {
+            IMUFullState::gravity_w << 0.0, 0.0, tempMat(0, 0);
         } else {
             IMUFullState::gravity_w << 0.0, 0.0, 9.8;
         }
-        this->propagator.gravity = IMUFullState::gravity_w;
-        Log("     gravity in w frame init : " << this->propagator.gravity.transpose());
+        Log("     gravity in w frame init : " << IMUFullState::gravity_w.transpose());
 
         // 加载多目相机外参
         Log(">> Load multi-view camera extrinsic...");

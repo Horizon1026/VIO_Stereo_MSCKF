@@ -14,9 +14,9 @@ namespace ESKF_VIO_BACKEND {
         // 运动相关名义状态
         IMUMotionState nominalState;
         // IMU 完整状态协方差矩阵
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_FULL_ERROR_STATE_SIZE> imuCov;
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> imuCov;
         // IMU 与 Camera 的协方差矩阵
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, Eigen::Dynamic> imuCamCov;
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, Eigen::Dynamic> imuCamCov;
         // 当前时刻点对应的 IMU 量测值
         Vector3 accel;
         Vector3 gyro;
@@ -38,17 +38,16 @@ namespace ESKF_VIO_BACKEND {
         FrameManager *slidingWindow;
         // 滑动窗口内 camera pose 的协方差矩阵
         Matrix camCov;
-        // 无 update 时的 IMU bias 和 gravity
+        // 无 update 时的 IMU bias
         Vector3 bias_a;
         Vector3 bias_g;
-        Vector3 gravity;
         // 无 update 且无 item 时的 motion state 初值
         IMUMotionState initState;
-        // 联系 IMU 和 Camera 协方差的 Fai 矩阵
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_FULL_ERROR_STATE_SIZE> fai;
-        // 离散时间状态方程
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_FULL_ERROR_STATE_SIZE> F;
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, IMU_NOISE_SIZE> G;
+        // 联系 IMU 和 Camera 协方差的 Fai 矩阵就是离散时间的 F 矩阵
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> phi;
+        // 离散时间状态方程和过程噪声
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> F;
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_NOISE_SIZE> G;
         Eigen::Matrix<Scalar, IMU_NOISE_SIZE, IMU_NOISE_SIZE> Q;
 
     public:
@@ -76,8 +75,8 @@ namespace ESKF_VIO_BACKEND {
         /* 重置过程方程 */
         void ResetProcessFunction(void);
         /* 误差状态合并与分裂 */
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> ErrorStateConvert(const IMUFullState &errorState);
-        IMUFullState ErrorStateConvert(const Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> &delta_x);
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> ErrorStateConvert(const IMUFullState &errorState);
+        IMUFullState ErrorStateConvert(const Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> &delta_x);
         /* 初始化过程噪声矩阵 */
         void InitializeProcessNoiseMatrix(const Scalar noise_accel,
                                           const Scalar noise_gyro,

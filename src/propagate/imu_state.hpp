@@ -5,7 +5,7 @@
 
 namespace ESKF_VIO_BACKEND {
     /* 状态与噪声向量维度 */
-    #define IMU_FULL_ERROR_STATE_SIZE (18)
+    #define IMU_STATE_SIZE (15)
     #define IMU_NOISE_SIZE (12)
     /* 状态向量分量索引 */
     #define INDEX_P (0)
@@ -13,7 +13,6 @@ namespace ESKF_VIO_BACKEND {
     #define INDEX_R (6)
     #define INDEX_BA (9)
     #define INDEX_BG (12)
-    #define INDEX_G (15)
     /* 噪声向量分量索引 */
     #define INDEX_NA (0)
     #define INDEX_NG (3)
@@ -34,8 +33,6 @@ namespace ESKF_VIO_BACKEND {
         Vector3 bias_a;
         // 角速度偏差
         Vector3 bias_g;
-        // 重力加速度
-        Vector3 gravity;
         // 在 w 系下的重力加速度
         static Vector3 gravity_w;
     public:
@@ -46,19 +43,19 @@ namespace ESKF_VIO_BACKEND {
                      const Quaternion &q_wb,
                      const Vector3 &v_wb,
                      const Vector3 &bias_a,
-                     const Vector3 &bias_g,
-                     const Vector3 &gravity) :
-            p_wb(p_wb), v_wb(v_wb), q_wb(q_wb), bias_a(bias_a), bias_g(bias_g), gravity(gravity) {}
+                     const Vector3 &bias_g) :
+            p_wb(p_wb), v_wb(v_wb), q_wb(q_wb), bias_a(bias_a), bias_g(bias_g) {}
         IMUFullState(const Vector3 &p_wb,
                      const Vector3 &theta_wb,
                      const Vector3 &v_wb,
                      const Vector3 &bias_a,
-                     const Vector3 &bias_g,
-                     const Vector3 &gravity) :
-            p_wb(p_wb), v_wb(v_wb), theta_wb(theta_wb), bias_a(bias_a), bias_g(bias_g), gravity(gravity) {}
+                     const Vector3 &bias_g) :
+            p_wb(p_wb), v_wb(v_wb), theta_wb(theta_wb), bias_a(bias_a), bias_g(bias_g) {}
     public:
         /* 状态清零 */
         void Reset(void);
+        /* 设置重力加速度的模长 */
+        static void SetGravityNorm(Scalar norm);
     };
 
 

@@ -9,7 +9,7 @@ namespace ESKF_VIO_BACKEND {
                                    const Vector3 &gyro,
                                    const fp64 timeStamp) {
         // 获取 IMU 和 Cam 的状态维度
-        uint32_t imuSize = IMU_FULL_ERROR_STATE_SIZE;
+        uint32_t imuSize = IMU_STATE_SIZE;
         uint32_t camSize = this->slidingWindow->frames.size() * 6;
 
         // 如果序列为空，则构造新的起点
@@ -26,7 +26,7 @@ namespace ESKF_VIO_BACKEND {
             if (camSize > 0) {
                 newItem->imuCamCov.setZero(imuSize, camSize);
                 this->camCov.setZero(camSize, camSize);
-                this->fai.setIdentity();
+                this->phi.setIdentity();
             }
             newItem->errorState.Reset();
 
@@ -51,7 +51,7 @@ namespace ESKF_VIO_BACKEND {
         // 中值积分递推名义状态，同时计算出 accel 和 gyro 的中值
         Vector3 midAccel, midGyro;
         this->PropagateMotionNominalState(item_0, item_1,
-                                          this->bias_a, this->bias_g, this->gravity,
+                                          this->bias_a, this->bias_g, IMUFullState::gravity_w,
                                           midAccel, midGyro);
 
         // 中值积分递推误差状态方程，更新 covariance
@@ -103,7 +103,6 @@ namespace ESKF_VIO_BACKEND {
         this->F.block<3, 3>(INDEX_P, INDEX_V) = I3_dt;
         this->F.block<3, 3>(INDEX_V, INDEX_R) = - dt * Utility::SkewSymmetricMatrix(midAccel);
         this->F.block<3, 3>(INDEX_V, INDEX_BA) = - dt * R_wb_0;
-        this->F.block<3, 3>(INDEX_V, INDEX_G) = - I3_dt;    // g_w > 0, propagate is -g (not +g)
         this->F.block<3, 3>(INDEX_R, INDEX_R) = - dt * Utility::SkewSymmetricMatrix(midGyro);
         this->F.block<3, 3>(INDEX_R, INDEX_BG) = - I3_dt;
 
@@ -114,14 +113,14 @@ namespace ESKF_VIO_BACKEND {
         this->G.block<3, 3>(INDEX_BG, INDEX_NWG) = I3_sqrt_dt;
 
         // propagate 误差状态以及对应的 IMU 协方差矩阵
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> error_x_0 = this->ErrorStateConvert(item_0->errorState);
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> error_x_1 = this->F * error_x_0;
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> error_x_0 = this->ErrorStateConvert(item_0->errorState);
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> error_x_1 = this->F * error_x_0;
         item_1->errorState = this->ErrorStateConvert(error_x_1);
         item_1->imuCov = this->F * item_0->imuCov * this->F.transpose() + this->G * this->Q * this->G.transpose();
 
         // propagate IMU 与相机之间的协方差矩阵
-        this->fai = this->F * this->fai;
-        item_1->imuCamCov = this->fai * item_0->imuCamCov;
+        this->phi = this->F * this->phi;
+        item_1->imuCamCov = this->phi * item_0->imuCamCov;
     }
 
 
@@ -133,26 +132,24 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 误差状态合并与分裂 */
-    Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> PropagateQueue::ErrorStateConvert(const IMUFullState &errorState) {
-        Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> delta_x;
+    Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> PropagateQueue::ErrorStateConvert(const IMUFullState &errorState) {
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> delta_x;
         delta_x.segment<3>(INDEX_P) = errorState.p_wb;
         delta_x.segment<3>(INDEX_V) = errorState.v_wb;
         delta_x.segment<3>(INDEX_R) = errorState.theta_wb;
         delta_x.segment<3>(INDEX_BA) = errorState.bias_a;
         delta_x.segment<3>(INDEX_BG) = errorState.bias_g;
-        delta_x.segment<3>(INDEX_G) = errorState.gravity;
         return delta_x;
     }
 
 
-    IMUFullState PropagateQueue::ErrorStateConvert(const Eigen::Matrix<Scalar, IMU_FULL_ERROR_STATE_SIZE, 1> &delta_x) {
+    IMUFullState PropagateQueue::ErrorStateConvert(const Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> &delta_x) {
         IMUFullState errorState;
         errorState.p_wb = delta_x.segment<3>(INDEX_P);
         errorState.v_wb = delta_x.segment<3>(INDEX_V);
         errorState.theta_wb = delta_x.segment<3>(INDEX_R);
         errorState.bias_a = delta_x.segment<3>(INDEX_BA);
         errorState.bias_g = delta_x.segment<3>(INDEX_BG);
-        errorState.gravity = delta_x.segment<3>(INDEX_G);
         return errorState;
     }
 
