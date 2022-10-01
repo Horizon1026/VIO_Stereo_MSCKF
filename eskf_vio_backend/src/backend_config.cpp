@@ -3,7 +3,6 @@
 #include <log_api.hpp>
 /* 外部依赖 */
 #include <fstream>
-#include <iostream>
 
 namespace ESKF_VIO_BACKEND {
     /* 后端优化器读取配置并初始化 */
