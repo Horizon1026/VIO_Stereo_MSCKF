@@ -1,9 +1,7 @@
 /* 内部依赖 */
-#include <include/data_manager/data_typedef.hpp>
+#include <data_typedef.hpp>
+#include <log_api.hpp>
 /* 外部依赖 */
-#if STD_COUT_INFO
-    #include <iostream>
-#endif
 
 namespace ESKF_VIO_BACKEND {
     /* 清空保存的数据 */
@@ -49,11 +47,11 @@ namespace ESKF_VIO_BACKEND {
     /* 自我打印保存信息 */
     void FeaturesMessage::Information(void) {
     #if STD_COUT_INFO
-        std::cout << ">> Features Message at time stamp " << this->timeStamp << "s:\n";
+        Log(">> Features Message at time stamp " << this->timeStamp << "s:");
         for (uint32_t i = 0; i < this->ids.size(); ++i) {
-            std::cout << "     feature id " << this->ids[i] << " is observed in:\n";
+            Log("     feature id " << this->ids[i] << " is observed in:");
             for (auto it = this->observes[i]->norms.begin(); it != this->observes[i]->norms.end(); ++it) {
-                std::cout << "       camera id " << it->first << " [" << it->second.transpose() << "]\n";
+                Log("       camera id " << it->first << " [" << it->second.transpose() << "]");
             }
         }
     #endif
@@ -70,9 +68,9 @@ namespace ESKF_VIO_BACKEND {
     /* 自我打印保存信息 */
     void IMUMessage::Information(void) {
     #if STD_COUT_INFO
-        std::cout << ">> IMU Message at time stamp " << this->timeStamp << "s:";
-        std::cout << "     gyro [" << this->gyro.transpose() << "]\n";
-        std::cout << "     accel  [" << this->accel.transpose() << "]\n";
+        Log(">> IMU Message at time stamp " << this->timeStamp << "s:");
+        Log("     gyro  [" << this->gyro.transpose() << "]");
+        Log("     accel [" << this->accel.transpose() << "]");
     #endif
     }
 

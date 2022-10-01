@@ -9,9 +9,6 @@
 #include <Eigen/Geometry>
 /* 内部依赖 */
 
-/* 是否允许 std::cout 形式的 log 输出 */
-#define STD_COUT_INFO (1)
-
 /* 所有类型命名都定义在命名空间内 */
 namespace ESKF_VIO_BACKEND {
     using uint8_t = unsigned char;

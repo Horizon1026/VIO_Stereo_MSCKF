@@ -1,7 +1,7 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/utility/typedef.hpp>
+#include <typedef.hpp>
 
 /* 后端的数据加载器仅仅支持特征点追踪结果，以及IMU量测信息 */
 namespace ESKF_VIO_BACKEND {

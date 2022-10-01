@@ -1,7 +1,7 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/utility/typedef.hpp>
+#include <typedef.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* PnP 问题求解器 */

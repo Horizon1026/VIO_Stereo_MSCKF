@@ -1,7 +1,7 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/data_manager/data_typedef.hpp>
+#include <data_typedef.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* 管理一个特征点 */

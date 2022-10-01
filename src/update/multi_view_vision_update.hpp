@@ -1,11 +1,11 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/utility/typedef.hpp>
-#include <include/propagate/sequence_propagator.hpp>
-#include <include/data_manager/feature_manager.hpp>
-#include <include/data_manager/frame_manager.hpp>
-#include <include/update/trianglation.hpp>
+#include <typedef.hpp>
+#include <sequence_propagator.hpp>
+#include <feature_manager.hpp>
+#include <frame_manager.hpp>
+#include <trianglation.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* 多目视觉观测更新管理器 */

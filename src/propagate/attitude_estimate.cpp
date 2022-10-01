@@ -1,7 +1,7 @@
 /* 内部依赖 */
-#include <include/propagate/attitude_estimate.hpp>
-#include <include/propagate/imu_state.hpp>
-#include <include/utility/math_lib.hpp>
+#include <attitude_estimate.hpp>
+#include <imu_state.hpp>
+#include <math_lib.hpp>
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {

@@ -1,5 +1,5 @@
 /* 内部依赖 */
-#include <include/propagate/imu_state.hpp>
+#include <imu_state.hpp>
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {

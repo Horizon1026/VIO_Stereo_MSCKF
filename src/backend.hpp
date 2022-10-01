@@ -1,13 +1,13 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/data_manager/data_loader.hpp>
-#include <include/data_manager/feature_manager.hpp>
-#include <include/data_manager/frame_manager.hpp>
-#include <include/propagate/sequence_propagator.hpp>
-#include <include/propagate/attitude_estimate.hpp>
-#include <include/update/multi_view_vision_update.hpp>
-#include <include/update/trianglation.hpp>
+#include <data_loader.hpp>
+#include <feature_manager.hpp>
+#include <frame_manager.hpp>
+#include <sequence_propagator.hpp>
+#include <attitude_estimate.hpp>
+#include <multi_view_vision_update.hpp>
+#include <trianglation.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* ESKF VIO 后端控制器 */

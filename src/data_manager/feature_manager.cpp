@@ -1,9 +1,7 @@
 /* 内部依赖 */
-#include <include/data_manager/feature_manager.hpp>
+#include <feature_manager.hpp>
+#include <log_api.hpp>
 /* 外部依赖 */
-#if STD_COUT_INFO
-    #include <iostream>
-#endif
 
 namespace ESKF_VIO_BACKEND {
     /* 为此特征点添加一个观测 */
@@ -36,12 +34,12 @@ namespace ESKF_VIO_BACKEND {
     /* 打印出当前特征点的信息 */
     void Feature::Information(void) {
     #if STD_COUT_INFO
-        std::cout << ">> Feature id " << this->id << " is observed in frame [" << this->firstFrameID <<
-            ", " << this->FinalFrameID() << "]\n";
+        Log(">> Feature id " << this->id << " is observed in frame [" << this->firstFrameID <<
+            ", " << this->FinalFrameID() << "]");
         for (uint32_t i = 0; i < this->observes.size(); ++i) {
             for (auto it = this->observes[i]->norms.begin(); it != this->observes[i]->norms.end(); ++it) {
-                std::cout << "     frame " << this->firstFrameID + i << " camera " << it->first << " observe [" <<
-                    it->second.transpose() << "]\n";
+                Log("     frame " << this->firstFrameID + i << " camera " << it->first << " observe [" <<
+                    it->second.transpose() << "]");
             }
         }
     #endif
@@ -148,12 +146,12 @@ namespace ESKF_VIO_BACKEND {
     void FeatureManager::Information(void) {
     #if STD_COUT_INFO
         if (this->features.empty()) {
-            std::cout << ">> Feature manager has no featuers." << std::endl;
+            Log(">> Feature manager has no featuers.");
         } else {
             for (auto it = this->features.begin(); it != this->features.end(); ++it) {
                 it->second->Information();
             }
-            std::cout << std::endl;
+            Log("");
         }
     #endif
     }

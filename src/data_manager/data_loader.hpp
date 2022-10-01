@@ -1,7 +1,7 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/data_manager/data_typedef.hpp>
+#include <data_typedef.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* 数据加载器负责管理数据的输入，并按时间戳顺序提供给后续接口 */

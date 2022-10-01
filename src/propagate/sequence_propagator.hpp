@@ -1,9 +1,9 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/utility/typedef.hpp>
-#include <include/propagate/imu_state.hpp>
-#include <include/data_manager/frame_manager.hpp>
+#include <typedef.hpp>
+#include <imu_state.hpp>
+#include <frame_manager.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* IMU propagate 序列中的元素 */

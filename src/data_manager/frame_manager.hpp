@@ -1,7 +1,7 @@
 #pragma once
 /* 外部依赖 */
 /* 内部依赖 */
-#include <include/data_manager/feature_manager.hpp>
+#include <feature_manager.hpp>
 
 #define FIRST_FRAME_ID 1
 

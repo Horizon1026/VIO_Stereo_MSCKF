@@ -1,10 +1,10 @@
 /* 外部依赖 */
-#include <iostream>
 #include <fstream>
 
 /* 内部依赖 */
-#include <include/backend.hpp>
-#include <include/utility/math_lib.hpp>
+#include <backend.hpp>
+#include <math_lib.hpp>
+#include <log_api.hpp>
 using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
@@ -15,11 +15,11 @@ double maxTimeStamp = 100;
 /* 载入 IMU 数据 */
 void LoadIMUData(const std::shared_ptr<Backend> &backend) {
     std::string imu_file = simPath + "imu_pose.txt";
-    std::cout << ">> Load imu data from " << imu_file << std::endl;
+    Log(">> Load imu data from " << imu_file);
     std::ifstream fsIMU;
     fsIMU.open(imu_file.c_str());
     if (!fsIMU.is_open()) {
-        std::cout << "   failed." << std::endl;
+        Log("   failed.");
         return;
     }
     std::string oneLine;
@@ -39,7 +39,7 @@ void LoadIMUData(const std::shared_ptr<Backend> &backend) {
             break;
         }
     }
-    std::cout << "   " << cnt << " imu raw data loaded.\n";
+    Log("   " << cnt << " imu raw data loaded.");
 }
 
 /* 载入特征点追踪数据 */
@@ -47,11 +47,11 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
     /* 读取所有特征点 */
     std::vector<Vector3> allPoints;
     std::string pts_file = simPath + "all_points.txt";
-    std::cout << ">> Load pts data from " << pts_file << std::endl;
+    Log(">> Load pts data from " << pts_file);
     std::ifstream fsPts;
     fsPts.open(pts_file.c_str());
     if (!fsPts.is_open()) {
-        std::cout << "   failed." << std::endl;
+        Log("   failed.");
         return;
     }
     std::string oneLine;
@@ -66,11 +66,11 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
     /* 读取相机位姿 */
 	std::string camPose = simPath + "cam_pose.txt";
-    std::cout << ">> Load camera and features data from " << camPose << std::endl;
+    Log(">> Load camera and features data from " << camPose);
 	std::ifstream fsCam;
 	fsCam.open(camPose.c_str());
 	if (!fsCam.is_open()) {
-        std::cout << "   failed." << std::endl;
+        Log("   failed.");
         return;
 	}
 	Quaternion q_wc;
@@ -118,7 +118,7 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
             break;
         }
     }
-    std::cout << "   " << cnt << " features track data loaded.\n";
+    Log("   " << cnt << " features track data loaded.");
 
 }
 
@@ -127,14 +127,14 @@ int main() {
     // std::ofstream logFile("../test_log/20220925_get_imu_attitude_truth_with_identity_atti_init.txt");
     // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
-    std::cout << "This is a vio backend with filter estimator." << std::endl;
+    Log("This is a vio backend with filter estimator.");
     std::shared_ptr<Backend> backend(new Backend());
     backend->Initialize("../config");
 
     LoadIMUData(backend);
     LoadFeaturesData(backend);
 
-    for (uint32_t i = 0; i < 4000; ++i) {
+    for (uint32_t i = 0; i < 20; ++i) {
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
         backend->PublishPropagateState(state);
