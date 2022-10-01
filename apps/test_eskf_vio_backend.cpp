@@ -9,8 +9,8 @@ using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
 /* 测试用相关定义 */
-std::string simPath = "../simulate/";
-double maxTimeStamp = 100;
+std::string simPath = "./simulate/";
+double maxTimeStamp = 20;
 
 /* 载入 IMU 数据 */
 void LoadIMUData(const std::shared_ptr<Backend> &backend) {
@@ -129,7 +129,7 @@ int main() {
 
     LogInfo("This is a vio backend with filter estimator.");
     std::shared_ptr<Backend> backend(new Backend());
-    backend->Initialize("../config");
+    backend->Initialize("./eskf_vio_backend/config");
 
     LoadIMUData(backend);
     LoadFeaturesData(backend);

@@ -1,3 +1,1 @@
-cd build/
-./ESKF_Estimator
-cd ..
+./output/test_eskf_vio_backend

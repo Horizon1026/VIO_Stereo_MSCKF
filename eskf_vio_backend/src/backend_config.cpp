@@ -9,6 +9,7 @@ namespace ESKF_VIO_BACKEND {
     /* 后端优化器读取配置并初始化 */
     bool Backend::Initialize(const std::string &configPath) {
         Matrix tempMat;
+        LogInfo(">> ESKF VIO Backend Starts reading config file at " << configPath);
 
         // 加载 IMU 噪声参数
         LogInfo(">> Load imu noise...");
