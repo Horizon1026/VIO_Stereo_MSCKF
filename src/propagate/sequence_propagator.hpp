@@ -41,7 +41,7 @@ namespace ESKF_VIO_BACKEND {
         // 无 update 时的 IMU bias
         Vector3 bias_a;
         Vector3 bias_g;
-        // 无 update 且无 item 时的 motion state 初值
+        // 无 update 且 items 为空时的 motion state 初值，初值将在 eskf vio backend 初始化时从姿态解算结果中获取
         IMUMotionState initState;
         // 联系 IMU 和 Camera 协方差的 Fai 矩阵就是离散时间的 F 矩阵
         Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> phi;

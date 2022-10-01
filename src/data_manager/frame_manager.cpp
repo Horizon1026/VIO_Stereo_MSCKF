@@ -51,14 +51,12 @@ namespace ESKF_VIO_BACKEND {
 
     /* 打印出此帧所有信息 */
     void Frame::Information(void) {
-    #if STD_COUT_INFO
-        Log(">> Frame id " << this->id << " at time " << this->timeStamp << "s observes " <<
+        LogInfo(">> Frame id " << this->id << " at time " << this->timeStamp << "s observes " <<
             this->features.size() << " features.");
-        Log("     q_wb is [" << this->q_wb.w() << ", " << this->q_wb.x() << ", " <<
+        LogInfo("     q_wb is [" << this->q_wb.w() << ", " << this->q_wb.x() << ", " <<
             this->q_wb.y() << ", " << this->q_wb.z() << "] (s, v)");
-        Log("     p_wb is [" << this->p_wb.transpose() << "]");
-        Log("     v_wb is [" << this->v_wb.transpose() << "]");
-    #endif
+        LogInfo("     p_wb is [" << this->p_wb.transpose() << "]");
+        LogInfo("     v_wb is [" << this->v_wb.transpose() << "]");
     }
 
 
@@ -161,15 +159,13 @@ namespace ESKF_VIO_BACKEND {
 
     /* 打印出滑动窗口内所有关键帧的信息 */
     void FrameManager::Information(void) {
-    #if STD_COUT_INFO
         if (this->frames.empty()) {
-            Log(">> Frame manager has no featuers.");
+            LogInfo(">> Frame manager has no featuers.");
         } else {
             for (auto it = this->frames.begin(); it != this->frames.end(); ++it) {
                 (*it)->Information();
             }
-            Log("");
+            LogInfo("");
         }
-    #endif
     }
 }

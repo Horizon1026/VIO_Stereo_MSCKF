@@ -46,15 +46,13 @@ namespace ESKF_VIO_BACKEND {
 
     /* 自我打印保存信息 */
     void FeaturesMessage::Information(void) {
-    #if STD_COUT_INFO
-        Log(">> Features Message at time stamp " << this->timeStamp << "s:");
+        LogInfo(">> Features Message at time stamp " << this->timeStamp << "s:");
         for (uint32_t i = 0; i < this->ids.size(); ++i) {
-            Log("     feature id " << this->ids[i] << " is observed in:");
+            LogInfo("     feature id " << this->ids[i] << " is observed in:");
             for (auto it = this->observes[i]->norms.begin(); it != this->observes[i]->norms.end(); ++it) {
-                Log("       camera id " << it->first << " [" << it->second.transpose() << "]");
+                LogInfo("       camera id " << it->first << " [" << it->second.transpose() << "]");
             }
         }
-    #endif
     }
 
 
@@ -67,11 +65,9 @@ namespace ESKF_VIO_BACKEND {
     
     /* 自我打印保存信息 */
     void IMUMessage::Information(void) {
-    #if STD_COUT_INFO
-        Log(">> IMU Message at time stamp " << this->timeStamp << "s:");
-        Log("     gyro  [" << this->gyro.transpose() << "]");
-        Log("     accel [" << this->accel.transpose() << "]");
-    #endif
+        LogInfo(">> IMU Message at time stamp " << this->timeStamp << "s:");
+        LogInfo("     gyro  [" << this->gyro.transpose() << "]");
+        LogInfo("     accel [" << this->accel.transpose() << "]");
     }
 
 
@@ -96,13 +92,11 @@ namespace ESKF_VIO_BACKEND {
 
     /* 自我打印保存信息 */
     void CombinedMessage::Information(void) {
-    #if STD_COUT_INFO
         if (this->featMeas != nullptr) {
             this->featMeas->Information();
         }
         for (uint32_t i = 0; i < this->imuMeas.size(); ++i) {
             this->imuMeas[i]->Information();
         }
-    #endif
     }
 }

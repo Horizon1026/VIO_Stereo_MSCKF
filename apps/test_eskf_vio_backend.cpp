@@ -15,11 +15,11 @@ double maxTimeStamp = 100;
 /* 载入 IMU 数据 */
 void LoadIMUData(const std::shared_ptr<Backend> &backend) {
     std::string imu_file = simPath + "imu_pose.txt";
-    Log(">> Load imu data from " << imu_file);
+    LogInfo(">> Load imu data from " << imu_file);
     std::ifstream fsIMU;
     fsIMU.open(imu_file.c_str());
     if (!fsIMU.is_open()) {
-        Log("   failed.");
+        LogInfo("   failed.");
         return;
     }
     std::string oneLine;
@@ -39,7 +39,7 @@ void LoadIMUData(const std::shared_ptr<Backend> &backend) {
             break;
         }
     }
-    Log("   " << cnt << " imu raw data loaded.");
+    LogInfo("   " << cnt << " imu raw data loaded.");
 }
 
 /* 载入特征点追踪数据 */
@@ -47,11 +47,11 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
     /* 读取所有特征点 */
     std::vector<Vector3> allPoints;
     std::string pts_file = simPath + "all_points.txt";
-    Log(">> Load pts data from " << pts_file);
+    LogInfo(">> Load pts data from " << pts_file);
     std::ifstream fsPts;
     fsPts.open(pts_file.c_str());
     if (!fsPts.is_open()) {
-        Log("   failed.");
+        LogInfo("   failed.");
         return;
     }
     std::string oneLine;
@@ -66,11 +66,11 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
     /* 读取相机位姿 */
 	std::string camPose = simPath + "cam_pose.txt";
-    Log(">> Load camera and features data from " << camPose);
+    LogInfo(">> Load camera and features data from " << camPose);
 	std::ifstream fsCam;
 	fsCam.open(camPose.c_str());
 	if (!fsCam.is_open()) {
-        Log("   failed.");
+        LogInfo("   failed.");
         return;
 	}
 	Quaternion q_wc;
@@ -118,7 +118,7 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
             break;
         }
     }
-    Log("   " << cnt << " features track data loaded.");
+    LogInfo("   " << cnt << " features track data loaded.");
 
 }
 
@@ -127,7 +127,7 @@ int main() {
     // std::ofstream logFile("../test_log/20220925_get_imu_attitude_truth_with_identity_atti_init.txt");
     // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
-    Log("This is a vio backend with filter estimator.");
+    LogInfo("This is a vio backend with filter estimator.");
     std::shared_ptr<Backend> backend(new Backend());
     backend->Initialize("../config");
 

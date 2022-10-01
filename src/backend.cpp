@@ -112,7 +112,7 @@ namespace ESKF_VIO_BACKEND {
         newFrame->AddFeatures(newObserveFeatures);
 
         // TODO: 
-        // this->featureManager.Information();
+        this->featureManager.Information();
         // this->frameManager.Information();
         return true;
     }

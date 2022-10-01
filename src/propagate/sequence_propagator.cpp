@@ -101,9 +101,9 @@ namespace ESKF_VIO_BACKEND {
 
         // 构造离散过程方程 F 矩阵
         this->F.block<3, 3>(INDEX_P, INDEX_V) = I3_dt;
-        this->F.block<3, 3>(INDEX_V, INDEX_R) = - dt * Utility::SkewSymmetricMatrix(midAccel);
+        this->F.block<3, 3>(INDEX_V, INDEX_R) = - dt * R_wb_0 * Utility::SkewSymmetricMatrix(midAccel);
         this->F.block<3, 3>(INDEX_V, INDEX_BA) = - dt * R_wb_0;
-        this->F.block<3, 3>(INDEX_R, INDEX_R) = - dt * Utility::SkewSymmetricMatrix(midGyro);
+        this->F.block<3, 3>(INDEX_R, INDEX_R) = Matrix33::Identity() - dt * Utility::SkewSymmetricMatrix(midGyro);
         this->F.block<3, 3>(INDEX_R, INDEX_BG) = - I3_dt;
 
         // 构造离散过程方程 G 矩阵

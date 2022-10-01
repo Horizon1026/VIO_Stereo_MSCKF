@@ -33,16 +33,14 @@ namespace ESKF_VIO_BACKEND {
 
     /* 打印出当前特征点的信息 */
     void Feature::Information(void) {
-    #if STD_COUT_INFO
-        Log(">> Feature id " << this->id << " is observed in frame [" << this->firstFrameID <<
+        LogInfo(">> Feature id " << this->id << " is observed in frame [" << this->firstFrameID <<
             ", " << this->FinalFrameID() << "]");
         for (uint32_t i = 0; i < this->observes.size(); ++i) {
             for (auto it = this->observes[i]->norms.begin(); it != this->observes[i]->norms.end(); ++it) {
-                Log("     frame " << this->firstFrameID + i << " camera " << it->first << " observe [" <<
+                LogInfo("     frame " << this->firstFrameID + i << " camera " << it->first << " observe [" <<
                     it->second.transpose() << "]");
             }
         }
-    #endif
     }
 
 
@@ -144,16 +142,14 @@ namespace ESKF_VIO_BACKEND {
 
     /* 打印出当前管理的所有特征点的信息 */
     void FeatureManager::Information(void) {
-    #if STD_COUT_INFO
         if (this->features.empty()) {
-            Log(">> Feature manager has no featuers.");
+            LogInfo(">> Feature manager has no featuers.");
         } else {
             for (auto it = this->features.begin(); it != this->features.end(); ++it) {
                 it->second->Information();
             }
-            Log("");
+            LogInfo("");
         }
-    #endif
     }
 
 }
