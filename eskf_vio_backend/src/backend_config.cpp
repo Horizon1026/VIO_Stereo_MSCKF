@@ -8,7 +8,15 @@ namespace ESKF_VIO_BACKEND {
     /* 后端优化器读取配置并初始化 */
     bool Backend::Initialize(const std::string &configPath) {
         Matrix tempMat;
+        std::string configFile;
         LogInfo(">> ESKF VIO Backend Starts reading config file at " << configPath);
+
+        // 加载 IMU 输入频率
+        LogInfo(">> Load imu input frequence...");
+        if (this->LoadMatrix(configPath + "/imu_frequence.txt", 1, 1, tempMat) == true) {
+            this->dataloader.imuPeriod = static_cast<fp64>(1.0 / tempMat(0, 0));
+        }
+        LogInfo("     imu period is " << this->dataloader.imuPeriod << "s.");
 
         // 加载 IMU 噪声参数
         LogInfo(">> Load imu noise...");

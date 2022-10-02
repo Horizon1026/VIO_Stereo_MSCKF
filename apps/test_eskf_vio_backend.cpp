@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
 
         // Vector3 pitch_roll_yaw = ESKF_VIO_BACKEND::Utility::QuaternionToEuler(state.q_wb);
         // std::cout << pitch_roll_yaw.x() << " " << pitch_roll_yaw.y() << " " << pitch_roll_yaw.z() << " ";
-        // std::cout << state.p_wb.transpose() << std::endl;
+        std::cout << state.p_wb.transpose() << std::endl;
     }
     return 0;
 }

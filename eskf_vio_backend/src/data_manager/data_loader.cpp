@@ -51,9 +51,14 @@ namespace ESKF_VIO_BACKEND {
         if (!this->imuMeas.empty() && !this->featMeas.empty()) {
             auto &imu = this->imuMeas.front();
             auto &feat = this->featMeas.front();
-            if (feat->timeStamp < imu->timeStamp) {
+            if (feat->timeStamp <= imu->timeStamp) {
                 output->featMeas = feat;
                 this->featMeas.pop_front();
+                // 如果 features 数据的时间戳和 imu 时间戳很接近，则捆绑输出
+                if (std::fabs(feat->timeStamp - imu->timeStamp) < static_cast<fp64>(this->imuPeriod)) {
+                    output->imuMeas.emplace_back(imu);
+                    this->imuMeas.pop_front();
+                }
             } else {
                 output->imuMeas.emplace_back(imu);
                 this->imuMeas.pop_front();
