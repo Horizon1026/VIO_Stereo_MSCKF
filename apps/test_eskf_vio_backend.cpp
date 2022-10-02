@@ -146,11 +146,14 @@ int main(int argc, char **argv) {
     for (uint32_t i = 0; i < 20; ++i) {
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
-        backend->PublishPropagateState(state);
-
-        // Vector3 pitch_roll_yaw = ESKF_VIO_BACKEND::Utility::QuaternionToEuler(state.q_wb);
-        // std::cout << pitch_roll_yaw.x() << " " << pitch_roll_yaw.y() << " " << pitch_roll_yaw.z() << " ";
-        std::cout << state.p_wb.transpose() << std::endl;
+        bool res = backend->PublishPropagateState(state);
+        if (res == true) {
+            // Vector3 pitch_roll_yaw = ESKF_VIO_BACKEND::Utility::QuaternionToEuler(state.q_wb);
+            // std::cout << pitch_roll_yaw.x() << " " << pitch_roll_yaw.y() << " " << pitch_roll_yaw.z() << " ";
+            std::cout << state.p_wb.transpose() << std::endl;
+        } else {
+            std::cout << "backend is not ready." << std::endl;
+        }
     }
     return 0;
 }
