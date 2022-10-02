@@ -1,4 +1,5 @@
 rm output/ -rf
+mkdir build
 cd build/
 rm * -rf
 cmake ..
