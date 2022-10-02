@@ -35,7 +35,7 @@ namespace ESKF_VIO_BACKEND {
         // propagate 之后需要记录的变化的相关元素
         std::deque<std::shared_ptr<IMUPropagateQueueItem>> items;
         // 滑动窗口内的关键帧
-        FrameManager *slidingWindow;
+        std::shared_ptr<FrameManager> slidingWindow;
         // 滑动窗口内 camera pose 的协方差矩阵
         Matrix camCov;
         // 无 update 时的 IMU bias

@@ -6,15 +6,17 @@
 #include <feature_manager.hpp>
 #include <frame_manager.hpp>
 #include <trianglation.hpp>
+#include <perspective_n_point.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* 多目视觉观测更新管理器 */
     class MultiViewVisionUpdate {
     public:
         // 指向相关管理器或工具的指针
-        FeatureManager *featureManager;
-        FrameManager *frameManager;
-        Trianglator *trianglator;
+        std::shared_ptr<FeatureManager> featureManager;
+        std::shared_ptr<FrameManager> frameManager;
+        std::shared_ptr<Trianglator> trianglator;
+        std::shared_ptr<PnPSolver> pnpSolver;
         // 量测方程拼接矩阵 [Hx | Hp | r]，用于原始拼接、左零空间投影
         Matrix Hx_Hp_r;
 

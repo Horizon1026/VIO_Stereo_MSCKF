@@ -8,6 +8,7 @@
 #include <attitude_estimate.hpp>
 #include <multi_view_vision_update.hpp>
 #include <trianglation.hpp>
+#include <perspective_n_point.hpp>
 
 namespace ESKF_VIO_BACKEND {
     /* ESKF VIO 后端控制器 */
@@ -24,6 +25,7 @@ namespace ESKF_VIO_BACKEND {
         AttitudeEstimate attitudeEstimator;     // 姿态解算求解器
         PropagateQueue propagator;              // IMU 状态递推过程管理器
         Trianglator trianglator;                // 视觉特征点三角测量求解器
+        PnPSolver pnpSolver;                    // PnP 求解器
         MultiViewVisionUpdate visionUpdator;    // 视觉 Update 过程管理器
     
     public:

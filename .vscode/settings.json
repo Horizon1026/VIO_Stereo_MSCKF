@@ -70,6 +70,7 @@
         "fstream": "cpp",
         "complex": "cpp",
         "*.txx": "cpp",
-        "locale": "cpp"
+        "locale": "cpp",
+        "codecvt": "cpp"
     }
 }
