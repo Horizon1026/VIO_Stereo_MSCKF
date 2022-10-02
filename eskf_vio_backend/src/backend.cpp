@@ -90,7 +90,7 @@ namespace ESKF_VIO_BACKEND {
 
     /* 重置 */
     void Backend::Reset(void) {
-
+        this->status = NEED_INIT;
     }
 
 

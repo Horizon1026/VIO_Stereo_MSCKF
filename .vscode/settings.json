@@ -72,5 +72,6 @@
         "*.txx": "cpp",
         "locale": "cpp",
         "codecvt": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
