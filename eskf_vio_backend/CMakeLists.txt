@@ -13,6 +13,7 @@ set(LIBRARY_OUTPUT_PATH ../output)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories("/usr/include/eigen3")
 # 寻找 TBB 库
 # find_package( TBB REQUIRED )
 # 寻找 Pangolin 库并添加其路径
