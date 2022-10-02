@@ -23,5 +23,10 @@ namespace ESKF_VIO_BACKEND {
                                 const std::vector<Vector2> &pts_2d,
                                 Quaternion &q_wc,
                                 Vector3 &p_wc);
+        /* 基于 Huber 和函数，抑制 outliers，使用所有输入的点进行估计，输入 pose 为初值 */
+        bool EstimatePoseHuber(const std::vector<Vector3> &pts_3d,
+                               const std::vector<Vector2> &pts_2d,
+                               Quaternion &q_wc,
+                               Vector3 &p_wc);
     };
 }
