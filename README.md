@@ -20,5 +20,6 @@ A state estimator for robots using ESKF
 已将 IMU 状态从 18 维修改为 15 维，因为估计重力加速度会引入额外的误差
 + 已完成 attitude estimator 姿态解算求解器（已验证）
 + 已完成将 eskf_vio_backend 编译为 so 动态链接库，之后再通过链接库和引用头文件的方式来使用库（已验证）
+为避免 vscode 不能识别多个 cmake 工程导致无法自动联想，影响代码开发进度，在 CMakeLists.txt 中增加一个分支，选择编译库后链接或者直接编译
 + TODO: Multi-View VIO 初始化（需要一个姿态估计器来估计姿态，需要至少一个双目系统来估计初始速度）
 + TODO: 多目视觉 update 部分，属于ESKF 的 update 部分（包括特征点选择、特征点三角化、量测方程构造、ESKF update、queue repropagate、关键帧选择、滑动窗口维度扩展或裁剪）
