@@ -21,14 +21,14 @@ include_directories("/usr/include/eigen3")
 # include_directories( ${Pangolin_INCLUDE_DIRS} )
 
 # 添加头文件路径
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include/backend)
 include_directories(${CMAKE_SOURCE_DIR}/include/data_manager)
 include_directories(${CMAKE_SOURCE_DIR}/include/geometry)
 include_directories(${CMAKE_SOURCE_DIR}/include/propagate)
 include_directories(${CMAKE_SOURCE_DIR}/include/update)
 include_directories(${CMAKE_SOURCE_DIR}/include/utility)
 # 添加源文件
-aux_source_directory(${CMAKE_SOURCE_DIR}/src              BACKEND)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/backend      BACKEND)
 aux_source_directory(${CMAKE_SOURCE_DIR}/src/data_manager DATA_MANAGER)
 aux_source_directory(${CMAKE_SOURCE_DIR}/src/geometry     GEOMETRY)
 aux_source_directory(${CMAKE_SOURCE_DIR}/src/propagate    PROPAGATE)

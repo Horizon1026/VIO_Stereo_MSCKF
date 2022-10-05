@@ -30,6 +30,9 @@ namespace ESKF_VIO_BACKEND {
     using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
     using Vector2 = Eigen::Matrix<Scalar, 3, 1>;
 
+    #define RETURN_IF_FALSE(...) if (__VA_ARGS__ == false) { return false; }
+    #define RETURN_IF_TRUE(...) if (__VA_ARGS__ == true) { return true; }
+
     // 边缘化策略定义
     enum MargPolicy {
         MARG_OLDEST = 1,
@@ -40,7 +43,6 @@ namespace ESKF_VIO_BACKEND {
     // 状态估计器的 status 定义
     enum Status {
         NEED_INIT = 1,
-        INITIALIZING,
         INITIALIZED
     };
 }

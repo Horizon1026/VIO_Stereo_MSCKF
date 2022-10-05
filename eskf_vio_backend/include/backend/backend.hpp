@@ -63,6 +63,15 @@ namespace ESKF_VIO_BACKEND {
         /* 设置相机与 IMU 之间的外参 */
         bool SetExtrinsic(const std::vector<Quaternion> &q_bc,
             const std::vector<Vector3> &p_bc);
+    
+    /* 对内接口 interface 初始化过程相关 */
+    private:
+        /* 尝试进行初始化 */
+        bool Initialize(void);
+        /* 基于某一帧的多目测量结果进行三角化 */
+        bool TrianglizeMultiView(const std::shared_ptr<Frame> &frame);
+        /* 基于三角化成功的点，估计某一帧的位姿 */
+        bool EstimateFramePose(const std::shared_ptr<Frame> &frame);
     };
 
 }

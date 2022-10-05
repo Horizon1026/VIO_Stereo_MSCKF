@@ -16,7 +16,7 @@ set(MAKE_LIB FALSE)
 if (MAKE_LIB)
     # 添加 eskf_vio_backend 的 so 库对应头文件
     set(ESKF_VIO_BACKEND_INCLUDE ${CMAKE_SOURCE_DIR}/eskf_vio_backend)
-    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include)
+    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/geometry)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/propagate)
@@ -44,6 +44,7 @@ else()
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules/")
     find_package(Eigen3 REQUIRED)
     include_directories(${EIGEN3_INCLUDE_DIR})
+    include_directories("/usr/include/eigen3")
     # 寻找 TBB 库
     # find_package( TBB REQUIRED )
     # 寻找 Pangolin 库并添加其路径
@@ -52,14 +53,14 @@ else()
 
     # 添加头文件路径
     set(ESKF_VIO_BACKEND_INCLUDE ${CMAKE_SOURCE_DIR}/eskf_vio_backend)
-    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include)
+    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/geometry)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/propagate)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/update)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/utility)
     # 添加源文件
-    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src              BACKEND)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/backend      BACKEND)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/data_manager DATA_MANAGER)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/geometry     GEOMETRY)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/propagate    PROPAGATE)

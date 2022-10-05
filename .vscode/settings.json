@@ -71,7 +71,8 @@
         "complex": "cpp",
         "*.txx": "cpp",
         "locale": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "shared_mutex": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "editor.minimap.enabled": true,
