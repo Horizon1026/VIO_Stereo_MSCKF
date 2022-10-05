@@ -9,6 +9,8 @@ namespace ESKF_VIO_BACKEND {
     bool AttitudeEstimate::Propagate(const Vector3 &accel, const Vector3 &gyro, const fp64 timeStamp) {
         if (this->items.empty()) {
             /* 如果队列为空，则利用 accel 来给一个 attitude 初值 */
+            // 首先需要检查 accel 的模长是否和重力加速度一致，不一致的化不能初始化
+            // TODO: 
             Vector3 g_imu = accel - this->bias_a;
             Vector3 g_word = IMUFullState::gravity_w;
             Vector3 g_cross = g_imu.cross(g_word);
@@ -87,6 +89,15 @@ namespace ESKF_VIO_BACKEND {
     bool AttitudeEstimate::SetBias(const Vector3 &bias_a, const Vector3 &bias_g) {
         this->bias_a = bias_a;
         this->bias_g = bias_g;
+        return true;
+    }
+
+
+    /* 清除旧时刻的姿态解算结果 */
+    bool AttitudeEstimate::CleanOldItems(const fp64 timeStamp, const Scalar threshold) {
+        while (Scalar(timeStamp - this->items.front()->timeStamp) > threshold) {
+            this->items.pop_front();
+        }
         return true;
     }
 }

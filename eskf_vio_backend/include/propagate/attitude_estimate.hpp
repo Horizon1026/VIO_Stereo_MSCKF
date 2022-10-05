@@ -44,5 +44,7 @@ namespace ESKF_VIO_BACKEND {
         bool GetAttitude(const fp64 timeStamp, Quaternion &q_wb);
         /* 设置 bias */
         bool SetBias(const Vector3 &bias_a, const Vector3 &bias_g);
+        /* 清除旧时刻的姿态解算结果 */
+        bool CleanOldItems(const fp64 timeStamp, const Scalar threshold);
     };
 }

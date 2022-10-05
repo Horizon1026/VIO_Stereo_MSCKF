@@ -32,6 +32,8 @@ namespace ESKF_VIO_BACKEND {
 
     #define RETURN_IF_FALSE(...) if (__VA_ARGS__ == false) { return false; }
     #define RETURN_IF_TRUE(...) if (__VA_ARGS__ == true) { return true; }
+    #define RETURN_FALSE_IF_EQUAL(...) if (__VA_ARGS__) { return false; }
+    #define RETURN_IF_EQUAL(...) if (__VA_ARGS__) { return; }
 
     // 边缘化策略定义
     enum MargPolicy {

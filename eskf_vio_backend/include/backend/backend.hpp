@@ -72,6 +72,9 @@ namespace ESKF_VIO_BACKEND {
         bool TrianglizeMultiView(const std::shared_ptr<Frame> &frame);
         /* 基于三角化成功的点，估计某一帧的位姿 */
         bool EstimateFramePose(const std::shared_ptr<Frame> &frame);
+        /* 从指定时刻点开始，初始化序列化 propagator，递推到最新时刻 */
+        bool InitializePropagator(const IMUMotionState &initState,
+                                  const fp64 startTime);
     };
 
 }
