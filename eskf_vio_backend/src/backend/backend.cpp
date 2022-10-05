@@ -1,5 +1,6 @@
 /* 内部依赖 */
 #include <backend.hpp>
+#include <log_api.hpp>
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {
@@ -50,9 +51,11 @@ namespace ESKF_VIO_BACKEND {
 
             if (this->status == NEED_INIT) {
                 // 尝试初始化，成功后状态会变成 INITIALIZED
+                LogInfo(">> Start initialization.");
                 bool res = this->Initialize();
                 // 如果初始化失败，可能是帧数不够，也可能是过程出错
-                if (this->status == NEED_INIT) {
+                if (res == false) {
+                    LogInfo(">> Initialization failed.");
                     // Step e1: 调整滑动窗口使其仅剩下一帧
                     while (this->frameManager.frames.size() > 1) {
                         this->MarginalizeFeatureFrameManager(MARG_OLDEST);
@@ -60,6 +63,9 @@ namespace ESKF_VIO_BACKEND {
                     // Step e2: 清空 attitude estimator 中记录的 imu 历史量测数据和姿态估计结果
                     this->attitudeEstimator.CleanOldItems(this->frameManager.frames.back()->timeStamp,
                                                           this->dataloader.imuPeriod);
+                } else {
+                    this->status = INITIALIZED;
+                    LogInfo(">> Initialization succeed.");
                 }
             } else {
                 // 在已经完成初始化的情况下，进行一次 update 的流程
@@ -85,6 +91,20 @@ namespace ESKF_VIO_BACKEND {
         }
 
         return res;
+    }
+
+
+    /* 单步运行的测试 */
+    bool Backend::RunOnceTest(void) {
+        bool res = true;
+        // 提取一个数据，可能是单个 IMU 数据，也可能是 IMU 和 features 的捆绑数据
+        std::shared_ptr<CombinedMessage> msg;
+        res = this->dataloader.PopOneMessage(msg);
+        if (res == false) {
+            return false;
+        }
+
+        return true;
     }
 
 

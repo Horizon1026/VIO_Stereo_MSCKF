@@ -45,6 +45,8 @@ namespace ESKF_VIO_BACKEND {
         bool GetFeaturesMessage(const std::shared_ptr<FeaturesMessage> &newFeatMeas);
         /* 单步运行 */
         bool RunOnce(void);
+        /* 单步运行的测试 */
+        bool RunOnceTest(void);
         /* 输出最新 Propagate 点估计 */
         bool PublishPropagateState(IMUFullState &state);
         /* 输出最新 Update 点估计 */

@@ -95,6 +95,9 @@ namespace ESKF_VIO_BACKEND {
 
     /* 清除旧时刻的姿态解算结果 */
     bool AttitudeEstimate::CleanOldItems(const fp64 timeStamp, const Scalar threshold) {
+        if (this->items.empty()) {
+            return true;
+        }
         while (Scalar(timeStamp - this->items.front()->timeStamp) > threshold) {
             this->items.pop_front();
         }
