@@ -2,10 +2,20 @@
 cmake_minimum_required( VERSION 3.10 )
 # cmake工程名
 project(Test_eskf_vio_backend)
-# 设置编译类型为发布
-set(CMAKE_BUILD_TYPE "Debug")
-# 添加c++ 17标准的支持
-set(CMAKE_CXX_FLAGS "-std=c++17 -g")
+
+# 切换 Release 或者 Debug
+set(CMAKE_MODE_RELEASE TRUE)
+if (CMAKE_MODE_RELEASE)
+    # 设置编译类型为发布
+    set(CMAKE_BUILD_TYPE "Release")
+    # 添加c++ 17标准的支持
+    set(CMAKE_CXX_FLAGS "-std=c++17 -O2")
+else()
+    # 设置编译类型为调试
+    set(CMAKE_BUILD_TYPE "Debug")
+    # 添加c++ 17标准的支持
+    set(CMAKE_CXX_FLAGS "-std=c++17 -g")
+endif()
 # 设置 executable 文件输出路径
 set(EXECUTABLE_OUTPUT_PATH ../output)
 
