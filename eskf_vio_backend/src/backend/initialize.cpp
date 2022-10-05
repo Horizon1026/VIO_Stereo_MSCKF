@@ -1,5 +1,6 @@
 /* 内部依赖 */
 #include <backend.hpp>
+#include <log_api.hpp>
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {
@@ -11,6 +12,7 @@ namespace ESKF_VIO_BACKEND {
             auto frame_j = *std::next(this->frameManager.frames.begin());
             // Step 1: 从 attitude estimator 中拿取此帧对应时刻的姿态估计结果，赋值给首帧的 q_wb
             RETURN_IF_FALSE(this->attitudeEstimator.GetAttitude(frame_i->timeStamp,
+                                                                this->dataloader.imuPeriod,
                                                                 frame_i->q_wb));
             // Step 2: 首帧观测为 multi-view 时，首帧位置设置为原点，进行首帧内的多目三角测量，得到一些特征点的 p_w
             frame_i->p_wb.setZero();
@@ -25,7 +27,12 @@ namespace ESKF_VIO_BACKEND {
             //         从 attitude estimator 提取出从首帧时刻点开始，到最新时刻的 imu 量测，输入到 propagator 让他递推到最新时刻
             IMUMotionState initState(frame_i->p_wb, frame_i->v_wb, frame_i->q_wb);
             RETURN_IF_FALSE(this->InitializePropagator(initState, frame_i->timeStamp));
-            // 初始化过程成功
+            // 初始化过程成功，打印初始化结果
+            LogInfo(">> Initialize at time stamp " << frame_i->timeStamp << "s:");
+            LogInfo("     init p_wb is [" << frame_i->p_wb.transpose() << "]");
+            LogInfo("     init v_wb is [" << frame_i->v_wb.transpose() << "]");
+            LogInfo("     init q_wb is [" << frame_i->q_wb.w() << ", " << frame_i->q_wb.x() << ", " <<
+                frame_i->q_wb.y() << ", " << frame_i->q_wb.z() << "]");
             return true;
         } else {
             return false;
@@ -38,6 +45,10 @@ namespace ESKF_VIO_BACKEND {
         if (frame == nullptr) {
             return false;
         }
+        /*
+            frame i -> q_wb p_wb
+            i cam 0 / cam 1  ->  bc_0  bc_1  ->   wc_0  wc_1  -> trianglize  ->  p_w
+        */
         // TODO: 从 frame->features 中挑选点进行三角化，结果将保存在 feature manager 中
         for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
             std::vector<Quaternion> all_q_wb;

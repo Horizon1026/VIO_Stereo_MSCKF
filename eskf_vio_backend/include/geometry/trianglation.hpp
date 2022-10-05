@@ -2,8 +2,6 @@
 /* 外部依赖 */
 /* 内部依赖 */
 #include <typedef.hpp>
-#include <feature_manager.hpp>
-#include <frame_manager.hpp>
 
 namespace ESKF_VIO_BACKEND {
     class Trianglator {

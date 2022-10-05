@@ -26,7 +26,6 @@ namespace ESKF_VIO_BACKEND {
             if (camSize > 0) {
                 newItem->imuCamCov.setZero(imuSize, camSize);
                 this->camCov.setZero(camSize, camSize);
-                this->phi.setIdentity();
             }
             newItem->errorState.Reset();
 
@@ -119,8 +118,7 @@ namespace ESKF_VIO_BACKEND {
         item_1->imuCov = this->F * item_0->imuCov * this->F.transpose() + this->G * this->Q * this->G.transpose();
 
         // propagate IMU 与相机之间的协方差矩阵
-        this->phi = this->F * this->phi;
-        item_1->imuCamCov = this->phi * item_0->imuCamCov;
+        item_1->imuCamCov = this->F * item_0->imuCamCov;
     }
 
 

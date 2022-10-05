@@ -41,7 +41,7 @@ namespace ESKF_VIO_BACKEND {
         /* 姿态解算进行一步更新 */
         bool Propagate(const Vector3 &accel, const Vector3 &gyro, const fp64 timeStamp);
         /* 提取出指定时刻点附近的姿态估计结果 */
-        bool GetAttitude(const fp64 timeStamp, Quaternion &q_wb);
+        bool GetAttitude(const fp64 timeStamp, const fp64 threshold, Quaternion &atti);
         /* 设置 bias */
         bool SetBias(const Vector3 &bias_a, const Vector3 &bias_g);
         /* 清除旧时刻的姿态解算结果 */

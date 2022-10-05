@@ -2,6 +2,7 @@
 #include <attitude_estimate.hpp>
 #include <imu_state.hpp>
 #include <math_lib.hpp>
+#include <log_api.hpp>
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {
@@ -9,16 +10,20 @@ namespace ESKF_VIO_BACKEND {
     bool AttitudeEstimate::Propagate(const Vector3 &accel, const Vector3 &gyro, const fp64 timeStamp) {
         if (this->items.empty()) {
             /* 如果队列为空，则利用 accel 来给一个 attitude 初值 */
-            // 首先需要检查 accel 的模长是否和重力加速度一致，不一致的化不能初始化
-            // TODO: 
             Vector3 g_imu = accel - this->bias_a;
             Vector3 g_word = IMUFullState::gravity_w;
+            // 首先需要检查 accel 的模长是否和重力加速度一致，不一致的话不能初始化
+            if (std::fabs(g_word.norm() - g_imu.norm()) > fp64(0.1)) {
+                LogInfo(">> imu accel norm is not equal to gravity, attitude estimator init failed.");
+                return false;
+            }
+            // 将重力加速度向量转化为旋转矩阵
             Vector3 g_cross = g_imu.cross(g_word);
             Scalar norm = g_cross.norm();
             Vector3 u = g_cross / norm;
             Scalar theta = std::atan2(norm, g_imu.transpose() * g_word);
             Vector3 dq_v = u * theta;
-            Quaternion q_wb = Utility::DeltaQ(dq_v);
+            Quaternion q_wb = Utility::DeltaQ(dq_v).normalized();
             // 构造新的 item
             std::shared_ptr<AttitudeEstimateItem> newItem(new AttitudeEstimateItem());
             this->items.emplace_back(newItem);
@@ -26,6 +31,7 @@ namespace ESKF_VIO_BACKEND {
             newItem->gyro = gyro - this->bias_g;
             newItem->q_wb = q_wb.normalized();
             newItem->timeStamp = timeStamp;
+            LogInfo(">> Attitude estimator init successfully.");
         } else {
             /* 在上一步的基础上 propagate 姿态 */
             auto item_0 = this->items.back();
@@ -56,13 +62,13 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 提取出指定时刻点附近的姿态估计结果 */
-    bool AttitudeEstimate::GetAttitude(const fp64 timeStamp, Quaternion &atti) {
+    bool AttitudeEstimate::GetAttitude(const fp64 timeStamp, const fp64 threshold, Quaternion &atti) {
         // 从后往前找
         for (auto it = this->items.rbegin(); it != this->items.rend(); ++it) {
-            if ((*it)->timeStamp < timeStamp) {
+            if ((*it)->timeStamp <= timeStamp) {
                 if (it == this->items.rbegin()) {
                     // 如果这个 item 就是遍历到的第一个，相差不大就可以返回
-                    if (std::fabs((*it)->timeStamp - timeStamp) < fp64(0.011)) {
+                    if (std::fabs((*it)->timeStamp - timeStamp) < threshold) {
                         atti = (*it)->q_wb;
                         return true;
                     } else {
@@ -81,7 +87,7 @@ namespace ESKF_VIO_BACKEND {
                 }
             }
         }
-        return true;
+        return false;
     }
 
 

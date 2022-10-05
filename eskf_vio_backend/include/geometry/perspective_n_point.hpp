@@ -14,6 +14,11 @@ namespace ESKF_VIO_BACKEND {
         ~PnPSolver() {}
     public:
         /* 使用所有输入的点进行估计，输入 pose 为初值 */
+        /*
+            frame i -> pts p_w  ->  frame i q_wb  -> w;  frame i p_wb [0,0,0]
+            imu - cam_x  ->  q_bc_x, p_bc_x
+            frame j q_wb/p_wb --[q_bc/p_bc]-> q_wc/p_wc  =>  pnp  =>  wc  --[bc]->  wb  ->  frame j
+        */
         bool EstimatePose(const std::vector<Vector3> &pts_3d,
                           const std::vector<Vector2> &pts_2d,
                           Quaternion &q_wc,
