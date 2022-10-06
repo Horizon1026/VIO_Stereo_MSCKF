@@ -63,6 +63,24 @@ namespace ESKF_VIO_BACKEND {
         frame->v_wb = propagateItem->nominalState.v_wb;
         frame->q_wb = propagateItem->nominalState.q_wb;
         // expand covariance
+        /*
+            用于扩充维度的雅可比矩阵，本质上就是 new state/full state 的雅可比矩阵
+            full_cov = [ I(15 + 6m + 6n) ] * old_full_cov * [ I(15 + 6m + 6n) ].T
+                       [        J        ]                  [        J        ]
+ 
+            when camera state is q_wc/p_wc, use q_bc0/p_bc0 to calculate from q_wb/p_wb
+                q_wc = q_wb * q_bc0;
+                p_wc = p_wb + q_wb * p_bc0
+                      p  v        theta          ba  bg  q_bc0  p_bc0  q_bc1  p_bc1  ...  Twb0  Twb1  ...
+            as J is [ 0  0         R_wb          0   0     I      0      0      0    ...    0     0   ...  ]  ->  q_wc(theta)
+                    [ I  0  - R_wb * hat(p_bc)   0   0     0      I      0      0    ...    0     0   ...  ]  ->  p_wc
+
+            when camera state is q_wb/p_wb, things become easy
+                      p  v  theta   ba  bg  q_bc0  p_bc0  q_bc1  p_bc1  ...  Twb0  Twb1  ...
+            as J is [ 0  0    I     0   0     0      0      0      0    ...    0     0   ...  ]  ->  q_wb
+                    [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb
+
+        */
         // TODO:
         return true;
     }
