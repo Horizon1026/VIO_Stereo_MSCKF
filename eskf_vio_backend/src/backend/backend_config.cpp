@@ -95,6 +95,7 @@ namespace ESKF_VIO_BACKEND {
 
         // 挂载管理器指针
         this->propagator.slidingWindow = std::make_shared<FrameManager>(this->frameManager);
+        this->visionUpdator.propagator = std::make_shared<PropagateQueue>(this->propagator);
         this->visionUpdator.featureManager = std::make_shared<FeatureManager>(this->featureManager);
         this->visionUpdator.frameManager = std::make_shared<FrameManager>(this->frameManager);
         this->visionUpdator.trianglator = std::make_shared<Trianglator>(this->trianglator);

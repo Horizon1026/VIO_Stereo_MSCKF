@@ -69,6 +69,7 @@ namespace ESKF_VIO_BACKEND {
                 }
             } else {
                 // 在已经完成初始化的情况下，进行一次 update 的流程
+                this->visionUpdator.Update(msg->featMeas->timeStamp, this->dataloader.imuPeriod);
                 // Step 1: 定位到 propagator 序列中对应时间戳的地方，提取对应时刻状态，清空在这之前的序列 item
 
                 // Step 2: 若此时滑动窗口已满，则判断最新帧是否为关键帧，确定边缘化策略。可以在此时给前端 thread 发送信号。
@@ -83,10 +84,8 @@ namespace ESKF_VIO_BACKEND {
 
                 // Step 7: 对于 propagate queue 中后续的已经存在的 items，从 update 时刻点重新 propagate
 
-                // Step 8: 基于边缘化策略，调整特征点管理器和关键帧管理器的管理内容
-                if (this->frameManager.NeedMarginalize() == true) {
-                    this->MarginalizeFeatureFrameManager(MARG_OLDEST);
-                }
+                // 基于边缘化策略，调整特征点管理器和关键帧管理器的管理内容
+                this->MarginalizeFeatureFrameManager(this->visionUpdator.margPolicy);
             }
         }
 
@@ -182,7 +181,9 @@ namespace ESKF_VIO_BACKEND {
                 this->featureManager.RemoveByFrameID(this->frameManager.frames.back()->id - 1, true);
                 this->frameManager.RemoveFrame(this->frameManager.frames.size() - 2);
                 break;
+            case NO_MARG:
             default:
+                break;
                 return false;
         }
         return true;

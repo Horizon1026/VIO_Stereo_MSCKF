@@ -39,7 +39,8 @@ namespace ESKF_VIO_BACKEND {
     enum MargPolicy {
         MARG_OLDEST = 1,
         MARG_NEWEST,
-        MARG_SUBNEW
+        MARG_SUBNEW,
+        NO_MARG
     };
 
     // 状态估计器的 status 定义

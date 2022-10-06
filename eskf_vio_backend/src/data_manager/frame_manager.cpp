@@ -157,6 +157,17 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+    /* 判断是否关键帧 */
+    bool FrameManager::IsKeyFrame(const std::shared_ptr<Frame> &frame) {
+        if (frame == nullptr) {
+            return false;
+        }
+
+        // TODO:
+        return true;
+    }
+
+
     /* 打印出滑动窗口内所有关键帧的信息 */
     void FrameManager::Information(void) {
         if (this->frames.empty()) {

@@ -64,6 +64,8 @@ namespace ESKF_VIO_BACKEND {
         uint32_t GetMaxFrameID(void);
         /* 判断滑动窗口是否需要进行边缘化操作 */
         bool NeedMarginalize(void);
+        /* 判断是否关键帧 */
+        bool IsKeyFrame(const std::shared_ptr<Frame> &frame);
         /* 打印出滑动窗口内所有关键帧的信息 */
         void Information(void);
     };

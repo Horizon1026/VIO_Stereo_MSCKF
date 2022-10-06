@@ -47,16 +47,27 @@ namespace ESKF_VIO_BACKEND {
         Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> F;
         Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_NOISE_SIZE> G;
         Eigen::Matrix<Scalar, IMU_NOISE_SIZE, IMU_NOISE_SIZE> Q;
-
     public:
         /* 构造函数与析构函数 */
         PropagateQueue() {}
         ~PropagateQueue() {}
     public:
+        /* 初始化过程噪声矩阵 */
+        void InitializeProcessNoiseMatrix(const Scalar noise_accel,
+                                          const Scalar noise_gyro,
+                                          const Scalar random_walk_accel,
+                                          const Scalar random_walk_gyro);
         /* 新一帧 IMU 量测数据输入，在已有 queue 的基础上进行 propagate */
         bool Propagate(const Vector3 &accel,
                        const Vector3 &gyro,
                        const fp64 timeStamp);
+        /* 从头开始重新 propagate */
+        bool Repropagate(void);
+        /* 重置过程方程 */
+        void ResetProcessFunction(void);
+        /* 重置序列初始时刻点 */
+        bool ResetOrigin(const fp64 timeStamp, const fp64 threshold);
+    private:
         /* 中值积分法 propagate 运动相关名义状态 */
         void PropagateMotionNominalState(const std::shared_ptr<IMUPropagateQueueItem> &item_0,
                                          std::shared_ptr<IMUPropagateQueueItem> &item_1,
@@ -70,15 +81,8 @@ namespace ESKF_VIO_BACKEND {
                                                std::shared_ptr<IMUPropagateQueueItem> &item_1,
                                                const Vector3 &midAccel,
                                                const Vector3 &midGyro);
-        /* 重置过程方程 */
-        void ResetProcessFunction(void);
         /* 误差状态合并与分裂 */
         Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> ErrorStateConvert(const IMUFullState &errorState);
         IMUFullState ErrorStateConvert(const Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> &delta_x);
-        /* 初始化过程噪声矩阵 */
-        void InitializeProcessNoiseMatrix(const Scalar noise_accel,
-                                          const Scalar noise_gyro,
-                                          const Scalar random_walk_accel,
-                                          const Scalar random_walk_gyro);
     };
 }

@@ -60,6 +60,13 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+    /* 从头开始重新 propagate */
+    bool PropagateQueue::Repropagate(void) {
+        // TODO:
+        return true;
+    }
+
+
     /* 中值积分法 propagate 运动相关名义状态 */
     void PropagateQueue::PropagateMotionNominalState(const std::shared_ptr<IMUPropagateQueueItem> &item_0,
                                                      std::shared_ptr<IMUPropagateQueueItem> &item_1,
@@ -162,5 +169,20 @@ namespace ESKF_VIO_BACKEND {
         this->Q.diagonal().segment<3>(INDEX_NG) *= noise_gyro;
         this->Q.diagonal().segment<3>(INDEX_NWA) *= random_walk_accel;
         this->Q.diagonal().segment<3>(INDEX_NWG) *= random_walk_gyro;
+    }
+
+
+    /* 重置序列初始时刻点 */
+    bool PropagateQueue::ResetOrigin(const fp64 timeStamp, const fp64 threshold) {
+        if (this->items.empty()) {
+            return false;
+        }
+        while ((timeStamp - this->items.front()->timeStamp) > threshold) {
+            this->items.pop_front();
+            if (this->items.empty()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

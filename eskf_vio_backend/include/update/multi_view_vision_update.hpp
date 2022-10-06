@@ -1,5 +1,5 @@
-#pragma once
 /* 外部依赖 */
+#pragma once
 /* 内部依赖 */
 #include <typedef.hpp>
 #include <sequence_propagator.hpp>
@@ -13,21 +13,41 @@ namespace ESKF_VIO_BACKEND {
     class MultiViewVisionUpdate {
     public:
         // 指向相关管理器或工具的指针
+        std::shared_ptr<PropagateQueue> propagator;
         std::shared_ptr<FeatureManager> featureManager;
         std::shared_ptr<FrameManager> frameManager;
         std::shared_ptr<Trianglator> trianglator;
         std::shared_ptr<PnPSolver> pnpSolver;
-        // 量测方程拼接矩阵 [Hx | Hp | r]，用于原始拼接、左零空间投影
-        Matrix Hx_Hp_r;
+        // 用于构造量测方程的特征点
+        std::vector<std::shared_ptr<Feature>> features;
+        // 所有特征点共同构造出来的量测方程 [Hx | r]
+        Matrix Hx_r;
+        // 每个特征点投影到左零空间的子量测方程的量测维度之和
+        uint32_t sizeof_JacobianRow;
+        // 边缘化策略
+        MargPolicy margPolicy = NO_MARG;
 
     public:
         /* 构造函数与析构函数 */
         MultiViewVisionUpdate() {}
         ~MultiViewVisionUpdate() {}
     public:
-        /* 选择出指定数量的具备较好视差的特征点 */
-        bool SelectGoodFeatures(const uint32_t num, std::vector<std::shared_ptr<Feature>> &features);
-        /* 构造量测方程 */
-        bool ConstrunctMeasurementFunction(std::vector<std::shared_ptr<Feature>> &features);
+        /* 执行一次 update 过程 */
+        bool Update(const fp64 timeStamp, const fp64 threshold);
+    private:
+        /* 定位到 propagator 序列中对应时间戳的地方，清空在这之前的序列 item */
+        bool ResetPropagatorOrigin(const fp64 timeStamp, const fp64 threshold);
+        /* 若此时滑动窗口已满，则判断次新帧是否为关键帧，确定边缘化策略 */
+        bool DecideMargPolicy(void);
+        /* 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值 */
+        bool ExpandCameraStateCovariance(void);
+        /* 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
+        bool SelectGoodFeatures(const uint32_t num);
+        /* 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态 */
+        bool ConstructMeasurementFunction(void);
+        /* 更新误差状态和名义状态 */
+        bool UpdateState(void);
+        /* 裁减 update 时刻点上的状态和协方差矩阵 */
+        bool ReduceCameraStateCovariance(void);
     };
 }
