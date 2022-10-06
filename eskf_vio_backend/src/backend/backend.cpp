@@ -71,23 +71,24 @@ namespace ESKF_VIO_BACKEND {
             
             if (this->status == INITIALIZED) {
                 // 在已经完成初始化的情况下，进行一次 update 的流程
-                this->visionUpdator.Update(msg->featMeas->timeStamp, this->dataloader.imuPeriod);
-                // Step 1: 定位到 propagator 序列中对应时间戳的地方，提取对应时刻状态，清空在这之前的序列 item
-
-                // Step 2: 若此时滑动窗口已满，则判断最新帧是否为关键帧，确定边缘化策略。可以在此时给前端 thread 发送信号。
-
-                // Step 3: 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值
-
-                // Step 4: 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量。
-
-                // Step 5: 基于三角测量的质量，选择一定数量的特征点来构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态
-
-                // Step 6: 根据边缘化策略，选择跳过此步，或裁减 update 时刻点上的状态和协方差矩阵
-
-                // Step 7: 对于 propagate queue 中后续的已经存在的 items，从 update 时刻点重新 propagate
-
-                // 基于边缘化策略，调整特征点管理器和关键帧管理器的管理内容
-                this->MarginalizeFeatureFrameManager(this->visionUpdator.margPolicy);
+                LogInfo(">> Start vision update.");
+                bool res = this->visionUpdator.Update(msg->featMeas->timeStamp, this->dataloader.imuPeriod);
+                // 如果 update 失败，需要重新初始化
+                if (res == false) {
+                    LogInfo(">> Vision update failed.");
+                    this->status = NEED_INIT;
+                    // Step e1: 调整滑动窗口使其仅剩下一帧
+                    while (this->frameManager.frames.size() > 1) {
+                        this->MarginalizeFeatureFrameManager(MARG_OLDEST);
+                    }
+                    // Step e2: 清空 attitude estimator 中记录的 imu 历史量测数据和姿态估计结果
+                    this->attitudeEstimator.CleanOldItems(this->frameManager.frames.back()->timeStamp,
+                                                          this->dataloader.imuPeriod);
+                } else {
+                    LogInfo(">> Vision update succeed.");
+                    // 基于边缘化策略，调整特征点管理器和关键帧管理器的管理内容
+                    this->MarginalizeFeatureFrameManager(this->visionUpdator.margPolicy);
+                }
             }
         }
 

@@ -127,6 +127,17 @@ namespace ESKF_VIO_BACKEND {
 
         // propagate IMU 与相机之间的协方差矩阵
         item_1->imuCamCov = this->F * item_0->imuCamCov;
+
+        /* 协方差矩阵 propagate 过程 */
+        /*
+                   [ imu-imu  imu-ex  imu-cam ]
+        full_cov = [ ex-imu   ex-ex   ex-cam  ]
+                   [ cam-imu  cam-ex  cam-cam ]
+
+        cov <- F * cov * F.T + G * Q * G.T  =>  [ F  0 ] * [ A    B ] * [ F.T  0 ]  =  [ F * A * F.T  F * B ]
+                                                [ 0  I ]   [ B.T  C ]   [  0   I ]     [  B.T * F.T     C   ]
+        
+        */
     }
 
 
