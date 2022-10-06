@@ -4,7 +4,7 @@ cmake_minimum_required( VERSION 3.10 )
 project(Test_eskf_vio_backend)
 
 # 切换 Release 或者 Debug
-set(CMAKE_MODE_RELEASE TRUE)
+set(CMAKE_MODE_RELEASE FALSE)
 if (CMAKE_MODE_RELEASE)
     # 设置编译类型为发布
     set(CMAKE_BUILD_TYPE "Release")

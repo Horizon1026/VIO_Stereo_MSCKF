@@ -67,7 +67,9 @@ namespace ESKF_VIO_BACKEND {
                     this->status = INITIALIZED;
                     LogInfo(">> Initialization succeed.");
                 }
-            } else {
+            }
+            
+            if (this->status == INITIALIZED) {
                 // 在已经完成初始化的情况下，进行一次 update 的流程
                 this->visionUpdator.Update(msg->featMeas->timeStamp, this->dataloader.imuPeriod);
                 // Step 1: 定位到 propagator 序列中对应时间戳的地方，提取对应时刻状态，清空在这之前的序列 item
@@ -182,23 +184,10 @@ namespace ESKF_VIO_BACKEND {
                 this->frameManager.RemoveFrame(this->frameManager.frames.size() - 2);
                 break;
             case NO_MARG:
-            default:
                 break;
+            default:
                 return false;
         }
         return true;
-    }
-
-
-    /* 设置相机与 IMU 之间的外参 */
-    bool Backend::SetExtrinsic(const std::vector<Quaternion> &q_bc,
-        const std::vector<Vector3> &p_bc) {
-        if (q_bc.size() != p_bc.size()) {
-            return false;
-        } else {
-            this->q_bc = q_bc;
-            this->p_bc = p_bc;
-            return true;
-        }
     }
 }

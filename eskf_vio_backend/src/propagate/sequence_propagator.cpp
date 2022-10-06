@@ -1,6 +1,7 @@
 /* 内部依赖 */
 #include <sequence_propagator.hpp>
 #include <math_lib.hpp>
+#include <log_api.hpp>
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {
@@ -10,7 +11,7 @@ namespace ESKF_VIO_BACKEND {
                                    const fp64 timeStamp) {
         // 获取 IMU 和 Cam 的状态维度
         uint32_t imuSize = IMU_STATE_SIZE;
-        uint32_t camSize = this->slidingWindow->frames.size() * 6;
+        uint32_t camSize = this->slidingWindow->frames.size() * 6 + this->slidingWindow->extrinsics.size() * 6;
 
         // 如果序列为空，则构造新的起点
         if (this->items.empty()) {
@@ -183,6 +184,8 @@ namespace ESKF_VIO_BACKEND {
                 return false;
             }
         }
+        LogInfo(">> Propagator reset at " << timeStamp << "s, first item time stamp is " <<
+            this->items.front()->timeStamp << "s, " << this->items.size() << " items maintained.");
         return true;
     }
 }

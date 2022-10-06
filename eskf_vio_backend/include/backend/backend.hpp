@@ -18,8 +18,6 @@ namespace ESKF_VIO_BACKEND {
         DataLoader dataloader;                  // 数据加载器，控制数据流按时间戳顺序输入
         FeatureManager featureManager;          // 视觉特征点管理器
         FrameManager frameManager;              // 视觉关键帧管理器
-        std::vector<Quaternion> q_bc;           // 每一个 camera 和 IMU 之间的相对位姿，脚标即为对应 camera 的 ID
-        std::vector<Vector3> p_bc;
         
         /* 序列递推与观测更新相关 */
         AttitudeEstimate attitudeEstimator;     // 姿态解算求解器
@@ -62,9 +60,6 @@ namespace ESKF_VIO_BACKEND {
         bool UpdateFeatureFrameManager(const std::shared_ptr<FeaturesMessage> &featMeas);
         /* 基于 marg 策略调整特征点管理器和帧管理器 */
         bool MarginalizeFeatureFrameManager(MargPolicy policy);
-        /* 设置相机与 IMU 之间的外参 */
-        bool SetExtrinsic(const std::vector<Quaternion> &q_bc,
-            const std::vector<Vector3> &p_bc);
     
     /* 对内接口 interface 初始化过程相关 */
     private:

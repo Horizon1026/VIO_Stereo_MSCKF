@@ -74,14 +74,12 @@ namespace ESKF_VIO_BACKEND {
 
         // 加载多目相机外参
         LogInfo(">> Load multi-view camera extrinsic...");
-        this->q_bc.clear();
-        this->p_bc.clear();
+        this->frameManager.extrinsics.clear();
         uint32_t camNum = 0;
         while (this->LoadMatrix(configPath + "/T_bc" + std::to_string(camNum) + ".txt", 4, 4, tempMat) == true) {
             Quaternion q_bc(tempMat.topLeftCorner<3, 3>());
             Vector3 p_bc(tempMat.topRightCorner<3, 1>());
-            this->q_bc.emplace_back(q_bc);
-            this->p_bc.emplace_back(p_bc);
+            this->frameManager.extrinsics.emplace_back(Extrinsic(q_bc, p_bc));
             LogInfo("     camera " << camNum << " extrinsic q_bc is [" << q_bc.w() << ", " << q_bc.x() << ", " <<
                 q_bc.y() << ", " << q_bc.z() << "], p_bc is [" << p_bc.transpose() << "]");
             ++camNum;
@@ -94,12 +92,12 @@ namespace ESKF_VIO_BACKEND {
         }
 
         // 挂载管理器指针
-        this->propagator.slidingWindow = std::make_shared<FrameManager>(this->frameManager);
-        this->visionUpdator.propagator = std::make_shared<PropagateQueue>(this->propagator);
-        this->visionUpdator.featureManager = std::make_shared<FeatureManager>(this->featureManager);
-        this->visionUpdator.frameManager = std::make_shared<FrameManager>(this->frameManager);
-        this->visionUpdator.trianglator = std::make_shared<Trianglator>(this->trianglator);
-        this->visionUpdator.pnpSolver = std::make_shared<PnPSolver>(this->pnpSolver);
+        this->propagator.slidingWindow = &this->frameManager;
+        this->visionUpdator.propagator = &this->propagator;
+        this->visionUpdator.featureManager = &this->featureManager;
+        this->visionUpdator.frameManager = &this->frameManager;
+        this->visionUpdator.trianglator = &this->trianglator;
+        this->visionUpdator.pnpSolver = &this->pnpSolver;
         return true;
     }
 

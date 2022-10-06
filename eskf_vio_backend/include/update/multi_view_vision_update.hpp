@@ -13,11 +13,11 @@ namespace ESKF_VIO_BACKEND {
     class MultiViewVisionUpdate {
     public:
         // 指向相关管理器或工具的指针
-        std::shared_ptr<PropagateQueue> propagator;
-        std::shared_ptr<FeatureManager> featureManager;
-        std::shared_ptr<FrameManager> frameManager;
-        std::shared_ptr<Trianglator> trianglator;
-        std::shared_ptr<PnPSolver> pnpSolver;
+        PropagateQueue *propagator;
+        FeatureManager *featureManager;
+        FrameManager *frameManager;
+        Trianglator *trianglator;
+        PnPSolver *pnpSolver;
         // 用于构造量测方程的特征点
         std::vector<std::shared_ptr<Feature>> features;
         // 所有特征点共同构造出来的量测方程 [Hx | r]

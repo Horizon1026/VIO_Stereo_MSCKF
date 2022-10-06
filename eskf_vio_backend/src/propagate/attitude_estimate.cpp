@@ -13,8 +13,9 @@ namespace ESKF_VIO_BACKEND {
             Vector3 g_imu = accel - this->bias_a;
             Vector3 g_word = IMUFullState::gravity_w;
             // 首先需要检查 accel 的模长是否和重力加速度一致，不一致的话不能初始化
-            if (std::fabs(g_word.norm() - g_imu.norm()) > fp64(0.1)) {
-                LogInfo(">> imu accel norm is not equal to gravity, attitude estimator init failed.");
+            if (std::fabs(g_word.norm() - g_imu.norm()) > fp64(0.05)) {
+                LogInfo(">> Attitude estimator: imu accel norm " << g_imu.norm() <<
+                    " is not equal to gravity, attitude estimator init failed.");
                 return false;
             }
             // 将重力加速度向量转化为旋转矩阵

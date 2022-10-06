@@ -144,6 +144,7 @@ int main(int argc, char **argv) {
 
     // 运行测试
     for (uint32_t i = 0; i < 20; ++i) {
+        std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
         bool res = backend->PublishPropagateState(state);

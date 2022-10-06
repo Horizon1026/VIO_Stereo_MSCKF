@@ -29,6 +29,7 @@ namespace ESKF_VIO_BACKEND {
             RETURN_IF_FALSE(this->InitializePropagator(initState, frame_i->timeStamp));
             // 初始化过程成功，打印初始化结果
             LogInfo(">> Initialize at time stamp " << frame_i->timeStamp << "s:");
+            LogInfo("     first item time stamp is " << this->propagator.items.front()->timeStamp << "s");
             LogInfo("     init p_wb is [" << frame_i->p_wb.transpose() << "]");
             LogInfo("     init v_wb is [" << frame_i->v_wb.transpose() << "]");
             LogInfo("     init q_wb is [" << frame_i->q_wb.w() << ", " << frame_i->q_wb.x() << ", " <<
@@ -79,7 +80,7 @@ namespace ESKF_VIO_BACKEND {
         this->propagator.initState.q_wb = initState.q_wb;
         // 从 attitude estimator 提取出从首帧时刻点开始，到最新时刻的 imu 量测
         auto it = this->attitudeEstimator.items.begin();
-        while (std::fabs((*it)->timeStamp - startTime) < this->dataloader.imuPeriod &&
+        while (std::fabs((*it)->timeStamp - startTime) > this->dataloader.imuPeriod &&
                it != this->attitudeEstimator.items.end()) {
             ++it;
         }
