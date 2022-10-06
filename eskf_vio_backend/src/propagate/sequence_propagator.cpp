@@ -9,9 +9,10 @@ namespace ESKF_VIO_BACKEND {
     bool PropagateQueue::Propagate(const Vector3 &accel,
                                    const Vector3 &gyro,
                                    const fp64 timeStamp) {
-        // 获取 IMU 和 Cam 的状态维度
+        // 设置 IMU 和 Cam 的状态维度，初始化完成后，滑动窗口内应当仅仅保留 frame i
+        // 虽然初始化时，窗口内肯定有两帧，但是初始化后需要进行一次 update，期间会有 state expand，因此初始化成只有一帧的情况
         uint32_t imuSize = IMU_STATE_SIZE;
-        uint32_t camSize = this->slidingWindow->frames.size() * 6 + this->slidingWindow->extrinsics.size() * 6;
+        uint32_t camSize = 6 + this->slidingWindow->extrinsics.size() * 6;
 
         // 如果序列为空，则构造新的起点
         if (this->items.empty()) {

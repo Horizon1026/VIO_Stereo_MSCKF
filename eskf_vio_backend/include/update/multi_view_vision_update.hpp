@@ -20,6 +20,10 @@ namespace ESKF_VIO_BACKEND {
         PnPSolver *pnpSolver;
         // 用于构造量测方程的特征点
         std::vector<std::shared_ptr<Feature>> features;
+        // 状态的协方差矩阵，用于扩维和裁减
+        Matrix covariance;
+        // 用于状态扩维的雅可比矩阵
+        Matrix expand_J;
         // 所有特征点共同构造出来的量测方程 [Hx | r]
         Matrix Hx_r;
         // 每个特征点投影到左零空间的子量测方程的量测维度之和

@@ -15,7 +15,7 @@ namespace ESKF_VIO_BACKEND {
         IMUMotionState nominalState;
         // IMU 完整状态协方差矩阵
         Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> imuCov;
-        // IMU 与 Camera 的协方差矩阵
+        // IMU 与 Camera 的协方差矩阵（同时包括外参，外参靠左上）
         Eigen::Matrix<Scalar, IMU_STATE_SIZE, Eigen::Dynamic> imuCamCov;
         // 当前时刻点对应的 IMU 量测值
         Vector3 accel;

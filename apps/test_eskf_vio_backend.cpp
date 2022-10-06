@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
     configPath = argv[2];
 
     // 配置 std::cout 打印到指定文件
-    // std::ofstream logFile("../test_log/20220925_get_imu_attitude_truth_with_identity_atti_init.txt");
+    // std::ofstream logFile("../test_log/20221006_msckf_init_and_expand_state_cov_size.txt");
     // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     // 初始化配置 vio backend，并载入数据

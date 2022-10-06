@@ -58,15 +58,18 @@ namespace ESKF_VIO_BACKEND {
     bool MultiViewVisionUpdate::ExpandCameraStateCovariance(void) {
         auto frame = this->frameManager->frames.back();
         auto propagateItem = this->propagator->items.front();
-        // expand state，因在 frame manager 中已经扩充内存，因此此处就是赋值
+        // expand state，因在 frame manager 中已经扩充内存，因此此处只需要赋值
         frame->p_wb = propagateItem->nominalState.p_wb;
-        frame->v_wb = propagateItem->nominalState.v_wb;
+        frame->v_wb = propagateItem->nominalState.v_wb; // 速度不参与 update，但是需要赋值
         frame->q_wb = propagateItem->nominalState.q_wb;
         // expand covariance
-        /*
-            用于扩充维度的雅可比矩阵，本质上就是 new state/full state 的雅可比矩阵
-            full_cov = [ I(15 + 6m + 6n) ] * old_full_cov * [ I(15 + 6m + 6n) ].T
-                       [        J        ]                  [        J        ]
+        /*  用于扩充维度的雅可比矩阵，本质上就是 new state/full state 的雅可比矩阵
+            full_cov = [ I(15 + 6m + 6n) ] * old_full_cov(C) * [ I(15 + 6m + 6n) ].T
+                       [        J        ]                     [        J        ]
+                     = [ C  ] * [ I  J.T ]
+                       [ JC ]
+                     = [ C     CJ.T ]
+                       [ JC   JCJ.T ]
  
             when camera state is q_wc/p_wc, use q_bc0/p_bc0 to calculate from q_wb/p_wb
                 q_wc = q_wb * q_bc0;
@@ -78,10 +81,29 @@ namespace ESKF_VIO_BACKEND {
             when camera state is q_wb/p_wb, things become easy
                       p  v  theta   ba  bg  q_bc0  p_bc0  q_bc1  p_bc1  ...  Twb0  Twb1  ...
             as J is [ 0  0    I     0   0     0      0      0      0    ...    0     0   ...  ]  ->  q_wb
-                    [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb
-
-        */
-        // TODO:
+                    [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb       */
+        uint32_t camSize = this->frameManager->extrinsics.size() * 6 + this->frameManager->frames.size() * 6;
+        uint32_t size = IMU_STATE_SIZE + camSize;
+        this->covariance.setZero(size, size);
+        // LogInfo(">> old imu-imu cov is\n" << propagateItem->imuCov);
+        // LogInfo(">> old imu-cam cov is\n" << propagateItem->imuCamCov);
+        // 填充雅可比矩阵的既有部分
+        this->covariance.topLeftCorner<IMU_STATE_SIZE, IMU_STATE_SIZE>() = propagateItem->imuCov;
+        this->covariance.block(0, IMU_STATE_SIZE, IMU_STATE_SIZE, camSize - 6) = propagateItem->imuCamCov;
+        this->covariance.block(IMU_STATE_SIZE, 0, camSize - 6, IMU_STATE_SIZE) = propagateItem->imuCamCov.transpose();
+        this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camSize - 6, camSize - 6) = this->propagator->camCov;
+        // LogInfo(">> old covariance is\n" << this->covariance.topLeftCorner(size - 6, size - 6));
+        // 构造雅可比矩阵（不需要全部构造，只需要不为零的部分就行了）
+        this->expand_J.setZero(6, IMU_STATE_SIZE);
+        this->expand_J.block(3, INDEX_P, 3, 3).setIdentity();
+        this->expand_J.block(0, INDEX_R, 3, 3).setIdentity();
+        // LogInfo(">> Jacobian for expand is\n" << this->expand_J);
+        // 填充雅可比矩阵的扩维部分
+        this->covariance.block(size - 6, 0, 6, IMU_STATE_SIZE) = this->expand_J * propagateItem->imuCov;
+        this->covariance.block(size - 6, IMU_STATE_SIZE, 6, camSize - 6) = this->expand_J * propagateItem->imuCamCov;
+        this->covariance.block(0, size - 6, size - 6, 6) = this->covariance.block(size - 6, 0, 6, size - 6).transpose();
+        this->covariance.block(size - 6, size - 6, 6, 6) = this->expand_J * propagateItem->imuCov * this->expand_J.transpose();
+        // LogInfo(">> new covariance is\n" << this->covariance);
         return true;
     }
 
