@@ -45,10 +45,14 @@ namespace ESKF_VIO_BACKEND {
         bool DecideMargPolicy(void);
         /* 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值 */
         bool ExpandCameraStateCovariance(void);
-        /* 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
+        /* 三角测量在最新一帧中被追踪到的特征点。已被测量过的选择迭代法，没被测量过的选择数值法。*/
+        /* 更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
         bool SelectGoodFeatures(const uint32_t num);
         /* 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态 */
         bool ConstructMeasurementFunction(void);
+        /* 构造一个特征点所有观测的量测方程，投影到左零空间 */
+        bool ConstructMeasurementFunction(const std::shared_ptr<Feature> &feature,
+                                          Matrix &Hx_r);
         /* 更新误差状态和名义状态 */
         bool UpdateState(void);
         /* 裁减 update 时刻点上的状态和协方差矩阵 */

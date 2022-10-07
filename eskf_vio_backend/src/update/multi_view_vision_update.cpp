@@ -85,40 +85,63 @@ namespace ESKF_VIO_BACKEND {
         uint32_t camSize = this->frameManager->extrinsics.size() * 6 + this->frameManager->frames.size() * 6;
         uint32_t size = IMU_STATE_SIZE + camSize;
         this->covariance.setZero(size, size);
-        // LogInfo(">> old imu-imu cov is\n" << propagateItem->imuCov);
-        // LogInfo(">> old imu-cam cov is\n" << propagateItem->imuCamCov);
         // 填充雅可比矩阵的既有部分
         this->covariance.topLeftCorner<IMU_STATE_SIZE, IMU_STATE_SIZE>() = propagateItem->imuCov;
         this->covariance.block(0, IMU_STATE_SIZE, IMU_STATE_SIZE, camSize - 6) = propagateItem->imuCamCov;
         this->covariance.block(IMU_STATE_SIZE, 0, camSize - 6, IMU_STATE_SIZE) = propagateItem->imuCamCov.transpose();
         this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camSize - 6, camSize - 6) = this->propagator->camCov;
-        // LogInfo(">> old covariance is\n" << this->covariance.topLeftCorner(size - 6, size - 6));
         // 构造雅可比矩阵（不需要全部构造，只需要不为零的部分就行了）
         this->expand_J.setZero(6, IMU_STATE_SIZE);
         this->expand_J.block(3, INDEX_P, 3, 3).setIdentity();
         this->expand_J.block(0, INDEX_R, 3, 3).setIdentity();
-        // LogInfo(">> Jacobian for expand is\n" << this->expand_J);
         // 填充雅可比矩阵的扩维部分
         this->covariance.block(size - 6, 0, 6, IMU_STATE_SIZE) = this->expand_J * propagateItem->imuCov;
         this->covariance.block(size - 6, IMU_STATE_SIZE, 6, camSize - 6) = this->expand_J * propagateItem->imuCamCov;
         this->covariance.block(0, size - 6, size - 6, 6) = this->covariance.block(size - 6, 0, 6, size - 6).transpose();
         this->covariance.block(size - 6, size - 6, 6, 6) = this->expand_J * propagateItem->imuCov * this->expand_J.transpose();
-        // LogInfo(">> new covariance is\n" << this->covariance);
         return true;
     }
 
 
-    /* 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
+    /* 三角测量在最新一帧中被追踪到的特征点。已被测量过的选择迭代法，没被测量过的选择数值法。*/
+    /* 更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
     bool MultiViewVisionUpdate::SelectGoodFeatures(const uint32_t num) {
+        auto frame = this->frameManager->frames.back();
+        std::map<fp32, std::shared_ptr<Feature>> goodFeatures;  // <score, feature_ptr>
+        for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
+            if ((*it).second->status == Feature::SOLVED) {
+                // 迭代法三角测量
+                // TODO: 三角测量成功后，连同打分塞到 goodFeatures
+            } else {
+                // 解析法三角测量
+                // TODO：同上
+            }
+        }
+        // 从高分到低分选择特征点，存入到 this->features 中
         this->features.clear();
-
-        // TODO:
+        uint32_t cnt = num;
+        for (auto it = goodFeatures.begin(); it != goodFeatures.end(); ++it) {
+            if (cnt) {
+                this->features.emplace_back(it->second);
+                --cnt;
+            } else {
+                break;
+            }
+        }
         return true;
     }
 
 
     /* 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态 */
     bool MultiViewVisionUpdate::ConstructMeasurementFunction(void) {
+        // TODO:
+        return true;
+    }
+
+
+    /* 构造一个特征点所有观测的量测方程，投影到左零空间 */
+    bool MultiViewVisionUpdate::ConstructMeasurementFunction(const std::shared_ptr<Feature> &feature,
+                                                             Matrix &Hx_r) {
         // TODO:
         return true;
     }

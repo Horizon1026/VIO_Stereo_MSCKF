@@ -10,6 +10,7 @@ namespace ESKF_VIO_BACKEND {
             return;
         }
         this->observes.emplace_back(newObserve);
+        this->observeNum += newObserve->norms.size();
     }
 
 
@@ -34,7 +35,7 @@ namespace ESKF_VIO_BACKEND {
     /* 打印出当前特征点的信息 */
     void Feature::Information(void) {
         LogInfo(">> Feature id " << this->id << " is observed in frame [" << this->firstFrameID <<
-            ", " << this->FinalFrameID() << "]");
+            ", " << this->FinalFrameID() << "], observe num is " << this->observeNum);
         for (uint32_t i = 0; i < this->observes.size(); ++i) {
             for (auto it = this->observes[i]->norms.begin(); it != this->observes[i]->norms.end(); ++it) {
                 LogInfo("     frame " << this->firstFrameID + i << " camera " << it->first << " observe [" <<
@@ -95,6 +96,7 @@ namespace ESKF_VIO_BACKEND {
                         continue;
                     }
                     // 如果此特征点有多个观测，则删除对应观测
+                    feature->observeNum -= feature->observes[frameID - feature->firstFrameID]->norms.size();
                     for (uint32_t i = frameID - feature->firstFrameID; i < feature->observes.size() - 1; ++i) {
                         feature->observes[i] = feature->observes[i + 1];
                     }
@@ -117,6 +119,7 @@ namespace ESKF_VIO_BACKEND {
                         continue;
                     }
                     // 如果此特征点有多个观测，则删除对应观测
+                    feature->observeNum -= feature->observes[0]->norms.size();
                     for (uint32_t i = 0; i < feature->observes.size() - 1; ++i) {
                         feature->observes[i] = feature->observes[i + 1];
                     }

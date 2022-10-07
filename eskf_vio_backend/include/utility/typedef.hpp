@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <deque>
 #include <memory>
+#include <map>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>

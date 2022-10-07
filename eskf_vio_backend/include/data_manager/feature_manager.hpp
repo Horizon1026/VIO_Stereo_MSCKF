@@ -13,6 +13,8 @@ namespace ESKF_VIO_BACKEND {
         uint32_t firstFrameID;
         // 此特征点在以第 firstFrameID 帧为起始的连续几帧中的观测
         std::vector<std::shared_ptr<FeatureObserve>> observes;
+        // 观测到此特征点的 camera pose 数量
+        uint32_t observeNum;
         // 此特征点在世界坐标系中的位置
         Vector3 p_w;
         // 此特征点的状态
@@ -26,7 +28,9 @@ namespace ESKF_VIO_BACKEND {
         Feature(const uint32_t id,
                 const uint32_t firstFrameID,
                 const std::vector<std::shared_ptr<FeatureObserve>> &observes) :
-            id(id), firstFrameID(firstFrameID), observes(observes) {}
+            id(id), firstFrameID(firstFrameID), observes(observes) {
+            this->observeNum = observes.front()->norms.size();
+        }
         ~Feature() {}
     public:
         /* 为此特征点添加一个观测 */
