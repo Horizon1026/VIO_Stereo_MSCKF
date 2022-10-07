@@ -25,6 +25,7 @@ namespace ESKF_VIO_BACKEND {
 
     using Scalar = float;
     using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using Quaternion = Eigen::Quaternion<Scalar>;
     using Matrix33 = Eigen::Matrix<Scalar, 3, 3>;
     using Matrix44 = Eigen::Matrix<Scalar, 4, 4>;

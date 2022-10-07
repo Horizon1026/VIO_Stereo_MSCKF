@@ -77,12 +77,12 @@ namespace ESKF_VIO_BACKEND {
             when camera state is q_wc/p_wc, use q_bc0/p_bc0 to calculate from q_wb/p_wb
                 q_wc = q_wb * q_bc0;
                 p_wc = p_wb + q_wb * p_bc0
-                      p  v        theta          ba  bg  q_bc0  p_bc0  q_bc1  p_bc1  ...  Twb0  Twb1  ...
-            as J is [ 0  0         R_wb          0   0     I      0      0      0    ...    0     0   ...  ]  ->  q_wc(theta)
-                    [ I  0  - R_wb * hat(p_bc)   0   0     0      I      0      0    ...    0     0   ...  ]  ->  p_wc
+                      p  v        theta          ba  bg  p_bc0  q_bc0  p_bc1  q_bc1  ...  Twb0  Twb1  ...
+            as J is [ 0  0         R_wb          0   0     0      I      0      0    ...    0     0   ...  ]  ->  q_wc(theta)
+                    [ I  0  - R_wb * hat(p_bc)   0   0     I      0      0      0    ...    0     0   ...  ]  ->  p_wc
 
             when camera state is q_wb/p_wb, things become easy
-                      p  v  theta   ba  bg  q_bc0  p_bc0  q_bc1  p_bc1  ...  Twb0  Twb1  ...
+                      p  v  theta   ba  bg  p_bc0  q_bc0  p_bc1  q_bc1  ...  Twb0  Twb1  ...
             as J is [ 0  0    I     0   0     0      0      0      0    ...    0     0   ...  ]  ->  q_wb
                     [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb       */
         uint32_t camExSize = (this->frameManager->extrinsics.size() + this->frameManager->frames.size()) * 6;
@@ -138,6 +138,8 @@ namespace ESKF_VIO_BACKEND {
     /* 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态 */
     bool MultiViewVisionUpdate::ConstructMeasurementFunction(void) {
         // TODO:
+        /*  需要 update 的状态量包括：
+            p_wb   v_wb   q_wb  ba  bg  p_bc0  q_bc0  p_bc1  q_bc1 ... p_wb0  q_wb0  p_wb1  q_wb1 ... */
         return true;
     }
 

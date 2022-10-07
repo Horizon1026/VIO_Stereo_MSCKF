@@ -20,6 +20,9 @@ namespace ESKF_VIO_BACKEND {
         PnPSolver *pnpSolver;
         // 用于构造量测方程的特征点
         std::vector<std::shared_ptr<Feature>> features;
+        // update 过程输出的 errorState 结果
+        // p_wb   v_wb   q_wb  ba  bg  p_bc0  q_bc0  p_bc1  q_bc1 ... p_wb0  q_wb0  p_wb1  q_wb1 ...
+        Vector delta_x;
         // 状态的协方差矩阵，用于扩维和裁减
         Matrix covariance;
         // 用于状态扩维的雅可比矩阵
