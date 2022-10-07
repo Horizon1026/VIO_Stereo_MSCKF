@@ -11,14 +11,14 @@ namespace ESKF_VIO_BACKEND {
             auto frame_i = this->frameManager.frames.front();
             auto frame_j = *std::next(this->frameManager.frames.begin());
             // Step 1: 从 attitude estimator 中拿取此帧对应时刻的姿态估计结果，赋值给首帧的 q_wb
-            RETURN_IF_FALSE(this->attitudeEstimator.GetAttitude(frame_i->timeStamp,
+            RETURN_FALSE_IF_FALSE(this->attitudeEstimator.GetAttitude(frame_i->timeStamp,
                                                                 this->dataloader.imuPeriod,
                                                                 frame_i->q_wb));
             // Step 2: 首帧观测为 multi-view 时，首帧位置设置为原点，进行首帧内的多目三角测量，得到一些特征点的 p_w
             frame_i->p_wb.setZero();
-            RETURN_IF_FALSE(this->TrianglizeMultiView(frame_i));
+            RETURN_FALSE_IF_FALSE(this->TrianglizeMultiView(frame_i));
             // Step 3: 利用这些特征点在下一帧中的观测，通过重投影 PnP 迭代，估计出下一帧基于首帧参考系 w 系的相对位姿 p_wb 和 q_wb
-            RETURN_IF_FALSE(this->EstimateFramePose(frame_j));
+            RETURN_FALSE_IF_FALSE(this->EstimateFramePose(frame_j));
             // Step 4: 两帧位置对时间进行差分，得到两帧在 w 系中的速度估计，至此首帧对应时刻点的 q_wb 和 v_wb 都已经确定
             frame_j->v_wb = (frame_j->p_wb - frame_i->p_wb) / Scalar(frame_j->timeStamp - frame_i->timeStamp);
             frame_i->v_wb = frame_j->v_wb;
@@ -26,7 +26,7 @@ namespace ESKF_VIO_BACKEND {
             //         首帧位置设置为原点，将首帧位姿和速度赋值给 propagator 的 initState
             //         从 attitude estimator 提取出从首帧时刻点开始，到最新时刻的 imu 量测，输入到 propagator 让他递推到最新时刻
             IMUMotionState initState(frame_i->p_wb, frame_i->v_wb, frame_i->q_wb);
-            RETURN_IF_FALSE(this->InitializePropagator(initState, frame_i->timeStamp));
+            RETURN_FALSE_IF_FALSE(this->InitializePropagator(initState, frame_i->timeStamp));
             // 初始化过程成功，打印初始化结果
             LogInfo(">> Initialize at time stamp " << frame_i->timeStamp << "s:");
             LogInfo("     first item time stamp is " << this->propagator.items.front()->timeStamp << "s");

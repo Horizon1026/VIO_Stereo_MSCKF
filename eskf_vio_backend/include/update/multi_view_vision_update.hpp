@@ -30,7 +30,8 @@ namespace ESKF_VIO_BACKEND {
         // 所有特征点共同构造出来的量测方程 [Hx | r]
         Matrix Hx_r;
         // 每个特征点投影到左零空间的子量测方程的量测维度之和
-        uint32_t sizeof_JacobianRow;
+        uint32_t Hx_cols;
+        uint32_t Hx_rows;
         // 边缘化策略
         MargPolicy margPolicy = NO_MARG;
 
