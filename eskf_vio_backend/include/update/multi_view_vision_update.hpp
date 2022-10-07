@@ -55,6 +55,8 @@ namespace ESKF_VIO_BACKEND {
                                           Matrix &Hx_r);
         /* 更新误差状态和名义状态 */
         bool UpdateState(void);
+        /* 更新协方差矩阵到 propagator 中 */
+        bool UpdateCovariance(void);
         /* 裁减 update 时刻点上的状态和协方差矩阵 */
         bool ReduceCameraStateCovariance(void);
     };

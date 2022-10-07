@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
     configPath = argv[2];
 
     // 配置 std::cout 打印到指定文件
-    // std::ofstream logFile("../test_log/20221006_msckf_init_and_expand_state_cov_size.txt");
+    // std::ofstream logFile("../test_log/20221007_test_feature_manager_observe_num.txt");
     // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     // 初始化配置 vio backend，并载入数据
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     LoadFeaturesData(backend);
 
     // 运行测试
-    for (uint32_t i = 0; i < 20; ++i) {
+    for (uint32_t i = 0; i < 200; ++i) {
         std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;

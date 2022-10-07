@@ -54,17 +54,28 @@ namespace ESKF_VIO_BACKEND {
         this->PropagateMotionNominalState(item_0, item_1,
                                           this->bias_a, this->bias_g, IMUFullState::gravity_w,
                                           midAccel, midGyro);
-
         // 中值积分递推误差状态方程，更新 covariance
         this->PropagateFullErrorStateCovariance(item_0, item_1, midAccel, midGyro);
-
         return true;
     }
 
 
     /* 从头开始重新 propagate */
     bool PropagateQueue::Repropagate(void) {
-        // TODO:
+        for (auto it = this->items.begin(); it != this->items.end(); ++it) {
+            if (std::next(it) == this->items.end()) {
+                break;
+            }
+            auto item_0 = *it;
+            auto item_1 = *std::next(it);
+            // 中值积分递推名义状态，同时计算出 accel 和 gyro 的中值
+            Vector3 midAccel, midGyro;
+            this->PropagateMotionNominalState(item_0, item_1,
+                                              this->bias_a, this->bias_g, IMUFullState::gravity_w,
+                                              midAccel, midGyro);
+            // 中值积分递推误差状态方程，更新 covariance
+            this->PropagateFullErrorStateCovariance(item_0, item_1, midAccel, midGyro);
+        }
         return true;
     }
 

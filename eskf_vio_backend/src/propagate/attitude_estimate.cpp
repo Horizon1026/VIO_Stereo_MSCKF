@@ -108,6 +108,8 @@ namespace ESKF_VIO_BACKEND {
         while (Scalar(timeStamp - this->items.front()->timeStamp) > threshold) {
             this->items.pop_front();
         }
+        LogInfo(">> Attitude estimator reset at " << timeStamp << "s, " << this->items.size() <<
+            " items maintained.");
         return true;
     }
 }

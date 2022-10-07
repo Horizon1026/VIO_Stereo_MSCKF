@@ -19,6 +19,7 @@ namespace ESKF_VIO_BACKEND {
         RETURN_IF_FALSE(this->UpdateState());
         // Step 6: 根据边缘化策略，选择跳过此步，或裁减 update 时刻点上的状态和协方差矩阵
         RETURN_IF_FALSE(this->ReduceCameraStateCovariance());
+        RETURN_IF_FALSE(this->UpdateCovariance());
         // Step 7: 对于 propagate queue 中后续的已经存在的 items，从 update 时刻点重新 propagate
         RETURN_IF_FALSE(this->propagator->Repropagate());
         return true;
@@ -42,9 +43,11 @@ namespace ESKF_VIO_BACKEND {
         if (this->frameManager->NeedMarginalize()) {
             // 最新帧已经加入到 sliding window 中
             auto subnew = *std::next(this->frameManager->frames.rbegin());
-            if (this->frameManager->IsKeyFrame(subnew)) {
+            if (this->frameManager->IsKeyFrame(subnew)) {   // iskeyframe() TODO:
+                LogInfo(">> Need marg oldest key frame.");
                 this->margPolicy = MARG_OLDEST;
             } else {
+                LogInfo(">> Need marg subnew key frame.");
                 this->margPolicy = MARG_SUBNEW;
             }
         } else {
@@ -82,21 +85,21 @@ namespace ESKF_VIO_BACKEND {
                       p  v  theta   ba  bg  q_bc0  p_bc0  q_bc1  p_bc1  ...  Twb0  Twb1  ...
             as J is [ 0  0    I     0   0     0      0      0      0    ...    0     0   ...  ]  ->  q_wb
                     [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb       */
-        uint32_t camSize = this->frameManager->extrinsics.size() * 6 + this->frameManager->frames.size() * 6;
-        uint32_t size = IMU_STATE_SIZE + camSize;
+        uint32_t camExSize = (this->frameManager->extrinsics.size() + this->frameManager->frames.size()) * 6;
+        uint32_t size = IMU_STATE_SIZE + camExSize;
         this->covariance.setZero(size, size);
         // 填充雅可比矩阵的既有部分
         this->covariance.topLeftCorner<IMU_STATE_SIZE, IMU_STATE_SIZE>() = propagateItem->imuCov;
-        this->covariance.block(0, IMU_STATE_SIZE, IMU_STATE_SIZE, camSize - 6) = propagateItem->imuCamCov;
-        this->covariance.block(IMU_STATE_SIZE, 0, camSize - 6, IMU_STATE_SIZE) = propagateItem->imuCamCov.transpose();
-        this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camSize - 6, camSize - 6) = this->propagator->camCov;
+        this->covariance.block(0, IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize - 6) = propagateItem->imuCamCov;
+        this->covariance.block(IMU_STATE_SIZE, 0, camExSize - 6, IMU_STATE_SIZE) = propagateItem->imuCamCov.transpose();
+        this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize - 6, camExSize - 6) = this->propagator->camCov;
         // 构造雅可比矩阵（不需要全部构造，只需要不为零的部分就行了）
         this->expand_J.setZero(6, IMU_STATE_SIZE);
         this->expand_J.block(3, INDEX_P, 3, 3).setIdentity();
         this->expand_J.block(0, INDEX_R, 3, 3).setIdentity();
         // 填充雅可比矩阵的扩维部分
         this->covariance.block(size - 6, 0, 6, IMU_STATE_SIZE) = this->expand_J * propagateItem->imuCov;
-        this->covariance.block(size - 6, IMU_STATE_SIZE, 6, camSize - 6) = this->expand_J * propagateItem->imuCamCov;
+        this->covariance.block(size - 6, IMU_STATE_SIZE, 6, camExSize - 6) = this->expand_J * propagateItem->imuCamCov;
         this->covariance.block(0, size - 6, size - 6, 6) = this->covariance.block(size - 6, 0, 6, size - 6).transpose();
         this->covariance.block(size - 6, size - 6, 6, 6) = this->expand_J * propagateItem->imuCov * this->expand_J.transpose();
         return true;
@@ -154,20 +157,42 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+    /* 更新协方差矩阵到 propagator 中 */
+    bool MultiViewVisionUpdate::UpdateCovariance(void) {
+        auto propagateItem = this->propagator->items.front();
+        uint32_t camExSize = this->covariance.cols() - IMU_STATE_SIZE;
+        propagateItem->imuCamCov = this->covariance.block(0, IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize);
+        this->propagator->camCov = this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize, camExSize);
+        return true;
+    }
+
+
     /* 裁减 update 时刻点上的状态和协方差矩阵 */
     bool MultiViewVisionUpdate::ReduceCameraStateCovariance(void) {
+        uint32_t exSize = this->frameManager->extrinsics.size() * 6;
+        uint32_t camSize = this->frameManager->frames.size() * 6;
+        uint32_t camExSize = exSize + camSize;
+        uint32_t imuSize = IMU_STATE_SIZE;
+        Matrix temp;
         switch (this->margPolicy) {
             case NO_MARG:
                 return true;
             case MARG_NEWEST:
-                return false;
-            case MARG_OLDEST:
-                // TODO:
-
+                this->covariance.conservativeResize(imuSize + camExSize - 6, imuSize + camExSize - 6);
                 return true;
             case MARG_SUBNEW:
-                // TODO:
-
+                this->covariance.block(0, camExSize - 12, camExSize - 12, 6) = this->covariance.block(0, camExSize - 6, camExSize - 12, 6);
+                this->covariance.block(camExSize - 12, 0, 6, camExSize - 12) = this->covariance.block(camExSize - 6, 0, 6, camExSize - 12);
+                this->covariance.block(camExSize - 12, camExSize - 12, 6, 6) = this->covariance.block(camExSize - 6, camExSize - 6, 6, 6);
+                this->covariance.conservativeResize(imuSize + camExSize - 6, imuSize + camExSize - 6);
+                return true;
+            case MARG_OLDEST:
+                temp = this->covariance.block(0, imuSize + exSize + 6, imuSize + exSize, camSize - 6);
+                this->covariance.block(0, imuSize + exSize, imuSize + exSize, camSize - 6) = temp;
+                this->covariance.block(imuSize + exSize, 0, camSize - 6, imuSize + exSize) = temp.transpose();
+                temp = this->covariance.bottomRightCorner(camSize - 6, camSize - 6);
+                this->covariance.block(imuSize + exSize, imuSize + exSize, camSize - 6, camSize - 6) = temp;
+                this->covariance.conservativeResize(imuSize + camExSize - 6, imuSize + camExSize - 6);
                 return true;
             default:
                 return false;

@@ -149,7 +149,7 @@ namespace ESKF_VIO_BACKEND {
 
     /* 判断滑动窗口是否需要进行边缘化操作 */
     bool FrameManager::NeedMarginalize(void) {
-        if (this->frames.size() >= this->maxWindowSize) {
+        if (this->frames.size() > this->maxWindowSize) {
             return true;
         } else {
             return false;

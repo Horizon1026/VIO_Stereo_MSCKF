@@ -40,29 +40,6 @@ namespace ESKF_VIO_BACKEND {
         LogInfo("     imu bias_a init : " << this->propagator.bias_a.transpose());
         LogInfo("     imu bias_g init : " << this->propagator.bias_g.transpose());
 
-        // 加载 IMU propagate 的初值
-        LogInfo(">> Load imu nominal state init value...");
-        if (this->LoadMatrix(configPath + "/imu_init_p_wb.txt", 1, 3, tempMat) == true) {
-            this->propagator.initState.p_wb = tempMat.transpose();
-        } else {
-            this->propagator.initState.p_wb.setZero();
-        }
-        if (this->LoadMatrix(configPath + "/imu_init_v_wb.txt", 1, 3, tempMat) == true) {
-            this->propagator.initState.v_wb = tempMat.transpose();
-        } else {
-            this->propagator.initState.v_wb.setZero();
-        }
-        if (this->LoadMatrix(configPath + "/imu_init_q_wb.txt", 1, 4, tempMat) == true) {
-            this->propagator.initState.q_wb = Quaternion(tempMat(0, 0), tempMat(0, 1), tempMat(0, 2), tempMat(0, 3));
-        } else {
-            this->propagator.initState.q_wb.setIdentity();
-        }
-        LogInfo("     imu init nominal p_wb : " << this->propagator.initState.p_wb.transpose());
-        LogInfo("     imu init nominal v_wb : " << this->propagator.initState.v_wb.transpose());
-        LogInfo("     imu init nominal q_wb : [" << this->propagator.initState.q_wb.w() << ", " <<
-            this->propagator.initState.q_wb.x() << ", " << this->propagator.initState.q_wb.y() << ", " <<
-            this->propagator.initState.q_wb.z() << "]");
-
         // 加载 w 系的重力加速度初值
         LogInfo(">> Load gravity in w frame...");
         if (this->LoadMatrix(configPath + "/gravity_in_w_init.txt", 1, 1, tempMat) == true) {
