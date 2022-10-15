@@ -90,7 +90,8 @@ namespace ESKF_VIO_BACKEND {
         uint32_t size = IMU_STATE_SIZE + camExSize;
         this->covariance.setZero(size, size);
         // 填充雅可比矩阵的既有部分
-        this->covariance.topLeftCorner<IMU_STATE_SIZE, IMU_STATE_SIZE>() = propagateItem->imuCov;
+        this->covariance.topLeftCorner<IMU_STATE_SIZE, IMU_STATE_SIZE>() = Scalar(0.5) *
+            (propagateItem->imuCov + propagateItem->imuCov.transpose());
         this->covariance.block(0, IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize - 6) = propagateItem->imuCamCov;
         this->covariance.block(IMU_STATE_SIZE, 0, camExSize - 6, IMU_STATE_SIZE) = propagateItem->imuCamCov.transpose();
         this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize - 6, camExSize - 6) = this->propagator->camCov;
@@ -164,11 +165,6 @@ namespace ESKF_VIO_BACKEND {
             this->Hx_r.block(rowsCount, 0, this->features[i]->observeNum * 2 - 3, this->Hx_cols + 1) = subHx_r;
             rowsCount += this->features[i]->observeNum * 2 - 3;
         }
-        LogDebug("after all features construction");
-        LogDebug("this->Hx_rows is " << this->Hx_rows);
-        LogDebug("this->Hx_cols is " << this->Hx_cols);
-        LogDebug("this->Hx_r size is " << this->Hx_r.rows() << ", " << this->Hx_r.cols());
-        LogDebug("this->Hx_r is\n" << this->Hx_r);
         // 对 Hx_r 的 Hx 部分进行 QR 分解，简化量测误差方程
         if (this->Hx_r.rows() > this->Hx_r.cols()) {
             Matrix &&Hx = this->Hx_r.block(0, 0, this->Hx_r.rows(), this->Hx_r.cols() - 1);
@@ -177,11 +173,6 @@ namespace ESKF_VIO_BACKEND {
             this->Hx_r = QRSolver.householderQ().transpose() * this->Hx_r;
             this->Hx_r.conservativeResize(this->Hx_r.cols() - 1, this->Hx_r.cols());
             this->Hx_rows = this->Hx_cols;
-            LogDebug("after qr");
-            LogDebug("this->Hx_rows is " << this->Hx_rows);
-            LogDebug("this->Hx_cols is " << this->Hx_cols);
-            LogDebug("this->Hx_r size is " << this->Hx_r.rows() << ", " << this->Hx_r.cols());
-            LogDebug("this->Hx_r is\n" << this->Hx_r);
         }
         return true;
     }
@@ -236,54 +227,70 @@ namespace ESKF_VIO_BACKEND {
                     Matrix23 jacobian_r_R_bc = jacobian_2d_3d * Utility::SkewSymmetricMatrix(p_c);
                     Hf_Hx_r.block<2, 3>(row, col + 3) = jacobian_r_R_bc;
                 }
-                
-                {
-                    // Only for test TODO:
-                    // 计算残差
-                    Vector2 residual = Vector2::Ones();
-                    Hf_Hx_r.block<2, 1>(row, Hf_Hx_r.cols() - 1) = residual;
-                    // 计算雅可比（归一化平面误差，对 p_w 求导）
-                    Matrix23 jacobian_r_p_w = Matrix23::Random();
-                    Hf_Hx_r.block<2, 3>(row, 0) = jacobian_r_p_w;
-                    // 计算雅可比（归一化平面误差，对 camera pose 求导）
-                    uint32_t col = 3 + IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6 + frameIdx * 6;
-                    Matrix23 jacobian_r_p_wb = Matrix23::Ones() * 3;
-                    Hf_Hx_r.block<2, 3>(row, col) = jacobian_r_p_wb;
-                    Matrix23 jacobian_r_R_wb = Matrix23::Ones() * 4;
-                    Hf_Hx_r.block<2, 3>(row, col + 3) = jacobian_r_R_wb;
-                    // 计算雅可比（归一化平面误差，对 camera extrinsic 求导）
-                    col = 3 + IMU_STATE_SIZE + cameraIdx * 6;
-                    Matrix23 jacobian_r_p_bc = Matrix23::Ones() * 5;
-                    Hf_Hx_r.block<2, 3>(row, col) = jacobian_r_p_bc;
-                    Matrix23 jacobian_r_R_bc = Matrix23::Ones() * 6;
-                    Hf_Hx_r.block<2, 3>(row, col + 3) = jacobian_r_R_bc;
-                }
                 row += 2;
             }
         }
-        LogDebug("feature " << feature->id << " has " << feature->observeNum << " observes");
-        LogDebug("feature " << feature->id << " observed in " << feature->observes.size() << " frames");
-        LogDebug("feature " << feature->id << " construct Hf_Hx_r.rows is " << Hf_Hx_r.rows());
-        LogDebug("feature " << feature->id << " construct Hf_Hx_r.cols is " << Hf_Hx_r.cols());
-        LogDebug("feature " << feature->id << " construct Hf_Hx_r is\n" << Hf_Hx_r);
 
         // 对 Hf_Hx_r 中的 Hf 部分进行 QR 分解，同步变化到 Hx 和 r 上
         Matrix &&Hf = Hf_Hx_r.block(0, 0, Hf_Hx_r.rows(), 3);
         Eigen::HouseholderQR<Matrix> QRSolver;
         QRSolver.compute(Hf);
         Hf_Hx_r = QRSolver.householderQ().transpose() * Hf_Hx_r;
-        LogDebug("after QR on Hf is\n" << Hf_Hx_r);
 
         // 裁剪出投影结果
         Hx_r = Hf_Hx_r.block(3, 3, Hf_Hx_r.rows() - 3, Hf_Hx_r.cols() - 3);
-        LogDebug("output Hx_r is\n" << Hx_r);
+        // TODO: 在三角化和 PnP 模块完工之前，量测方程设置为全零，防止产生错误的 update 行为
+        Hx_r.setZero();
+        // TODO: 添加 Huber 核函数，调整此特征点的 scale
         return true;
     }
 
 
     /* 更新误差状态和名义状态 */
     bool MultiViewVisionUpdate::UpdateState(void) {
-        // TODO:
+        // Step 1: 执行卡尔曼滤波的 update 过程
+        // 获得 propagator 预测的误差状态向量
+        this->propagator->GetFullErrorState(this->propagator->items.front(), this->delta_x);
+        // 检查当前协方差矩阵的维度是否和状态维度一致，协方差矩阵应当在 this->ExpandCameraStateCovariance() 做好了填充构造扩维
+        RETURN_FALSE_IF(this->delta_x.rows() != this->covariance.rows());
+        // 计算卡尔曼增益
+        Matrix &&H = this->Hx_r.block(0, 0, this->Hx_r.rows(), this->Hx_r.cols() - 1);
+        Vector &&r = this->Hx_r.block(0, this->Hx_r.cols() - 1, this->Hx_r.rows(), 1);
+        Matrix PHt = this->covariance * H.transpose();
+        this->meas_covariance = H * PHt;
+        this->meas_covariance.diagonal().array() += this->measureNoise;     // S = H * P * Ht + R
+        this->K = PHt * Utility::Inverse(this->meas_covariance);    // K = P * Ht * Sinv
+        // 更新误差状态向量
+        this->delta_x += this->K * r;       // dx = dx + K * r
+        Matrix I_KH = - this->K * H;
+        I_KH.diagonal().array() += Scalar(1);
+        this->covariance = I_KH * this->covariance;     // P = (I - K * H) * P
+
+        // Step 2: 结果更新到 propagator
+        this->propagator->items.front()->nominalState.p_wb -= this->delta_x.segment<3>(INDEX_P);
+        this->propagator->items.front()->nominalState.v_wb -= this->delta_x.segment<3>(INDEX_V);
+        this->propagator->items.front()->nominalState.q_wb = this->propagator->items.front()->nominalState.q_wb *
+            Utility::DeltaQ(-this->delta_x.segment<3>(INDEX_R));
+        this->propagator->items.front()->nominalState.q_wb.normalize();
+        this->propagator->bias_a -= this->delta_x.segment<3>(INDEX_BA);
+        this->propagator->bias_g -= this->delta_x.segment<3>(INDEX_BG);
+        for (uint32_t i = 0; i < this->frameManager->extrinsics.size(); ++i) {
+            this->frameManager->extrinsics[i].p_bc -= this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
+            this->frameManager->extrinsics[i].q_bc = this->frameManager->extrinsics[i].q_bc *
+                Utility::DeltaQ(-this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
+            this->frameManager->extrinsics[i].q_bc.normalize();
+        }
+        uint32_t idx = 0;
+        uint32_t offset = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6;
+        for (auto it = this->frameManager->frames.begin(); it != this->frameManager->frames.end(); ++it) {
+            (*it)->p_wb -= this->delta_x.segment<3>(offset + idx * 6);
+            (*it)->q_wb = (*it)->q_wb * Utility::DeltaQ(-this->delta_x.segment<3>(offset + idx * 6 + 3));
+            (*it)->q_wb.normalize();
+            ++idx;
+        }
+
+        // Step 3: 清空误差状态
+        this->propagator->items.front()->errorState.Reset();
         return true;
     }
 

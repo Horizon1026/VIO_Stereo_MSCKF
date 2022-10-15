@@ -69,8 +69,14 @@ namespace ESKF_VIO_BACKEND {
             LogInfo(">> Sliding window size set to " << this->frameManager.maxWindowSize << ".");
         }
 
+        // 加载视觉量测噪声
+        if (this->LoadMatrix(configPath + "/vision_measure_noise.txt", 1, 1, tempMat) == true) {
+            this->visionUpdator.measureNoise = tempMat(0, 0);
+            LogInfo(">> Vision measurement noise is " << this->visionUpdator.measureNoise << ".");
+        }
+
         // 挂载管理器指针
-        this->propagator.slidingWindow = &this->frameManager;
+        this->propagator.propagator = &this->frameManager;
         this->visionUpdator.propagator = &this->propagator;
         this->visionUpdator.featureManager = &this->featureManager;
         this->visionUpdator.frameManager = &this->frameManager;

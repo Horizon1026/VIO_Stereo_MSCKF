@@ -33,13 +33,13 @@ namespace ESKF_VIO_BACKEND {
     using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
     using Vector2 = Eigen::Matrix<Scalar, 2, 1>;
 
-    #define RETURN_FALSE_IF_FALSE(...) if (__VA_ARGS__ == false) { return false; }
-    #define RETURN_FALSE_IF_TRUE(...) if (__VA_ARGS__ == true) { return false; }
-    #define RETURN_FALSE_IF_EQUAL(...) if (__VA_ARGS__) { return false; }
-    #define RETURN_TRUE_IF_FALSE(...) if (__VA_ARGS__ == false) { return true; }
-    #define RETURN_TRUE_IF_TRUE(...) if (__VA_ARGS__ == true) { return true; }
-    #define RETURN_TRUE_IF_EQUAL(...) if (__VA_ARGS__) { return true; }
-    #define RETURN_IF_EQUAL(...) if (__VA_ARGS__) { return; }
+    #define RETURN_FALSE_IF_FALSE(...)  if ((__VA_ARGS__) == false) { return false; }
+    #define RETURN_FALSE_IF_TRUE(...)   if ((__VA_ARGS__) == true) { return false; }
+    #define RETURN_FALSE_IF(...)        if (__VA_ARGS__) { return false; }
+    #define RETURN_TRUE_IF_FALSE(...)   if ((__VA_ARGS__) == false) { return true; }
+    #define RETURN_TRUE_IF_TRUE(...)    if ((__VA_ARGS__) == true) { return true; }
+    #define RETURN_TRUE_IF(...)         if (__VA_ARGS__) { return true; }
+    #define RETURN_IF(...)        if (__VA_ARGS__) { return; }
 
     // 边缘化策略定义
     enum MargPolicy {

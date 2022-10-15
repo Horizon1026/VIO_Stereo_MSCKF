@@ -84,7 +84,7 @@ namespace ESKF_VIO_BACKEND {
                it != this->attitudeEstimator.items.end()) {
             ++it;
         }
-        RETURN_FALSE_IF_EQUAL(it == this->attitudeEstimator.items.end());
+        RETURN_FALSE_IF(it == this->attitudeEstimator.items.end());
         // 依次输入到 propagator 让他递推到最新时刻
         while (it != this->attitudeEstimator.items.end()) {
             this->propagator.Propagate((*it)->accel, (*it)->gyro, (*it)->timeStamp);

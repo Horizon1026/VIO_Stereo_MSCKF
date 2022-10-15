@@ -12,7 +12,7 @@ namespace ESKF_VIO_BACKEND {
         // 设置 IMU 和 Cam 的状态维度，初始化完成后，滑动窗口内应当仅仅保留 frame i
         // 虽然初始化时，窗口内肯定有两帧，但是初始化后需要进行一次 update，期间会有 state expand，因此初始化成只有一帧的情况
         uint32_t imuSize = IMU_STATE_SIZE;
-        uint32_t camSize = 6 + this->slidingWindow->extrinsics.size() * 6;
+        uint32_t camSize = 6 + this->propagator->extrinsics.size() * 6;
 
         // 如果序列为空，则构造新的起点
         if (this->items.empty()) {
@@ -209,6 +209,19 @@ namespace ESKF_VIO_BACKEND {
         }
         LogInfo(">> Propagator reset at " << timeStamp << "s, first item time stamp is " <<
             this->items.front()->timeStamp << "s, " << this->items.size() << " items maintained.");
+        return true;
+    }
+
+
+    /* 从某一个 item 中提取出完整误差状态向量 */
+    bool PropagateQueue::GetFullErrorState(const std::shared_ptr<IMUPropagateQueueItem> &item,
+                                             Vector &errorDelta_x) {
+        if (item == nullptr) {
+            return false;
+        }
+        uint32_t size = IMU_STATE_SIZE + this->propagator->extrinsics.size() * 6 + this->propagator->frames.size() * 6;
+        errorDelta_x.setZero(size, 1);
+        errorDelta_x.head<IMU_STATE_SIZE>() = ErrorStateConvert(item->errorState);
         return true;
     }
 }

@@ -128,6 +128,17 @@ namespace ESKF_VIO_BACKEND {
         }
 
 
+        /* 计算对称矩阵的逆 */
+        static Matrix Inverse(const Matrix &A) {
+            Eigen::SelfAdjointEigenSolver<Matrix> saes(A);
+            Matrix Ainv = saes.eigenvectors() * Vector(
+                (saes.eigenvalues().array() > Scalar(1e-8)).select(
+                    saes.eigenvalues().array().inverse(), 0
+                )).asDiagonal() * saes.eigenvectors().transpose();
+            return Ainv;
+        }
+
+
     public:
         /* 构造函数与析构函数 */
         Utility() {}

@@ -72,10 +72,7 @@ namespace ESKF_VIO_BACKEND {
     bool FrameManager::AddNewFrame(const std::shared_ptr<Frame> &newFrame) {
         // 设置 new frame 的 ID 和 pose 初值
         if (this->frames.empty()) {
-            newFrame->id = FIRST_FRAME_ID;
-            newFrame->q_wb.setIdentity();
-            newFrame->p_wb.setZero();
-            newFrame->v_wb.setZero();
+            newFrame->Initialize(FIRST_FRAME_ID, newFrame->timeStamp);
         } else {
             newFrame->id = this->frames.back()->id + 1;
             newFrame->q_wb = this->frames.back()->q_wb;

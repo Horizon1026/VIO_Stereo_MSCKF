@@ -20,18 +20,24 @@ namespace ESKF_VIO_BACKEND {
         PnPSolver *pnpSolver;
         // 用于构造量测方程的特征点
         std::vector<std::shared_ptr<Feature>> features;
-        // update 过程输出的 errorState 结果
-        // p_wb   v_wb   q_wb  ba  bg  p_bc0  q_bc0  p_bc1  q_bc1 ... p_wb0  q_wb0  p_wb1  q_wb1 ...
+        // propagator 预测的，以及 update 过程输出的 errorState 结果
+        // [p_wb   v_wb   q_wb  ba  bg]  [p_bc0  q_bc0  p_bc1  q_bc1 ...]  [p_wb0  q_wb0  p_wb1  q_wb1 ...]
         Vector delta_x;
-        // 状态的协方差矩阵，用于扩维和裁减
+        // 状态的协方差矩阵
         Matrix covariance;
         // 用于状态扩维的雅可比矩阵
         Matrix expand_J;
+        // 量测误差的协方差矩阵
+        Matrix meas_covariance;
         // 所有特征点共同构造出来的量测方程 [Hx | r]
         Matrix Hx_r;
         // 每个特征点投影到左零空间的子量测方程的量测维度之和
         uint32_t Hx_cols;
         uint32_t Hx_rows;
+        // ESKF 中的卡尔曼增益
+        Matrix K;
+        // 量测噪声（使用时默认为对角矩阵）
+        Scalar measureNoise;
         // 边缘化策略
         MargPolicy margPolicy = NO_MARG;
 

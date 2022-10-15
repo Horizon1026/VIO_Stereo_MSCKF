@@ -35,7 +35,7 @@ namespace ESKF_VIO_BACKEND {
         // propagate 之后需要记录的变化的相关元素
         std::deque<std::shared_ptr<IMUPropagateQueueItem>> items;
         // 滑动窗口内的关键帧
-        FrameManager *slidingWindow;
+        FrameManager *propagator;
         // 滑动窗口内 camera pose 的协方差矩阵
         Matrix camCov;
         // 无 update 时的 IMU bias
@@ -67,6 +67,9 @@ namespace ESKF_VIO_BACKEND {
         void ResetProcessFunction(void);
         /* 重置序列初始时刻点 */
         bool ResetOrigin(const fp64 timeStamp, const fp64 threshold);
+        /* 从某一个 item 中提取出完整误差状态向量 */
+        bool GetFullErrorState(const std::shared_ptr<IMUPropagateQueueItem> &item,
+                               Vector &errorDelta_x);
     private:
         /* 中值积分法 propagate 运动相关名义状态 */
         void PropagateMotionNominalState(const std::shared_ptr<IMUPropagateQueueItem> &item_0,

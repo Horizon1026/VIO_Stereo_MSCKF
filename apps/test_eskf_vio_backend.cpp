@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     LoadFeaturesData(backend);
 
     // 运行测试
-    for (uint32_t i = 0; i < 200; ++i) {
+    for (uint32_t i = 0; i < 4000; ++i) {
         std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
@@ -152,6 +152,9 @@ int main(int argc, char **argv) {
             // Vector3 pitch_roll_yaw = ESKF_VIO_BACKEND::Utility::QuaternionToEuler(state.q_wb);
             // std::cout << pitch_roll_yaw.x() << " " << pitch_roll_yaw.y() << " " << pitch_roll_yaw.z() << " ";
             std::cout << state.p_wb.transpose() << std::endl;
+            if (std::isnan(state.p_wb.x())) {
+                break;
+            }
         } else {
             std::cout << "backend is not ready." << std::endl;
         }
