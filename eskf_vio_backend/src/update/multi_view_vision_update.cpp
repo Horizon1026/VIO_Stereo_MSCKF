@@ -14,7 +14,7 @@ namespace ESKF_VIO_BACKEND {
         // Step 3: 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值
         RETURN_FALSE_IF_FALSE(this->ExpandCameraStateCovariance());
         // Step 4: 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点
-        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(2));
+        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(2)); // TODO: 用 2 个点来测试
         // Step 5: 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态
         RETURN_FALSE_IF_FALSE(this->ConstructMeasurementFunction());
         RETURN_FALSE_IF_FALSE(this->UpdateState());
@@ -127,7 +127,7 @@ namespace ESKF_VIO_BACKEND {
         // 从高分到低分选择特征点，存入到 this->features 中
         this->features.clear();
         uint32_t cnt = num;
-        for (auto it = goodFeatures.begin(); it != goodFeatures.end(); ++it) {
+        for (auto it = goodFeatures.rbegin(); it != goodFeatures.rend(); ++it) {
             if (cnt) {
                 this->features.emplace_back(it->second);
                 --cnt;
