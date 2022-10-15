@@ -9,6 +9,7 @@ namespace ESKF_VIO_BACKEND {
     bool Backend::Initialize(const std::string &configPath) {
         Matrix tempMat;
         std::string configFile;
+        LogFixPercision();
         LogInfo(">> ESKF VIO Backend Starts reading config file at " << configPath);
 
         // 加载 IMU 输入频率

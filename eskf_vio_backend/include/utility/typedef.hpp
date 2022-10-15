@@ -27,6 +27,7 @@ namespace ESKF_VIO_BACKEND {
     using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using Quaternion = Eigen::Quaternion<Scalar>;
+    using Matrix23 = Eigen::Matrix<Scalar, 2, 3>;
     using Matrix33 = Eigen::Matrix<Scalar, 3, 3>;
     using Matrix44 = Eigen::Matrix<Scalar, 4, 4>;
     using Vector3 = Eigen::Matrix<Scalar, 3, 1>;

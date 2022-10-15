@@ -37,7 +37,9 @@ namespace ESKF_VIO_BACKEND {
 
     public:
         /* 构造函数与析构函数 */
-        MultiViewVisionUpdate() {}
+        MultiViewVisionUpdate() {
+            this->features.reserve(100);
+        }
         ~MultiViewVisionUpdate() {}
     public:
         /* 执行一次 update 过程 */

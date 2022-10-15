@@ -1,6 +1,7 @@
 #pragma once
 /* 外部依赖 */
 #include <iostream>
+#include <iomanip>
 /* 内部依赖 */
 #include <typedef.hpp>
 
@@ -9,8 +10,13 @@
 
 namespace ESKF_VIO_BACKEND {
 #if STD_COUT_INFO
-    #define LogInfo(...) std::cout << __VA_ARGS__ << std::endl
+    #define LogFixPercision() std::cout << std::fixed << std::setprecision(2)
+    #define LogInfo(...)  std::cout << __VA_ARGS__ << std::endl
+    #define LogDebug(...) std::cout << "[Debug] " << __VA_ARGS__ << std::endl
+    #define LogError(...) std::cout << "[Error] " << __VA_ARGS__ << std::endl
 #else
     #define LogInfo(...)
+    #define LogDebug(...)
+    #define LogError(...)
 #endif
 }

@@ -1,5 +1,6 @@
 /* 内部依赖 */
 #include <multi_view_vision_update.hpp>
+#include <math_lib.hpp>
 #include <log_api.hpp>
 /* 外部依赖 */
 
@@ -13,7 +14,7 @@ namespace ESKF_VIO_BACKEND {
         // Step 3: 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值
         RETURN_FALSE_IF_FALSE(this->ExpandCameraStateCovariance());
         // Step 4: 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点
-        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(30));
+        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(2));
         // Step 5: 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态
         RETURN_FALSE_IF_FALSE(this->ConstructMeasurementFunction());
         RETURN_FALSE_IF_FALSE(this->UpdateState());
@@ -112,12 +113,15 @@ namespace ESKF_VIO_BACKEND {
         auto frame = this->frameManager->frames.back();
         std::map<fp32, std::shared_ptr<Feature>> goodFeatures;  // <score, feature_ptr>
         for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
+            auto feature = (*it).second;
             if ((*it).second->status == Feature::SOLVED) {
                 // 迭代法三角测量
                 // TODO: 三角测量成功后，连同打分塞到 goodFeatures
+                goodFeatures.insert(std::make_pair(std::rand(), feature));
             } else {
                 // 解析法三角测量
-                // TODO：同上
+                // TODO: 三角测量成功后，连同打分塞到 goodFeatures
+                goodFeatures.insert(std::make_pair(std::rand(), feature));
             }
         }
         // 从高分到低分选择特征点，存入到 this->features 中
@@ -131,6 +135,11 @@ namespace ESKF_VIO_BACKEND {
                 break;
             }
         }
+        if (this->features.empty()) {
+            LogInfo(">> No good features for update.");
+        } else {
+            LogInfo(">> Use " << this->features.size() << " features for updata");
+        }
         return true;
     }
 
@@ -138,23 +147,42 @@ namespace ESKF_VIO_BACKEND {
     /* 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态 */
     bool MultiViewVisionUpdate::ConstructMeasurementFunction(void) {
         /*  需要 update 的状态量包括：
-            p_wb   v_wb   q_wb  ba  bg  p_bc0  q_bc0  p_bc1  q_bc1 ... p_wb0  q_wb0  p_wb1  q_wb1 ... */
+            [p_wb   v_wb   q_wb  ba  bg]  [p_bc0  q_bc0  p_bc1  q_bc1 ...]  [p_wb0  q_wb0  p_wb1  q_wb1 ...] */
         this->Hx_cols = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6 +
             this->frameManager->frames.size() * 6;
         this->Hx_rows = 0;
         for (uint32_t i = 0; i < this->features.size(); ++i) {
-            this->Hx_rows += this->features[i]->observeNum;
+            this->Hx_rows += this->features[i]->observeNum * 2 - 3;
         }
         this->Hx_r.setZero(this->Hx_rows, this->Hx_cols + 1);
+
         // 遍历每一个特征点，构造各自的量测方程，然后拼接到一起
         uint32_t rowsCount = 0;
+        Matrix subHx_r;
         for (uint32_t i = 0; i < this->features.size(); ++i) {
-            Matrix &&subHx_r = this->Hx_r.block(rowsCount, 0, this->features[i]->observeNum * 2 - 3, this->Hx_cols);
             RETURN_FALSE_IF_FALSE(this->ConstructMeasurementFunction(this->features[i], subHx_r));
+            this->Hx_r.block(rowsCount, 0, this->features[i]->observeNum * 2 - 3, this->Hx_cols + 1) = subHx_r;
             rowsCount += this->features[i]->observeNum * 2 - 3;
         }
-        // 对 Hx_r 的 Hx 部分进行 QR 分解，简化量测方程
-        // TODO:
+        LogDebug("after all features construction");
+        LogDebug("this->Hx_rows is " << this->Hx_rows);
+        LogDebug("this->Hx_cols is " << this->Hx_cols);
+        LogDebug("this->Hx_r size is " << this->Hx_r.rows() << ", " << this->Hx_r.cols());
+        LogDebug("this->Hx_r is\n" << this->Hx_r);
+        // 对 Hx_r 的 Hx 部分进行 QR 分解，简化量测误差方程
+        if (this->Hx_r.rows() > this->Hx_r.cols()) {
+            Matrix &&Hx = this->Hx_r.block(0, 0, this->Hx_r.rows(), this->Hx_r.cols() - 1);
+            Eigen::HouseholderQR<Matrix> QRSolver;
+            QRSolver.compute(Hx);
+            this->Hx_r = QRSolver.householderQ().transpose() * this->Hx_r;
+            this->Hx_r.conservativeResize(this->Hx_r.cols() - 1, this->Hx_r.cols());
+            this->Hx_rows = this->Hx_cols;
+            LogDebug("after qr");
+            LogDebug("this->Hx_rows is " << this->Hx_rows);
+            LogDebug("this->Hx_cols is " << this->Hx_cols);
+            LogDebug("this->Hx_r size is " << this->Hx_r.rows() << ", " << this->Hx_r.cols());
+            LogDebug("this->Hx_r is\n" << this->Hx_r);
+        }
         return true;
     }
 
@@ -162,34 +190,93 @@ namespace ESKF_VIO_BACKEND {
     /* 构造一个特征点所有观测的量测方程，投影到左零空间 */
     bool MultiViewVisionUpdate::ConstructMeasurementFunction(const std::shared_ptr<Feature> &feature,
                                                              Matrix &Hx_r) {
-        Matrix Hx_Hf_r;
-        Hx_Hf_r.setZero(feature->observeNum * 2, this->Hx_cols + 4);
+        Matrix Hf_Hx_r;
+        Hf_Hx_r.setZero(feature->observeNum * 2, this->Hx_cols + 4);
 
-        // 遍历每一帧中的每一个观测，填充 Hx_Hf_r
-        uint32_t rowsCount = 0;
+        // 遍历每一帧中的每一个观测，填充 Hf_Hx_r
+        uint32_t row = 0;
         for (uint32_t i = 0; i < feature->observes.size(); ++i) {
             uint32_t frameID = i + feature->firstFrameID;
             auto frame = this->frameManager->GetFrame(frameID);
             RETURN_FALSE_IF_TRUE(frame == nullptr);
+            uint32_t frameIdx = frameID - this->frameManager->frames.front()->id;
             for (auto it = feature->observes[i]->norms.begin(); it != feature->observes[i]->norms.end(); ++it) {
+                uint32_t cameraIdx = it->first;
                 // 提取出计算雅可比与残差的相关变量
-                Vector3 &p_bc = this->frameManager->extrinsics[it->first].p_bc;
-                Matrix33 R_bc(this->frameManager->extrinsics[it->first].q_bc);
+                Vector3 &p_bc = this->frameManager->extrinsics[cameraIdx].p_bc;
+                Matrix33 R_cb(this->frameManager->extrinsics[cameraIdx].q_bc.inverse());
                 Vector3 &p_wb = frame->p_wb;
-                Matrix33 R_wb(frame->q_wb);
+                Matrix33 R_bw(frame->q_wb.inverse());
                 Vector3 &p_w = feature->p_w;
-                Vector2 &norm = it->second;
-                // 计算残差和雅可比，并填充到对应位置
-                // TODO:
-                rowsCount += 2;
+                Vector2 &measure = it->second;
+                // 计算残差和雅可比矩阵，并填充到 Hf_Hx_r 对应位置
+                Vector3 p_b = R_bw * (p_w - p_wb);
+                Vector3 p_c = R_cb * (p_b - p_bc);
+                if (std::fabs(p_c.z()) > Scalar(1e-10)) {
+                    // 计算残差
+                    Vector2 residual = (p_c / p_c.z()).head<2>() - measure;
+                    Hf_Hx_r.block<2, 1>(row, Hf_Hx_r.cols() - 1) = residual;
+                    // 计算雅可比（归一化平面误差，对 p_c 求导）
+                    Matrix23 jacobian_2d_3d;
+                    jacobian_2d_3d << 1. / p_c(2), 0, - p_c(0) / (p_c(2) * p_c(2)),
+                                      0, 1. / p_c(2), - p_c(1) / (p_c(2) * p_c(2));
+                    // 计算雅可比（归一化平面误差，对 p_w 求导）
+                    Matrix23 jacobian_r_p_w = jacobian_2d_3d * R_cb * R_bw;
+                    Hf_Hx_r.block<2, 3>(row, 0) = jacobian_r_p_w;
+                    // 计算雅可比（归一化平面误差，对 camera pose 求导）
+                    uint32_t col = 3 + IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6 + frameIdx * 6;
+                    Matrix23 jacobian_r_p_wb = jacobian_2d_3d * (- R_cb * R_bw);
+                    Hf_Hx_r.block<2, 3>(row, col) = jacobian_r_p_wb;
+                    Matrix23 jacobian_r_R_wb = jacobian_2d_3d * R_cb * Utility::SkewSymmetricMatrix(p_b);
+                    Hf_Hx_r.block<2, 3>(row, col + 3) = jacobian_r_R_wb;
+                    // 计算雅可比（归一化平面误差，对 camera extrinsic 求导）
+                    col = 3 + IMU_STATE_SIZE + cameraIdx * 6;
+                    Matrix23 jacobian_r_p_bc = jacobian_2d_3d * (- R_cb);
+                    Hf_Hx_r.block<2, 3>(row, col) = jacobian_r_p_bc;
+                    Matrix23 jacobian_r_R_bc = jacobian_2d_3d * Utility::SkewSymmetricMatrix(p_c);
+                    Hf_Hx_r.block<2, 3>(row, col + 3) = jacobian_r_R_bc;
+                }
+                
+                {
+                    // Only for test TODO:
+                    // 计算残差
+                    Vector2 residual = Vector2::Ones();
+                    Hf_Hx_r.block<2, 1>(row, Hf_Hx_r.cols() - 1) = residual;
+                    // 计算雅可比（归一化平面误差，对 p_w 求导）
+                    Matrix23 jacobian_r_p_w = Matrix23::Random();
+                    Hf_Hx_r.block<2, 3>(row, 0) = jacobian_r_p_w;
+                    // 计算雅可比（归一化平面误差，对 camera pose 求导）
+                    uint32_t col = 3 + IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6 + frameIdx * 6;
+                    Matrix23 jacobian_r_p_wb = Matrix23::Ones() * 3;
+                    Hf_Hx_r.block<2, 3>(row, col) = jacobian_r_p_wb;
+                    Matrix23 jacobian_r_R_wb = Matrix23::Ones() * 4;
+                    Hf_Hx_r.block<2, 3>(row, col + 3) = jacobian_r_R_wb;
+                    // 计算雅可比（归一化平面误差，对 camera extrinsic 求导）
+                    col = 3 + IMU_STATE_SIZE + cameraIdx * 6;
+                    Matrix23 jacobian_r_p_bc = Matrix23::Ones() * 5;
+                    Hf_Hx_r.block<2, 3>(row, col) = jacobian_r_p_bc;
+                    Matrix23 jacobian_r_R_bc = Matrix23::Ones() * 6;
+                    Hf_Hx_r.block<2, 3>(row, col + 3) = jacobian_r_R_bc;
+                }
+                row += 2;
             }
         }
-        // 对 Hx_Hf_r 中的 Hf 部分进行 QR 分解，同步变化到 Hx 和 r 上
-        // TODO:
+        LogDebug("feature " << feature->id << " has " << feature->observeNum << " observes");
+        LogDebug("feature " << feature->id << " observed in " << feature->observes.size() << " frames");
+        LogDebug("feature " << feature->id << " construct Hf_Hx_r.rows is " << Hf_Hx_r.rows());
+        LogDebug("feature " << feature->id << " construct Hf_Hx_r.cols is " << Hf_Hx_r.cols());
+        LogDebug("feature " << feature->id << " construct Hf_Hx_r is\n" << Hf_Hx_r);
+
+        // 对 Hf_Hx_r 中的 Hf 部分进行 QR 分解，同步变化到 Hx 和 r 上
+        Matrix &&Hf = Hf_Hx_r.block(0, 0, Hf_Hx_r.rows(), 3);
+        Eigen::HouseholderQR<Matrix> QRSolver;
+        QRSolver.compute(Hf);
+        Hf_Hx_r = QRSolver.householderQ().transpose() * Hf_Hx_r;
+        LogDebug("after QR on Hf is\n" << Hf_Hx_r);
 
         // 裁剪出投影结果
-        Hx_r.block(0, 0, Hx_r.rows(), Hx_r.cols() - 1) = Hx_Hf_r.block(3, 0, Hx_Hf_r.rows() - 3, Hx_Hf_r.cols() - 4);
-        Hx_r.block(0, Hx_r.cols() - 1, Hx_r.rows(), 1) = Hx_Hf_r.block(3, 0, Hx_Hf_r.rows() - 3, 1);
+        Hx_r = Hf_Hx_r.block(3, 3, Hf_Hx_r.rows() - 3, Hf_Hx_r.cols() - 3);
+        LogDebug("output Hx_r is\n" << Hx_r);
         return true;
     }
 
