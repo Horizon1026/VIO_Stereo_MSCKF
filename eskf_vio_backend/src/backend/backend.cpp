@@ -82,6 +82,9 @@ namespace ESKF_VIO_BACKEND {
                     LogInfo(">> Vision update succeed.");
                     // 基于边缘化策略，调整特征点管理器和关键帧管理器的管理内容
                     this->MarginalizeFeatureFrameManager(this->visionUpdator.margPolicy);
+                    // 更新姿态解算求解器的 bias
+                    this->attitudeEstimator.bias_a = this->propagator.bias_a;
+                    this->attitudeEstimator.bias_g = this->propagator.bias_g;
                 }
             }
 
