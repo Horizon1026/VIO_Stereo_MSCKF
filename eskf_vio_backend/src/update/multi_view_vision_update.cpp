@@ -19,7 +19,7 @@ namespace ESKF_VIO_BACKEND {
             // Step 4.1: 根据边缘化策略，选择跳过此步，或裁减 update 时刻点上的状态和协方差矩阵
             RETURN_FALSE_IF_FALSE(this->ReduceCameraStateCovariance());
             RETURN_FALSE_IF_FALSE(this->UpdateCovariance());
-            // Step 4.1: 对于 propagate queue 中后续的已经存在的 items，从 update 时刻点重新 propagate
+            // Step 4.1: 对于 propagate queue 中后续的已经存在的 items，从 update 时刻点重新 propagate，保持协方差维度一致
             RETURN_FALSE_IF_FALSE(this->propagator->Repropagate());
             return true;
         }
@@ -29,7 +29,7 @@ namespace ESKF_VIO_BACKEND {
         // Step 6: 根据边缘化策略，选择跳过此步，或裁减 update 时刻点上的状态和协方差矩阵
         RETURN_FALSE_IF_FALSE(this->ReduceCameraStateCovariance());
         RETURN_FALSE_IF_FALSE(this->UpdateCovariance());
-        // Step 7: 对于 propagate queue 中后续的已经存在的 items，从 update 时刻点重新 propagate
+        // Step 7: 对于 propagate queue 中后续的已经存在的 items，从 update 时刻点重新 propagate，保持协方差维度一致
         RETURN_FALSE_IF_FALSE(this->propagator->Repropagate());
         return true;
     }
