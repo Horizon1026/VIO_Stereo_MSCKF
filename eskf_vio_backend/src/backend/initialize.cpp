@@ -12,8 +12,8 @@ namespace ESKF_VIO_BACKEND {
             auto frame_j = *std::next(this->frameManager.frames.begin());
             // Step 1: 从 attitude estimator 中拿取此帧对应时刻的姿态估计结果，赋值给首帧的 q_wb
             RETURN_FALSE_IF_FALSE(this->attitudeEstimator.GetAttitude(frame_i->timeStamp,
-                                                                this->dataloader.imuPeriod,
-                                                                frame_i->q_wb));
+                                                                      this->dataloader.imuPeriod,
+                                                                      frame_i->q_wb));
             // Step 2: 首帧观测为 multi-view 时，首帧位置设置为原点，进行首帧内的多目三角测量，得到一些特征点的 p_w
             frame_i->p_wb.setZero();
             RETURN_FALSE_IF_FALSE(this->TrianglizeMultiView(frame_i));
@@ -44,7 +44,6 @@ namespace ESKF_VIO_BACKEND {
 
     /* 基于某一帧的多目测量结果进行三角化 */
     bool Backend::TrianglizeMultiView(const std::shared_ptr<Frame> &frame) {
-        std::cout<<"TrianglizeMultiView\n";
         if (frame == nullptr) {
             return false;
         }
@@ -53,24 +52,34 @@ namespace ESKF_VIO_BACKEND {
             i cam 0 / cam 1  ->  bc_0  bc_1  ->   wc_0  wc_1  -> trianglize  ->  p_w
         */
 
-       auto Trans_wb = Utility::qtToTransformMatrix(frame->q_wb, frame->p_wb);
-       auto Trans_bc0 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[0].q_bc, this->frameManager.extrinsics[0].p_bc);
-       auto Trans_bc1 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[1].q_bc, this->frameManager.extrinsics[1].p_bc);
+    //    auto Trans_wb = Utility::qtToTransformMatrix(frame->q_wb, frame->p_wb);
+    //    auto Trans_bc0 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[0].q_bc, this->frameManager.extrinsics[0].p_bc);
+    //    auto Trans_bc1 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[1].q_bc, this->frameManager.extrinsics[1].p_bc);
 
-       auto Trans_wc0 = Trans_bc0 * Trans_wb;
-       auto Trans_wc1 = Trans_bc1 * Trans_wb;
+    //    auto Trans_wc0 = Trans_bc0 * Trans_wb;
+    //    auto Trans_wc1 = Trans_bc1 * Trans_wb;
 
         // TODO: 从 frame->features 中挑选点进行三角化，结果将保存在 feature manager 中
         for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
-            std::vector<Quaternion> all_q_wb;
-            std::vector<Vector3> all_p_wb;
+            auto feature = it->second;
+            std::vector<Quaternion> all_q_wc;
+            std::vector<Vector3> all_p_wc;
             std::vector<Vector2> all_norm;
+
+            auto multiview = feature->observes[frame->id - feature->firstFrameID]->norms;
+            for (auto it = multiview.begin(); it != multiview.end(); ++it) {
+                Quaternion &q_bc = this->frameManager.extrinsics[it->first].q_bc;
+                Vector3 &p_bc = this->frameManager.extrinsics[it->first].p_bc;
+                Quaternion &q_wb = frame->q_wb;
+                Vector3 &p_wb = frame->p_wb;
+
+            }
             // TODO:
             // observeNum
-            auto observe0 = it->second->observes.front()->norms[0];
-            auto observe1 = it->second->observes.front()->norms[1];
-            it->second->p_w = Trianglator::linearTriangulation(Trans_wc0, Trans_wc1, observe0, observe1);
-            std::cout<<it->second->p_w<<std::endl;
+            // auto observe0 = it->second->observes.front()->norms[0];
+            // auto observe1 = it->second->observes.front()->norms[1];
+            // it->second->p_w = Trianglator::linearTriangulation(Trans_wc0, Trans_wc1, observe0, observe1);
+            // std::cout<<it->second->p_w<<std::endl;
         }
         return true;
     }

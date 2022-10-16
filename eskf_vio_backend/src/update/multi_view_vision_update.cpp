@@ -15,6 +15,7 @@ namespace ESKF_VIO_BACKEND {
         RETURN_FALSE_IF_FALSE(this->ExpandCameraStateCovariance());
         // Step 4: 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点
         RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(2)); // TODO: 用 2 个点来测试
+        // TODO: no features 需要特殊处理
         // Step 5: 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态
         RETURN_FALSE_IF_FALSE(this->ConstructMeasurementFunction());
         RETURN_FALSE_IF_FALSE(this->UpdateState());
@@ -84,8 +85,8 @@ namespace ESKF_VIO_BACKEND {
 
             when camera state is q_wb/p_wb, things become easy
                       p  v  theta   ba  bg  p_bc0  q_bc0  p_bc1  q_bc1  ...  Twb0  Twb1  ...
-            as J is [ 0  0    I     0   0     0      0      0      0    ...    0     0   ...  ]  ->  q_wb
-                    [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb       */
+            as J is [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb 
+                    [ 0  0    I     0   0     0      0      0      0    ...    0     0   ...  ]  ->  q_wb      */
         uint32_t camExSize = (this->frameManager->extrinsics.size() + this->frameManager->frames.size()) * 6;
         uint32_t size = IMU_STATE_SIZE + camExSize;
         this->covariance.setZero(size, size);
@@ -97,8 +98,8 @@ namespace ESKF_VIO_BACKEND {
         this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize - 6, camExSize - 6) = this->propagator->camCov;
         // 构造雅可比矩阵（不需要全部构造，只需要不为零的部分就行了）
         this->expand_J.setZero(6, IMU_STATE_SIZE);
-        this->expand_J.block(3, INDEX_P, 3, 3).setIdentity();
-        this->expand_J.block(0, INDEX_R, 3, 3).setIdentity();
+        this->expand_J.block<3, 3>(0, INDEX_P).setIdentity();
+        this->expand_J.block<3, 3>(3, INDEX_R).setIdentity();
         // 填充雅可比矩阵的扩维部分
         this->covariance.block(size - 6, 0, 6, IMU_STATE_SIZE) = this->expand_J * propagateItem->imuCov;
         this->covariance.block(size - 6, IMU_STATE_SIZE, 6, camExSize - 6) = this->expand_J * propagateItem->imuCamCov;
@@ -124,6 +125,7 @@ namespace ESKF_VIO_BACKEND {
                 // TODO：同上
                 // std::cout <<"id: "<<it->second->id<<std::endl;
             }
+            // goodFeatures.insert(std::make_pair(std::rand(), feature));
         }
         // 从高分到低分选择特征点，存入到 this->features 中
         this->features.clear();
@@ -147,6 +149,7 @@ namespace ESKF_VIO_BACKEND {
 
     /* 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态 */
     bool MultiViewVisionUpdate::ConstructMeasurementFunction(void) {
+        // Hx r
         /*  需要 update 的状态量包括：
             [p_wb   v_wb   q_wb  ba  bg]  [p_bc0  q_bc0  p_bc1  q_bc1 ...]  [p_wb0  q_wb0  p_wb1  q_wb1 ...] */
         this->Hx_cols = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6 +
@@ -242,6 +245,7 @@ namespace ESKF_VIO_BACKEND {
         // TODO: 在三角化和 PnP 模块完工之前，量测方程设置为全零，防止产生错误的 update 行为
         Hx_r.setZero();
         // TODO: 添加 Huber 核函数，调整此特征点的 scale
+        // Hx_r *= scale;
         return true;
     }
 
@@ -261,7 +265,7 @@ namespace ESKF_VIO_BACKEND {
         this->meas_covariance.diagonal().array() += this->measureNoise;     // S = H * P * Ht + R
         this->K = PHt * Utility::Inverse(this->meas_covariance);    // K = P * Ht * Sinv
         // 更新误差状态向量
-        this->delta_x += this->K * r;       // dx = dx + K * r
+        this->delta_x += this->K * r;       // TODO: dx = dx + K * r
         Matrix I_KH = - this->K * H;
         I_KH.diagonal().array() += Scalar(1);
         this->covariance = I_KH * this->covariance;     // P = (I - K * H) * P
@@ -302,6 +306,7 @@ namespace ESKF_VIO_BACKEND {
     /* 更新协方差矩阵到 propagator 中 */
     bool MultiViewVisionUpdate::UpdateCovariance(void) {
         auto propagateItem = this->propagator->items.front();
+        propagateItem->imuCov = this->covariance.block(0, 0, IMU_STATE_SIZE, IMU_STATE_SIZE);
         uint32_t camExSize = this->covariance.cols() - IMU_STATE_SIZE;
         propagateItem->imuCamCov = this->covariance.block(0, IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize);
         this->propagator->camCov = this->covariance.block(IMU_STATE_SIZE, IMU_STATE_SIZE, camExSize, camExSize);
