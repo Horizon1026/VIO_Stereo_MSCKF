@@ -40,7 +40,7 @@ namespace ESKF_VIO_BACKEND {
         if (this->frameManager == nullptr) {
             this->margPolicy = NO_MARG;
             return false;
-        } 
+        }
         if (this->frameManager->NeedMarginalize()) {
             // 最新帧已经加入到 sliding window 中
             auto subnew = *std::next(this->frameManager->frames.rbegin());
@@ -74,7 +74,7 @@ namespace ESKF_VIO_BACKEND {
                        [ JC ]
                      = [ C     CJ.T ]
                        [ JC   JCJ.T ]
- 
+
             when camera state is q_wc/p_wc, use q_bc0/p_bc0 to calculate from q_wb/p_wb
                 q_wc = q_wb * q_bc0;
                 p_wc = p_wb + q_wb * p_bc0
@@ -118,11 +118,11 @@ namespace ESKF_VIO_BACKEND {
             if ((*it).second->status == Feature::SOLVED) {
                 // 迭代法三角测量
                 // TODO: 三角测量成功后，连同打分塞到 goodFeatures
-                goodFeatures.insert(std::make_pair(std::rand(), feature));
+
             } else {
                 // 解析法三角测量
-                // TODO: 三角测量成功后，连同打分塞到 goodFeatures
-                goodFeatures.insert(std::make_pair(std::rand(), feature));
+                // TODO：同上
+                // std::cout <<"id: "<<it->second->id<<std::endl;
             }
         }
         // 从高分到低分选择特征点，存入到 this->features 中

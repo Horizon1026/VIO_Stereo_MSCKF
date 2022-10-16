@@ -41,8 +41,10 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+
     /* 基于某一帧的多目测量结果进行三角化 */
     bool Backend::TrianglizeMultiView(const std::shared_ptr<Frame> &frame) {
+        std::cout<<"TrianglizeMultiView\n";
         if (frame == nullptr) {
             return false;
         }
@@ -50,12 +52,25 @@ namespace ESKF_VIO_BACKEND {
             frame i -> q_wb p_wb
             i cam 0 / cam 1  ->  bc_0  bc_1  ->   wc_0  wc_1  -> trianglize  ->  p_w
         */
+
+       auto Trans_wb = Utility::qtToTransformMatrix(frame->q_wb, frame->p_wb);
+       auto Trans_bc0 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[0].q_bc, this->frameManager.extrinsics[0].p_bc);
+       auto Trans_bc1 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[1].q_bc, this->frameManager.extrinsics[1].p_bc);
+
+       auto Trans_wc0 = Trans_bc0 * Trans_wb;
+       auto Trans_wc1 = Trans_bc1 * Trans_wb;
+
         // TODO: 从 frame->features 中挑选点进行三角化，结果将保存在 feature manager 中
         for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
             std::vector<Quaternion> all_q_wb;
             std::vector<Vector3> all_p_wb;
             std::vector<Vector2> all_norm;
-            // TODO: 
+            // TODO:
+            // observeNum
+            auto observe0 = it->second->observes.front()->norms[0];
+            auto observe1 = it->second->observes.front()->norms[1];
+            it->second->p_w = Trianglator::linearTriangulation(Trans_wc0, Trans_wc1, observe0, observe1);
+            std::cout<<it->second->p_w<<std::endl;
         }
         return true;
     }

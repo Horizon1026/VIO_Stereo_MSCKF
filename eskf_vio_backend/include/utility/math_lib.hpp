@@ -103,7 +103,7 @@ namespace ESKF_VIO_BACKEND {
         }
         static Scalar ComputeRotationMagnitude(Vector3 &delta_r) {
             Quaternion delta_q(
-                Scalar(1.0), 
+                Scalar(1.0),
                 Scalar(0.5) * delta_r(0),
                 Scalar(0.5) * delta_r(1),
                 Scalar(0.5) * delta_r(2));
@@ -125,6 +125,15 @@ namespace ESKF_VIO_BACKEND {
             pry.y() = std::asin(- R(0, 2)) * static_cast<Scalar>(57.295779579);
             pry.z() = std::atan2(R(0, 1), R(0, 0)) * static_cast<Scalar>(57.295779579);
             return pry;
+        }
+
+        static Eigen::Matrix<Scalar, 4, 4> qtToTransformMatrix(const Quaternion &q, const Vector3 &t)
+        {
+            Eigen::Matrix<Scalar, 4, 4> Trans; // Your Transformation Matrix
+            Trans.setIdentity();
+            Trans.block<3,3>(0,0) = q.matrix();
+            Trans.block<3,1>(0,3) = t;
+            return Trans;
         }
 
 
