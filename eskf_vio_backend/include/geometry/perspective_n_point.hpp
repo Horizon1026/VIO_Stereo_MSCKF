@@ -12,6 +12,9 @@ namespace ESKF_VIO_BACKEND {
         uint32_t maxIterateTimes = 10;
         // delta_x 的收敛判断阈值
         Scalar maxNormDeltaX = Scalar(1e-6);
+        // huber 核函数的阈值及其平方
+        Scalar huberThres = Scalar(1);
+        Scalar huberThresSqr = Scalar(1);
 
     public:
         /* 构造函数与析构函数 */
