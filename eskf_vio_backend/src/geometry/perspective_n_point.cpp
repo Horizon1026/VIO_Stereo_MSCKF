@@ -74,6 +74,7 @@ namespace ESKF_VIO_BACKEND {
                                        const std::vector<Vector2> &pts_2d,
                                        Quaternion &q_wc,
                                        Vector3 &p_wc) {
+        // TODO: need P3P model
         return true;
     }
 
