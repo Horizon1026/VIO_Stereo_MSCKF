@@ -4,6 +4,7 @@
 
 /* 内部依赖 */
 #include <perspective_n_point.hpp>
+#include <tick_tock.hpp>
 using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
@@ -49,7 +50,9 @@ int main(int argc, char **argv) {
     std::cout << "Basic pnp:" << std::endl;
     res_q_wc.setIdentity();
     res_p_wc.setZero();
+    TickTockTimer timer;
     pnpSolver.EstimatePose(pts_3d, pts_2d, res_q_wc, res_p_wc);
+    std::cout << "cost time is " << timer.TickTock() << " ms" << std::endl;
     std::cout << "res_q_wc is [" << res_q_wc.w() << ", " << res_q_wc.x() << ", " << res_q_wc.y() <<
         ", " << res_q_wc.z() << "]\n";
     std::cout << "res_p_wc is " << res_p_wc.transpose() << std::endl;
@@ -57,7 +60,9 @@ int main(int argc, char **argv) {
     std::cout << "Kernel pnp:" << std::endl;
     res_q_wc.setIdentity();
     res_p_wc.setZero();
+    timer.TickTock();
     pnpSolver.EstimatePoseKernel(pts_3d, pts_2d, res_q_wc, res_p_wc);
+    std::cout << "cost time is " << timer.TickTock() << " ms" << std::endl;
     std::cout << "res_q_wc is [" << res_q_wc.w() << ", " << res_q_wc.x() << ", " << res_q_wc.y() <<
         ", " << res_q_wc.z() << "]\n";
     std::cout << "res_p_wc is " << res_p_wc.transpose() << std::endl;
@@ -65,7 +70,9 @@ int main(int argc, char **argv) {
     std::cout << "RANSAC pnp:" << std::endl;
     res_q_wc.setIdentity();
     res_p_wc.setZero();
+    timer.TickTock();
     pnpSolver.EstimatePoseRANSAC(pts_3d, pts_2d, res_q_wc, res_p_wc);
+    std::cout << "cost time is " << timer.TickTock() << " ms" << std::endl;
     std::cout << "res_q_wc is [" << res_q_wc.w() << ", " << res_q_wc.x() << ", " << res_q_wc.y() <<
         ", " << res_q_wc.z() << "]\n";
     std::cout << "res_p_wc is " << res_p_wc.transpose() << std::endl;
