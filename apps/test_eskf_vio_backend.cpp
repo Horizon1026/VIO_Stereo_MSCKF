@@ -1,9 +1,11 @@
 /* 外部依赖 */
+#define TEST 0
 #include <fstream>
 #include <iostream>
 
 /* 内部依赖 */
 #include <backend.hpp>
+#include <log_api.hpp>
 using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
@@ -122,7 +124,50 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
 }
 
+bool test_triangulation()
+{
+    int poseNums = 2;      // 相机数目
+
+    Vector3 landmark{2, 2, 2};
+    std::vector<Vector2> observe_vec;
+    std::vector<Quaternion> quat_vec;
+    std::vector<Vector3> t_vec;
+
+    Scalar radius = 8;
+    for (int n = 0; n < poseNums; ++n) {
+        Scalar theta = n * 2 * M_PI / (poseNums * 16); // 1/16 圆弧
+        // 绕 z 轴 旋转
+        Matrix33 R;
+        R = Eigen::AngleAxis<Scalar>(theta, Vector3::UnitZ());
+        Vector3 t = Vector3(radius * cos(theta) - radius, radius * sin(theta), 1 * sin(2 * theta));
+        //cameraPoses.push_back(Frame(R, t));
+        auto res = R * landmark + t;
+        observe_vec.emplace_back(res[0]/res[2],res[1]/res[2]);
+        quat_vec.emplace_back(R);
+        t_vec.emplace_back(t);
+        // std::cout<<"res: "<<observe_vec.back()<<std::endl;
+    }
+
+    Vector3 lm_esti;
+
+    Trianglator::TrianglateAnalytic(quat_vec, t_vec, observe_vec, lm_esti);
+    if ((lm_esti - landmark).norm() <0.0001)
+    {
+        LogInfo("triangulation test passed");
+        return true;
+    }
+    else
+    {
+        LogError("triangulation test not passed");
+        return false;
+    }
+}
+
 int main(int argc, char **argv) {
+#if TEST
+    test_triangulation();
+    return 0;
+#else
     // 处理输入的配置参数路径和数据路径
     if (argc != 3) {
         std::cerr << "Data path and Config path are needed." << std::endl;
@@ -160,4 +205,6 @@ int main(int argc, char **argv) {
         }
     }
     return 0;
+
+#endif
 }

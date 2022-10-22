@@ -23,7 +23,7 @@ namespace ESKF_VIO_BACKEND {
     using fp32 = float;
     using fp64 = double;
 
-    using Scalar = float;
+    using Scalar = double;
     using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using Quaternion = Eigen::Quaternion<Scalar>;
