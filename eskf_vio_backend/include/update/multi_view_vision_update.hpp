@@ -21,7 +21,7 @@ namespace ESKF_VIO_BACKEND {
         // 用于构造量测方程的特征点
         std::vector<std::shared_ptr<Feature>> features;
         // propagator 预测的，以及 update 过程输出的 errorState 结果
-        // [p_wb   v_wb   q_wb  ba  bg]  [p_bc0  q_bc0  p_bc1  q_bc1 ...]  [p_wb0  q_wb0  p_wb1  q_wb1 ...]
+        // [p_wb  v_wb  q_wb  ba  bg]  [p_bc0  q_bc0  p_bc1  q_bc1 ...]  [p_wb0  q_wb0  p_wb1  q_wb1 ...]
         Vector delta_x;
         // 状态的协方差矩阵
         Matrix covariance;
@@ -36,7 +36,7 @@ namespace ESKF_VIO_BACKEND {
         uint32_t Hx_rows;
         // ESKF 中的卡尔曼增益
         Matrix K;
-        // 量测噪声（使用时默认为对角矩阵）
+        // 量测噪声（使用时默认为对角矩阵 R ）
         Scalar measureNoise;
         // 边缘化策略
         MargPolicy margPolicy = NO_MARG;
