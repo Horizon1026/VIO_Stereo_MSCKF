@@ -29,7 +29,6 @@ namespace ESKF_VIO_BACKEND {
                 newItem->imuCamCov.setZero(imuSize, camSize);
                 this->camCov.setZero(camSize, camSize);
             }
-            newItem->errorState.Reset();
 
             // 从零开始创建的 propagate 起点，名义运动状态归为初值
             newItem->nominalState.p_wb = this->initState.p_wb;
@@ -131,10 +130,7 @@ namespace ESKF_VIO_BACKEND {
         this->G.block<3, 3>(INDEX_BA, INDEX_NWA) = I3_sqrt_dt;
         this->G.block<3, 3>(INDEX_BG, INDEX_NWG) = I3_sqrt_dt;
 
-        // propagate 误差状态以及对应的 IMU 协方差矩阵
-        Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> error_x_0 = this->ErrorStateConvert(item_0->errorState);
-        Eigen::Matrix<Scalar, IMU_STATE_SIZE, 1> error_x_1 = this->F * error_x_0;
-        item_1->errorState = this->ErrorStateConvert(error_x_1);
+        // propagate 误差状态对应的 IMU 协方差矩阵
         item_1->imuCov = this->F * item_0->imuCov * this->F.transpose() + this->G * this->Q * this->G.transpose();
 
         // propagate IMU 与相机之间的协方差矩阵
@@ -209,19 +205,6 @@ namespace ESKF_VIO_BACKEND {
         }
         LogInfo(">> Propagator reset at " << timeStamp << "s, first item time stamp is " <<
             this->items.front()->timeStamp << "s, " << this->items.size() << " items maintained.");
-        return true;
-    }
-
-
-    /* 从某一个 item 中提取出完整误差状态向量 */
-    bool PropagateQueue::GetFullErrorState(const std::shared_ptr<IMUPropagateQueueItem> &item,
-                                             Vector &errorDelta_x) {
-        if (item == nullptr) {
-            return false;
-        }
-        uint32_t size = IMU_STATE_SIZE + this->propagator->extrinsics.size() * 6 + this->propagator->frames.size() * 6;
-        errorDelta_x.setZero(size, 1);
-        errorDelta_x.head<IMU_STATE_SIZE>() = ErrorStateConvert(item->errorState);
         return true;
     }
 }

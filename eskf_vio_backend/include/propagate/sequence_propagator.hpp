@@ -9,8 +9,6 @@ namespace ESKF_VIO_BACKEND {
     /* IMU propagate 序列中的元素 */
     class IMUPropagateQueueItem {
     public:
-        // 完整误差状态
-        IMUFullState errorState;
         // 运动相关名义状态
         IMUMotionState nominalState;
         // IMU 完整状态协方差矩阵
@@ -67,9 +65,6 @@ namespace ESKF_VIO_BACKEND {
         void ResetProcessFunction(void);
         /* 重置序列初始时刻点 */
         bool ResetOrigin(const fp64 timeStamp, const fp64 threshold);
-        /* 从某一个 item 中提取出完整误差状态向量 */
-        bool GetFullErrorState(const std::shared_ptr<IMUPropagateQueueItem> &item,
-                               Vector &errorDelta_x);
     private:
         /* 中值积分法 propagate 运动相关名义状态 */
         void PropagateMotionNominalState(const std::shared_ptr<IMUPropagateQueueItem> &item_0,

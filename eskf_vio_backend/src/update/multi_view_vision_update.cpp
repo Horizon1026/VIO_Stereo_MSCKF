@@ -260,10 +260,6 @@ namespace ESKF_VIO_BACKEND {
     /* 更新误差状态和名义状态 */
     bool MultiViewVisionUpdate::UpdateState(void) {
         // Step 1: 执行卡尔曼滤波的 update 过程
-        // 获得 propagator 预测的误差状态向量
-        this->propagator->GetFullErrorState(this->propagator->items.front(), this->delta_x);
-        // 检查当前协方差矩阵的维度是否和状态维度一致，协方差矩阵应当在 this->ExpandCameraStateCovariance() 做好了填充构造扩维
-        RETURN_FALSE_IF(this->delta_x.rows() != this->covariance.rows());
         // 计算卡尔曼增益
         Matrix &&H = this->Hx_r.block(0, 0, this->Hx_r.rows(), this->Hx_r.cols() - 1);
         Vector &&r = this->Hx_r.block(0, this->Hx_r.cols() - 1, this->Hx_r.rows(), 1);
@@ -272,7 +268,7 @@ namespace ESKF_VIO_BACKEND {
         this->meas_covariance.diagonal().array() += this->measureNoise;     // S = H * P * Ht + R
         this->K = PHt * Utility::Inverse(this->meas_covariance);    // K = P * Ht * Sinv
         // 更新误差状态向量
-        this->delta_x = this->K * r;       // TODO: dx = K * r
+        this->delta_x = this->K * r;       // dx = K * r
         Matrix I_KH = - this->K * H;
         I_KH.diagonal().array() += Scalar(1);
         this->covariance = I_KH * this->covariance;     // P = (I - K * H) * P
@@ -303,9 +299,6 @@ namespace ESKF_VIO_BACKEND {
             (*it)->q_wb.normalize();
             ++idx;
         }
-
-        // Step 3: 清空误差状态
-        this->propagator->items.front()->errorState.Reset();
         return true;
     }
 
