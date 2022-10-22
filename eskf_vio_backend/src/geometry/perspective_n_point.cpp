@@ -79,10 +79,10 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 基于 Huber 和函数，抑制 outliers，使用所有输入的点进行估计，输入 pose 为初值 */
-    bool PnPSolver::EstimatePoseHuber(const std::vector<Vector3> &pts_3d,
-                                      const std::vector<Vector2> &pts_2d,
-                                      Quaternion &q_wc,
-                                      Vector3 &p_wc) {
+    bool PnPSolver::EstimatePoseKernel(const std::vector<Vector3> &pts_3d,
+                                       const std::vector<Vector2> &pts_2d,
+                                       Quaternion &q_wc,
+                                       Vector3 &p_wc) {
         if (pts_3d.size() != pts_2d.size() || pts_3d.empty()) {
             return false;
         }
@@ -115,16 +115,12 @@ namespace ESKF_VIO_BACKEND {
                                   0, invDep, - p_c(1) * invDep2;
                 jacobian.block<2, 3>(0, 0) = jacobian_2d_3d * (- Matrix33(q_wc.inverse()));
                 jacobian.block<2, 3>(0, 3) = jacobian_2d_3d * Utility::SkewSymmetricMatrix(p_c);
-                // 计算 huber 核权重
+                // 计算核函数权重
                 Scalar r_norm = residual.norm();
-                Scalar huber = Scalar(1);
-                if (r_norm > this->huberThres) {
-                    huber = Scalar(2) * std::sqrt(r_norm) * this->huberThres - this->huberThresSqr;
-                    huber /= r_norm;
-                }
+                Scalar kernel = this->Cauchy(Scalar(1), r_norm);
                 // 填充高斯牛顿方程
-                H += jacobian.transpose() * jacobian * huber;
-                b += - jacobian.transpose() * residual * huber;
+                H += jacobian.transpose() * jacobian * kernel;
+                b += - jacobian.transpose() * residual * kernel;
             }
 
             // 求解高斯牛顿增量方程

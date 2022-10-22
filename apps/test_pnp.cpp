@@ -54,10 +54,10 @@ int main(int argc, char **argv) {
         ", " << res_q_wc.z() << "]\n";
     std::cout << "res_p_wc is " << res_p_wc.transpose() << std::endl;
 
-    std::cout << "Huber pnp:" << std::endl;
+    std::cout << "Kernel pnp:" << std::endl;
     res_q_wc.setIdentity();
     res_p_wc.setZero();
-    pnpSolver.EstimatePoseHuber(pts_3d, pts_2d, res_q_wc, res_p_wc);
+    pnpSolver.EstimatePoseKernel(pts_3d, pts_2d, res_q_wc, res_p_wc);
     std::cout << "res_q_wc is [" << res_q_wc.w() << ", " << res_q_wc.x() << ", " << res_q_wc.y() <<
         ", " << res_q_wc.z() << "]\n";
     std::cout << "res_p_wc is " << res_p_wc.transpose() << std::endl;
