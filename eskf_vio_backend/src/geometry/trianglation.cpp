@@ -31,4 +31,23 @@ bool Trianglator::TrianglateAnalytic(const std::vector<Quaternion> &q_wc,
     return true;
 }
 
+/*measure the accuracy of the reprojection estimation*/
+Scalar Trianglator::getReprojectionCost(const Quaternion& q, const Vector3& t, const Vector3& lm, const Vector2& groundtruth ) { 
+  // Compute hi1, hi2, and hi3 as Equation (37).
+  const Scalar& alpha = lm(0)/lm(2);
+  const Scalar& beta = lm(1)/lm(2);
+  const Scalar& rho = 1.0/lm(2);
+
+  Vector3 h = q.toRotationMatrix()* Vector3(alpha, beta, 1.0) + rho*t;
+  Scalar& h1 = h(0);
+  Scalar& h2 = h(1);
+  Scalar& h3 = h(2);
+
+  // Predict the feature observation in ci frame.
+  Vector2 z_hat(h1/h3, h2/h3);
+
+  // Compute the residual.
+  return (z_hat-groundtruth).squaredNorm();
+}
+
 }

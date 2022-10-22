@@ -1,5 +1,5 @@
 /* 外部依赖 */
-#define TEST 0
+#define TEST 1
 #include <fstream>
 #include <iostream>
 
@@ -163,9 +163,38 @@ bool test_triangulation()
     }
 }
 
+bool test_getReprojectionCost()
+{
+    Vector3 landmark{2, 2, 2};
+    Scalar radius = 4;
+    Scalar theta = 2 * M_PI / (16); // 1/16 圆弧
+    // 绕 z 轴 旋转
+    Matrix33 R;
+    R = Eigen::AngleAxis<Scalar>(theta, Vector3::UnitZ());
+    Quaternion quat(R);
+    Vector3 t = Vector3(radius * cos(theta) - radius, radius * sin(theta), 1 * sin(2 * theta));
+    //cameraPoses.push_back(Frame(R, t));
+    auto res = R * landmark + t;
+    Vector2 proj_pt{res[0]/res[2], res[1]/res[2]};
+    // Vector3 lm_init(landmark[0]/landmark[2],landmark[1]/landmark[2],1.0/landmark[2]);
+    auto diff = Trianglator::getReprojectionCost(quat,  t, landmark, proj_pt);
+    if (std::abs(diff)<0.0001)
+    {
+        LogInfo("test_getReprojectionCost passed");
+        return true;
+    }
+    else
+    {
+        LogError("test_getReprojectionCost not passed");
+        return true;
+    }
+
+}
+
 int main(int argc, char **argv) {
 #if TEST
     test_triangulation();
+    test_getReprojectionCost();
     return 0;
 #else
     // 处理输入的配置参数路径和数据路径
