@@ -28,10 +28,14 @@ namespace ESKF_VIO_BACKEND {
     using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using Quaternion = Eigen::Quaternion<Scalar>;
     using Matrix23 = Eigen::Matrix<Scalar, 2, 3>;
+    using Matrix26 = Eigen::Matrix<Scalar, 2, 6>;
     using Matrix33 = Eigen::Matrix<Scalar, 3, 3>;
     using Matrix44 = Eigen::Matrix<Scalar, 4, 4>;
-    using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
+    using Matrix66 = Eigen::Matrix<Scalar, 6, 6>;
     using Vector2 = Eigen::Matrix<Scalar, 2, 1>;
+    using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
+    using Vector4 = Eigen::Matrix<Scalar, 4, 1>;
+    using Vector6 = Eigen::Matrix<Scalar, 6, 1>;
 
     #define RETURN_FALSE_IF_FALSE(...)  if ((__VA_ARGS__) == false) { return false; }
     #define RETURN_FALSE_IF_TRUE(...)   if ((__VA_ARGS__) == true) { return false; }

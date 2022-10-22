@@ -7,18 +7,18 @@ namespace ESKF_VIO_BACKEND {
     /* PnP 问题求解器 */
     class PnPSolver {
     public:
-        // 相关参数
+        /* 相关参数 */
+        // 最大迭代次数
+        uint32_t maxIterateTimes = 10;
+        // delta_x 的收敛判断阈值
+        Scalar maxNormDeltaX = Scalar(1e-6);
+
     public:
         /* 构造函数与析构函数 */
         PnPSolver() {}
         ~PnPSolver() {}
     public:
         /* 使用所有输入的点进行估计，输入 pose 为初值 */
-        /*
-            frame i -> pts p_w  ->  frame i q_wb  -> w;  frame i p_wb [0,0,0]
-            imu - cam_x  ->  q_bc_x, p_bc_x
-            frame j q_wb/p_wb --[q_bc/p_bc]-> q_wc/p_wc  =>  pnp  =>  wc  --[bc]->  wb  ->  frame j
-        */
         bool EstimatePose(const std::vector<Vector3> &pts_3d,
                           const std::vector<Vector2> &pts_2d,
                           Quaternion &q_wc,

@@ -76,16 +76,20 @@ else()
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/propagate    PROPAGATE)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/update       UPDATE)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/utility      UTILITY)
-    # 添加源文件（非库内）
-    aux_source_directory(${CMAKE_SOURCE_DIR}/apps SRC_LIST)
-    # 生成库
+    # 生成可执行文件
     add_executable(test_eskf_vio_backend
-        ${SRC_LIST}
+        ${CMAKE_SOURCE_DIR}/apps/test_eskf_vio_backend.cpp
         ${BACKEND}
         ${DATA_MANAGER}
         ${GEOMETRY}
         ${PROPAGATE}
         ${UPDATE}
+        ${UTILITY}
+    )
+    # 生成可执行文件
+    add_executable(test_pnp
+        ${CMAKE_SOURCE_DIR}/apps/test_pnp.cpp
+        ${GEOMETRY}
         ${UTILITY}
     )
 
