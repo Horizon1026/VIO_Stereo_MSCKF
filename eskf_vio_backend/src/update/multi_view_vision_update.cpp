@@ -272,7 +272,7 @@ namespace ESKF_VIO_BACKEND {
         this->meas_covariance.diagonal().array() += this->measureNoise;     // S = H * P * Ht + R
         this->K = PHt * Utility::Inverse(this->meas_covariance);    // K = P * Ht * Sinv
         // 更新误差状态向量
-        this->delta_x += this->K * r;       // TODO: dx = dx + K * r
+        this->delta_x = this->K * r;       // TODO: dx = K * r
         Matrix I_KH = - this->K * H;
         I_KH.diagonal().array() += Scalar(1);
         this->covariance = I_KH * this->covariance;     // P = (I - K * H) * P
