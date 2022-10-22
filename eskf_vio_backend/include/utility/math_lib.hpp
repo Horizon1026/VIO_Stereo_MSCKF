@@ -127,16 +127,6 @@ namespace ESKF_VIO_BACKEND {
             return pry;
         }
 
-        static Eigen::Matrix<Scalar, 4, 4> qtToTransformMatrix(const Quaternion &q, const Vector3 &t)
-        {
-            Eigen::Matrix<Scalar, 4, 4> Trans; // Your Transformation Matrix
-            Trans.setIdentity();
-            Trans.block<3,3>(0,0) = q.matrix();
-            Trans.block<3,1>(0,3) = t;
-            return Trans;
-        }
-
-
         /* 计算对称矩阵的逆 */
         static Matrix Inverse(const Matrix &A) {
             Eigen::SelfAdjointEigenSolver<Matrix> saes(A);
@@ -146,7 +136,6 @@ namespace ESKF_VIO_BACKEND {
                 )).asDiagonal() * saes.eigenvectors().transpose();
             return Ainv;
         }
-
 
     public:
         /* 构造函数与析构函数 */
