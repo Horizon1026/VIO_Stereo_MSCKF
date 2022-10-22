@@ -12,6 +12,13 @@ namespace ESKF_VIO_BACKEND {
         uint32_t maxIterateTimes = 10;
         // delta_x 的收敛判断阈值
         Scalar maxNormDeltaX = Scalar(1e-6);
+        // RANSAC 内嵌算法相关参数
+        struct PnP_RANSAC_Param {
+            Scalar inlierThres = 1e-3;
+            uint32_t maxIterateTimes = 20;
+            Scalar inlierRateThres = 0.9;
+        } ransacParam;
+        
 
     public:
         /* 构造函数与析构函数 */
@@ -23,11 +30,21 @@ namespace ESKF_VIO_BACKEND {
                           const std::vector<Vector2> &pts_2d,
                           Quaternion &q_wc,
                           Vector3 &p_wc);
+        /* P3P，使用 3 对输入的点进行估计，输入 pose 为初值 */
+        bool EstimatePoseP3P(const std::vector<Vector3> &pts_3d,
+                             const std::vector<Vector2> &pts_2d,
+                             Quaternion &q_wc,
+                             Vector3 &p_wc);
         /* 采用 RANSAC 方法，挑选输入的点进行估计，输入 pose 为初值 */
         bool EstimatePoseRANSAC(const std::vector<Vector3> &pts_3d,
                                 const std::vector<Vector2> &pts_2d,
                                 Quaternion &q_wc,
                                 Vector3 &p_wc);
+        bool EstimatePoseRANSAC(const std::vector<Vector3> &pts_3d,
+                                const std::vector<Vector2> &pts_2d,
+                                Quaternion &q_wc,
+                                Vector3 &p_wc,
+                                std::vector<bool> &isInlier);
         /* 基于核函数，抑制 outliers，使用所有输入的点进行估计，输入 pose 为初值 */
         bool EstimatePoseKernel(const std::vector<Vector3> &pts_3d,
                                 const std::vector<Vector2> &pts_2d,

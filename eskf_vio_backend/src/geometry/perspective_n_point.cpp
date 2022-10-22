@@ -3,6 +3,7 @@
 #include <math_lib.hpp>
 #include <log_api.hpp>
 /* 外部依赖 */
+#include <set>
 
 namespace ESKF_VIO_BACKEND {
     /* 使用所有输入的点进行估计，输入 pose 为初值 */
@@ -50,7 +51,6 @@ namespace ESKF_VIO_BACKEND {
             // 求解高斯牛顿增量方程
             dx = H.ldlt().solve(b);
             Scalar norm_dx = dx.norm();
-            LogDebug("delta_x is [" << norm_dx << "] " << dx.transpose());
             if (std::isnan(norm_dx) == true) {
                 return false;
             }
@@ -69,12 +69,97 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+    /* P3P，使用 3 对输入的点进行估计，输入 pose 为初值 */
+    bool PnPSolver::EstimatePoseP3P(const std::vector<Vector3> &pts_3d,
+                                    const std::vector<Vector2> &pts_2d,
+                                    Quaternion &q_wc,
+                                    Vector3 &p_wc) {
+        if (pts_3d.size() != pts_2d.size() || pts_3d.size() < 3) {
+            return false;
+        }
+        // TODO:
+
+        return true;
+    }
+
+
     /* 采用 RANSAC 方法，挑选输入的点进行估计，输入 pose 为初值 */
     bool PnPSolver::EstimatePoseRANSAC(const std::vector<Vector3> &pts_3d,
                                        const std::vector<Vector2> &pts_2d,
                                        Quaternion &q_wc,
                                        Vector3 &p_wc) {
-        // TODO: need P3P model
+        if (pts_3d.size() != pts_2d.size() || pts_3d.empty()) {
+            return false;
+        }
+        uint32_t iter = this->ransacParam.maxIterateTimes;
+        Quaternion best_q_wc = q_wc;
+        Vector3 best_p_wc = p_wc;
+        uint32_t best_score = 0;
+        uint32_t score = 0;
+
+        // RANSAC 循环
+        std::set<uint32_t> indice;
+        std::vector<Vector3> subPts3d;
+        std::vector<Vector2> subPts2d;
+        subPts3d.reserve(3);
+        subPts2d.reserve(3);
+        while (iter) {
+            // 随机选择三对 3D-2D
+            indice.clear();
+            subPts3d.clear();
+            subPts2d.clear();
+            while (indice.size() < 3) {
+                indice.insert(std::rand() % pts_3d.size());
+            }
+            for (auto it = indice.begin(); it != indice.end(); ++it) {
+                subPts3d.emplace_back(pts_3d[*it]);
+                subPts2d.emplace_back(pts_2d[*it]);
+            }
+            // 代入 PnP 模型，计算模型参数（这里如果能换成 P3P 模型会更好）
+            q_wc = best_q_wc;
+            p_wc = best_p_wc;
+            this->EstimatePose(subPts3d, subPts2d, q_wc, p_wc);
+            // 将模型代入所有点对，计算得分
+            score = 0;
+            for (uint32_t i = 0; i < pts_3d.size(); ++i) {
+                Vector3 p_c = q_wc.inverse() * (pts_3d[i] - p_wc);
+                Vector2 r = Vector2(p_c(0) / p_c(2), p_c(1) / p_c(2)) - pts_2d[i];
+                if (r.squaredNorm() < this->ransacParam.inlierThres) {
+                    ++score;
+                }
+            }
+            // 若得分更高，则更新模型参数
+            if (score > best_score) {
+                best_score = score;
+                best_q_wc = q_wc;
+                best_p_wc = p_wc;
+            }
+            // 提前终止迭代
+            if (Scalar(score) / Scalar(pts_3d.size()) > this->ransacParam.inlierRateThres) {
+                break;
+            }
+            --iter;
+        }
+        return true;
+    }
+
+
+
+    /* 采用 RANSAC 方法，挑选输入的点进行估计，输入 pose 为初值 */
+    bool PnPSolver::EstimatePoseRANSAC(const std::vector<Vector3> &pts_3d,
+                                       const std::vector<Vector2> &pts_2d,
+                                       Quaternion &q_wc,
+                                       Vector3 &p_wc,
+                                       std::vector<bool> &isInlier) {
+        RETURN_FALSE_IF_FALSE(this->EstimatePoseRANSAC(pts_3d, pts_2d, q_wc, p_wc));
+        isInlier.resize(pts_3d.size(), true);
+        for (uint32_t i = 0; i < pts_3d.size(); ++i) {
+            Vector3 p_c = q_wc.inverse() * (pts_3d[i] - p_wc);
+            Vector2 r = Vector2(p_c(0) / p_c(2), p_c(1) / p_c(2)) - pts_2d[i];
+            if (r.squaredNorm() >= this->ransacParam.inlierThres) {
+                isInlier[i] = false;
+            }
+        }
         return true;
     }
 
@@ -127,7 +212,6 @@ namespace ESKF_VIO_BACKEND {
             // 求解高斯牛顿增量方程
             dx = H.ldlt().solve(b);
             Scalar norm_dx = dx.norm();
-            LogDebug("delta_x is [" << norm_dx << "] " << dx.transpose());
             if (std::isnan(norm_dx) == true) {
                 return false;
             }
