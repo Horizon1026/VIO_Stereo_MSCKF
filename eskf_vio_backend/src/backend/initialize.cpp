@@ -47,39 +47,40 @@ namespace ESKF_VIO_BACKEND {
         if (frame == nullptr) {
             return false;
         }
-        /*
-            frame i -> q_wb p_wb
-            i cam 0 / cam 1  ->  bc_0  bc_1  ->   wc_0  wc_1  -> trianglize  ->  p_w
-        */
+        Quaternion &q_wb = frame->q_wb;
+        Vector3 &p_wb = frame->p_wb;
 
-    //    auto Trans_wb = Utility::qtToTransformMatrix(frame->q_wb, frame->p_wb);
-    //    auto Trans_bc0 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[0].q_bc, this->frameManager.extrinsics[0].p_bc);
-    //    auto Trans_bc1 = Utility::qtToTransformMatrix(this->frameManager.extrinsics[1].q_bc, this->frameManager.extrinsics[1].p_bc);
-
-    //    auto Trans_wc0 = Trans_bc0 * Trans_wb;
-    //    auto Trans_wc1 = Trans_bc1 * Trans_wb;
-
-        // TODO: 从 frame->features 中挑选点进行三角化，结果将保存在 feature manager 中
+        // 从 frame->features 中挑选点进行三角化，结果将保存在 feature manager 中
         for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
             auto feature = it->second;
             std::vector<Quaternion> all_q_wc;
             std::vector<Vector3> all_p_wc;
             std::vector<Vector2> all_norm;
+            all_q_wc.reserve(20);
+            all_p_wc.reserve(20);
+            all_norm.reserve(20);
 
             auto multiview = feature->observes[frame->id - feature->firstFrameID]->norms;
             for (auto it = multiview.begin(); it != multiview.end(); ++it) {
                 Quaternion &q_bc = this->frameManager.extrinsics[it->first].q_bc;
                 Vector3 &p_bc = this->frameManager.extrinsics[it->first].p_bc;
-                Quaternion &q_wb = frame->q_wb;
-                Vector3 &p_wb = frame->p_wb;
-
+                /* T_wc = T_wb * T_bc */
+                /* [R_wc  t_wc] = [R_wb  t_wb]  *  [R_bc  t_bc] = [ R_wb * R_bc  R_wb * t_bc + t_wb]
+                   [  0    1  ]   [  0     1 ]     [  0     1 ]   [      0                1        ] */
+                /* T_wb = T_wc * T_bc.inv */
+                /* [R_wb  t_wb] = [R_wc  t_wc]  *  [R_bc.t  - R_bc.t * t_bc] = [ R_wc * R_bc.t  - R_wc * R_bc.t * t_bc + t_wc]
+                   [  0    1  ]   [  0     1 ]     [  0             1      ]   [      0                       1              ] */
+                all_q_wc.emplace_back(Quaternion(q_wb * q_bc));
+                all_p_wc.emplace_back(Vector3(q_wb * p_bc + p_wb));
+                all_norm.emplace_back(multiview.find(it->first)->second);
             }
-            // TODO:
-            // observeNum
-            // auto observe0 = it->second->observes.front()->norms[0];
-            // auto observe1 = it->second->observes.front()->norms[1];
-            // it->second->p_w = Trianglator::linearTriangulation(Trans_wc0, Trans_wc1, observe0, observe1);
-            // std::cout<<it->second->p_w<<std::endl;
+            if (this->trianglator.TrianglateAnalytic(all_q_wc, all_p_wc, all_norm, feature->p_w) == true) {
+                feature->status = Feature::SOLVED;
+                LogDebug("feature " << feature->id << " is solved, p_w is " << feature->p_w.transpose());
+            } else {
+                feature->status = Feature::UNSOLVED;
+                LogDebug("feature " << feature->id << " is not solved.");
+            }
         }
         return true;
     }

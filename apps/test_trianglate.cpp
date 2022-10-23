@@ -16,8 +16,8 @@ bool TestTrianglateAnalytic() {
 
     Vector3 p_w{2, 2, 2};
     std::vector<Vector2> observe_vec;
-    std::vector<Quaternion> q_cw_vec;
-    std::vector<Vector3> p_cw_vec;
+    std::vector<Quaternion> q_wc_vec;
+    std::vector<Vector3> p_wc_vec;
 
     Scalar radius = 8;
     for (uint32_t n = 0; n < poseNums; ++n) {
@@ -29,12 +29,12 @@ bool TestTrianglateAnalytic() {
         //cameraPoses.push_back(Frame(R_cw, p_cw));
         auto p_c = R_cw * p_w + p_cw;
         observe_vec.emplace_back(p_c[0] / p_c[2], p_c[1] / p_c[2]);
-        q_cw_vec.emplace_back(R_cw);
-        p_cw_vec.emplace_back(p_cw);
+        q_wc_vec.emplace_back(R_cw.transpose());
+        p_wc_vec.emplace_back(- R_cw.transpose() * p_cw);
     }
 
     Vector3 res_p_w;
-    solver.TrianglateAnalytic(q_cw_vec, p_cw_vec, observe_vec, res_p_w);
+    solver.TrianglateAnalytic(q_wc_vec, p_wc_vec, observe_vec, res_p_w);
     std::cout << "TestTrianglateAnalytic :";
     std::cout << "set p_w is " << p_w.transpose() << ", res p_w is " << res_p_w.transpose() << std::endl;
     return true;

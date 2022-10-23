@@ -13,9 +13,9 @@
       inner_loop_max_iteration(10) {
 
 */
-# define INNER_LOOP_MAX_ITER (10) //inner_loop_max_iteration
-# define OUTER_LOOP_MAX_ITER (10)//outer_loop_max_iteration
-# define ESTIMATION_PRECISION (5e-7)//estimation_precision
+#define INNER_LOOP_MAX_ITER (10) //inner_loop_max_iteration
+#define OUTER_LOOP_MAX_ITER (10)//outer_loop_max_iteration
+#define ESTIMATION_PRECISION (5e-7)//estimation_precision
 namespace ESKF_VIO_BACKEND {
 
     bool Trianglator::TrianglateAnalytic(const std::vector<Quaternion> &q_wc,
@@ -28,21 +28,28 @@ namespace ESKF_VIO_BACKEND {
         }
         this->analyticTemp.A.resize(num * 2, 4);
         for (uint32_t i = 0; i < num; ++i) {
-            auto pose = Utility::TransformMatrix(q_wc[i], p_wc[i]);
+            auto pose = Utility::TransformMatrix(q_wc[i].inverse(), - (q_wc[i].inverse() * p_wc[i]));
             this->analyticTemp.A.row(2 * i) = norm[i][0] * pose.row(2) - pose.row(0);
             this->analyticTemp.A.row(2 * i + 1) = norm[i][1] * pose.row(2) - pose.row(1);
         }
         Vector4 x = this->analyticTemp.A.jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>();
+
+        // 检查计算结果是否正确
         if (std::fabs(x(3)) < 1e-6) {
             return false;
         }
-        p_w(0) = x(0) / x(3);
-        p_w(1) = x(1) / x(3);
-        p_w(2) = x(2) / x(3);
+        p_w = x.head<3>() / x(3);
+        for (uint32_t i = 0; i < q_wc.size(); ++i) {
+            Vector3 p_c = q_wc[i].inverse() * (p_w - p_wc[i]);
+            if (p_c.z() < 0) {
+                return false;
+            }
+        }
         return true;
     }
 
 
+    // TODO: 接口似乎有问题，T_wc 和 T_cw 混淆
     bool Trianglator::TrianglateIterative(const std::vector<Quaternion> &q_wc,
                                           const std::vector<Vector3> &p_wc,
                                           const std::vector<Vector2> &norm,

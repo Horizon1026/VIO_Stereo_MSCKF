@@ -15,6 +15,7 @@ namespace ESKF_VIO_BACKEND {
     #define LogDebug(...) std::cout << "[Debug] " << __VA_ARGS__ << std::endl
     #define LogError(...) std::cout << "[Error] " << __VA_ARGS__ << std::endl
 #else
+    #define LogFixPercision()
     #define LogInfo(...)
     #define LogDebug(...)
     #define LogError(...)

@@ -74,25 +74,39 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
         std::cout << "   failed." << std::endl;
         return;
 	}
-	Quaternion q_wc;
-	Vector3 p_wc;
+	Quaternion q_wc0, q_wc1;
+	Vector3 p_wc0, p_wc1;
 	double timeStamp;
     uint32_t cnt = 0;
+    Vector3 p_bc0 = Vector3(0.05, 0.04, 0.03);
+    Vector3 p_bc1 = Vector3(0.05, -0.14, 0.03);
+    Quaternion q_bc0 = Quaternion(0.5, 0.5, -0.5, -0.5);
+    Quaternion q_bc1 = Quaternion(0.5, 0.5, -0.5, -0.5);
 
 	// 提取对应时间戳的相机位姿，计算此时的观测
 	while (std::getline(fsCam, oneLine) && !oneLine.empty()) {
 		std::vector<Eigen::Matrix<Scalar, 2, 1>> features_0;
 		std::vector<Eigen::Matrix<Scalar, 2, 1>> features_1;    // p_c0c1 = [0.1, 0, 0]
 		std::istringstream camData_0(oneLine);
-		camData_0 >> timeStamp >> q_wc.w() >> q_wc.x() >> q_wc.y() >> q_wc.z() >> p_wc.x() >> p_wc.y() >> p_wc.z();
+		camData_0 >> timeStamp >> q_wc0.w() >> q_wc0.x() >> q_wc0.y() >> q_wc0.z() >> p_wc0.x() >> p_wc0.y() >> p_wc0.z();
+        /* T_wb = T_wc * T_bc.inv */
+        /* [R_wb  t_wb] = [R_wc  t_wc]  *  [R_bc.t  - R_bc.t * t_bc] = [ R_wc * R_bc.t  - R_wc * R_bc.t * t_bc + t_wc]
+           [  0    1  ]   [  0     1 ]     [  0             1      ]   [      0                       1              ] */
+        Quaternion q_wb = q_wc0 * q_bc0.inverse();
+        Vector3 p_wb = - (q_wb * p_bc0) + p_wc0;
+        /* T_wc = T_wb * T_bc */
+        /* [R_wc  t_wc] = [R_wb  t_wb]  *  [R_bc  t_bc] = [ R_wb * R_bc  R_wb * t_bc + t_wb]
+           [  0    1  ]   [  0     1 ]     [  0     1 ]   [      0                1        ] */
+        q_wc1 = q_wb * q_bc1;
+        p_wc1 = q_wb * p_bc1 + p_wb;
 
 		// 将世界坐标系的 points 投影到归一化平面
 		for (unsigned long i = 0; i < allPoints.size(); i++) {
-			Vector3 pc_0 = q_wc.inverse() * (allPoints[i] - p_wc);
+			Vector3 pc_0 = q_wc0.inverse() * (allPoints[i] - p_wc0);
 			Eigen::Matrix<Scalar, 2, 1> feature_0 = Eigen::Matrix<Scalar, 2, 1>(pc_0(0, 0) / pc_0(2, 0), pc_0(1, 0) / pc_0(2, 0));
 			features_0.emplace_back(feature_0);
 
-            Vector3 pc_1 = q_wc.inverse() * (allPoints[i] - p_wc - q_wc * Vector3(0.1, 0, 0));
+            Vector3 pc_1 = q_wc1.inverse() * (allPoints[i] - p_wc1);
 			Eigen::Matrix<Scalar, 2, 1> feature_1 = Eigen::Matrix<Scalar, 2, 1>(pc_1(0, 0) / pc_1(2, 0), pc_1(1, 0) / pc_1(2, 0));
 			features_1.emplace_back(feature_1);
 		}
@@ -133,7 +147,7 @@ int main(int argc, char **argv) {
     configPath = argv[2];
 
     // 配置 std::cout 打印到指定文件
-    // std::ofstream logFile("../test_log/20221015_test_construct_measurement_function.txt");
+    // std::ofstream logFile("../test_log/20221023_test_trianglize_in_initialization.txt");
     // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     // 初始化配置 vio backend，并载入数据
@@ -144,7 +158,7 @@ int main(int argc, char **argv) {
     LoadFeaturesData(backend);
 
     // 运行测试
-    for (uint32_t i = 0; i < 4000; ++i) {
+    for (uint32_t i = 0; i < 15; ++i) {
         std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
