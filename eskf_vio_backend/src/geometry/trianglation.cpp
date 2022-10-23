@@ -28,7 +28,7 @@ namespace ESKF_VIO_BACKEND {
         }
         this->analyticTemp.A.resize(num * 2, 4);
         for (uint32_t i = 0; i < num; ++i) {
-            auto pose =  Utility::TransformMatrix(q_wc[i], p_wc[i]);
+            auto pose = Utility::TransformMatrix(q_wc[i], p_wc[i]);
             this->analyticTemp.A.row(2 * i) = norm[i][0] * pose.row(2) - pose.row(0);
             this->analyticTemp.A.row(2 * i + 1) = norm[i][1] * pose.row(2) - pose.row(1);
         }
@@ -144,8 +144,8 @@ namespace ESKF_VIO_BACKEND {
         W.leftCols<2>() = R_c0_ci.toRotationMatrix().leftCols<2>();
         W.rightCols<1>() = t_c0_ci;
 
-        J.row(0) = 1/h3*W.row(0) - h1/(h3*h3)*W.row(2);
-        J.row(1) = 1/h3*W.row(1) - h2/(h3*h3)*W.row(2);
+        J.row(0) = 1 / h3 * W.row(0) - h1 / (h3 * h3) * W.row(2);
+        J.row(1) = 1 / h3 * W.row(1) - h2 / (h3 * h3) * W.row(2);
 
         // Compute the residual.
         Vector2 z_hat(h1 / h3, h2 / h3);
