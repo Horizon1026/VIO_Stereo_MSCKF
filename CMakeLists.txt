@@ -92,5 +92,11 @@ else()
         ${GEOMETRY}
         ${UTILITY}
     )
+    # 生成可执行文件
+    add_executable(test_trianglate
+        ${CMAKE_SOURCE_DIR}/apps/test_trianglate.cpp
+        ${GEOMETRY}
+        ${UTILITY}
+    )
 
 endif()

@@ -137,13 +137,12 @@ namespace ESKF_VIO_BACKEND {
             return Ainv;
         }
 
-        /*combint q t to homogeneous transformation*/
-        static Eigen::Matrix<Scalar, 4, 4> qtToTransformMatrix(const Quaternion &q, const Vector3 &t)
-        {
-            Eigen::Matrix<Scalar, 4, 4> Trans; // Your Transformation Matrix
+        /* combine q t to homogeneous transformation*/
+        static Matrix44 TransformMatrix(const Quaternion &q, const Vector3 &t) {
+            Matrix44 Trans;
             Trans.setIdentity();
-            Trans.block<3,3>(0,0) = q.matrix();
-            Trans.block<3,1>(0,3) = t;
+            Trans.block<3, 3>(0, 0) = q.matrix();
+            Trans.block<3, 1>(0, 3) = t;
             return Trans;
         }
 
