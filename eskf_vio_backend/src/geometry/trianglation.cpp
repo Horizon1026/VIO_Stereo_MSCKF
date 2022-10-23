@@ -60,7 +60,7 @@ namespace ESKF_VIO_BACKEND {
         // Compute the initial cost.
         Scalar total_cost = 0.0;
         for (uint32_t i = 0; i < total_poses; ++i) {
-            total_cost += getReprojectionCost(q_wc[i], p_wc[i], p_w, norm[i]);
+            total_cost += ComputeResidual(q_wc[i], p_wc[i], p_w, norm[i]);
         }
 
         // Outer loop.
@@ -73,7 +73,7 @@ namespace ESKF_VIO_BACKEND {
                 Vector2 r;
                 Scalar w;
 
-                this->jacobian(q_wc[i], p_wc[i], solution, norm[i], J, r, w);
+                this->CumputeJacobian(q_wc[i], p_wc[i], solution, norm[i], J, r, w);
 
                 if (w == 1) {
                     A += J.transpose() * J;
@@ -97,7 +97,7 @@ namespace ESKF_VIO_BACKEND {
                 delta_norm = delta.norm();
                 Scalar new_cost = 0.0;
                 for (uint32_t i = 0; i < total_poses; ++i) {
-                    new_cost += this->getReprojectionCost(q_wc[i], p_wc[i], p_w, norm[i]);
+                    new_cost += this->ComputeResidual(q_wc[i], p_wc[i], p_w, norm[i]);
                 }
                 if (new_cost < total_cost) {
                     is_cost_reduced = true;
@@ -121,13 +121,13 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
-    void Trianglator::jacobian(const Quaternion &R_c0_ci,
-                               const Vector3 &t_c0_ci,
-                               const Vector3 &x,
-                               const Vector2 &z,
-                               Matrix23 &J,
-                               Vector2 &r,
-                               Scalar &w) {
+    void Trianglator::CumputeJacobian(const Quaternion &R_c0_ci,
+                                      const Vector3 &t_c0_ci,
+                                      const Vector3 &x,
+                                      const Vector2 &z,
+                                      Matrix23 &J,
+                                      Vector2 &r,
+                                      Scalar &w) {
         Scalar huber_epsilon(0.01); 
         // Compute hi1, hi2, and hi3 as Equation (37).
         const Scalar &alpha = x(0);
@@ -162,10 +162,10 @@ namespace ESKF_VIO_BACKEND {
     }
 
     /* measure the accuracy of the reprojection estimation */
-    Scalar Trianglator::getReprojectionCost(const Quaternion &q,
-                                            const Vector3 &t,
-                                            const Vector3 &lm,
-                                            const Vector2 &groundtruth) { 
+    Scalar Trianglator::ComputeResidual(const Quaternion &q,
+                                        const Vector3 &t,
+                                        const Vector3 &lm,
+                                        const Vector2 &groundtruth) { 
         // Compute hi1, hi2, and hi3 as Equation (37).
         const Scalar &alpha = lm(0) / lm(2);
         const Scalar &beta = lm(1) / lm(2);

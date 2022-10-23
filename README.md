@@ -23,5 +23,5 @@ A state estimator for robots using ESKF
 为避免 vscode 不能识别多个 cmake 工程导致无法自动联想，影响代码开发进度，在 CMakeLists.txt 中增加一个分支，选择编译库后链接或者直接编译
 + 已完成多目视觉 vio 的初始化逻辑，除了三角化和 PnP 之外，其余部分均已完善（）
 + 已完成多目视觉 update 部分的逻辑，除特征点选择、三角化、关键帧选择之外，其余部分均已完善（包括 propagator 重置起点，扩展状态协方差，构造完整量测方程，ESKF Update，误差状态更新到名义状态，以 Update 结果配置 propagator 起点并让他 repropagate）
-+ TODO：三角测量和 PnP 模块相关接口
++ 已完成三角测量和 PnP 模块相关接口，但三角测量评分机制尚待完善
 + TODO：上述两个模块完成后的系统整体调试与优化

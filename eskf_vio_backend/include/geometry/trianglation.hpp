@@ -27,17 +27,17 @@ namespace ESKF_VIO_BACKEND {
                                  const std::vector<Vector2> &norm,
                                  Vector3 &p_w);
     public:
-        Scalar getReprojectionCost(const Quaternion& q,
-                                   const Vector3& t,
-                                   const Vector3& lm,
-                                   const Vector2& groundtruth);
-        void jacobian(const Quaternion &R_c0_ci,
-                      const Vector3 &t_c0_ci,
-                      const Vector3 &x,
-                      const Vector2 &z,
-                      Matrix23 &J,
-                      Vector2 &r,
-                      Scalar &w);
+        Scalar ComputeResidual(const Quaternion& q,
+                               const Vector3& t,
+                               const Vector3& lm,
+                               const Vector2& groundtruth);
+        void CumputeJacobian(const Quaternion &R_c0_ci,
+                             const Vector3 &t_c0_ci,
+                             const Vector3 &x,
+                             const Vector2 &z,
+                             Matrix23 &J,
+                             Vector2 &r,
+                             Scalar &w);
 
     };
 }
