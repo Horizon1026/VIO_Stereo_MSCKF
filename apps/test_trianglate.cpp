@@ -4,7 +4,7 @@
 #include <iostream>
 
 /* 内部依赖 */
-#include <trianglation.hpp>>
+#include <trianglation.hpp>
 #include <log_api.hpp>
 using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;

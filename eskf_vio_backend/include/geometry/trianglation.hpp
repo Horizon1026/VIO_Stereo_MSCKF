@@ -27,11 +27,11 @@ namespace ESKF_VIO_BACKEND {
                                  const std::vector<Vector2> &norm,
                                  Vector3 &p_w);
     public:
-        Scalar ComputeResidual(const Quaternion& q,
-                               const Vector3& t,
-                               const Vector3& lm,
-                               const Vector2& groundtruth);
-        void CumputeJacobian(const Quaternion &R_c0_ci,
+        Scalar ComputeResidual(const Quaternion &q_wc,
+                               const Vector3 &p_wc,
+                               const Vector3 &p_w,
+                               const Vector2 &observe);
+        void CumputeJacobian(const Quaternion &q_c0_ci,
                              const Vector3 &t_c0_ci,
                              const Vector3 &x,
                              const Vector2 &z,

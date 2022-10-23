@@ -2,7 +2,7 @@
 #include <sequence_propagator.hpp>
 #include <math_lib.hpp>
 #include <log_api.hpp>
-#include<trianglation.hpp>
+#include <trianglation.hpp>
 /* 外部依赖 */
 /*
       translation_threshold(0.2),
@@ -106,7 +106,7 @@ namespace ESKF_VIO_BACKEND {
                     lambda = lambda / 10 > 1e-10 ? lambda / 10 : 1e-10;
                 } else {
                     is_cost_reduced = false;
-                    p_w = Vector3(solution(0)/solution(2),solution(1)/solution(2), 1.0/solution(2));
+                    p_w = Vector3(solution(0) / solution(2), solution(1) / solution(2), 1.0 / solution(2));
                     lambda = lambda * 10 < 1e12 ? lambda * 10 : 1e12;
                 }
             } while (inner_loop_cntr++ < INNER_LOOP_MAX_ITER && !is_cost_reduced);
@@ -121,7 +121,7 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
-    void Trianglator::CumputeJacobian(const Quaternion &R_c0_ci,
+    void Trianglator::CumputeJacobian(const Quaternion &q_c0_ci,
                                       const Vector3 &t_c0_ci,
                                       const Vector3 &x,
                                       const Vector2 &z,
@@ -134,14 +134,14 @@ namespace ESKF_VIO_BACKEND {
         const Scalar &beta = x(1);
         const Scalar &rho = x(2);
 
-        Vector3 h = R_c0_ci.toRotationMatrix() * Vector3(alpha, beta, 1.0) + rho * t_c0_ci;
+        Vector3 h = q_c0_ci.toRotationMatrix() * Vector3(alpha, beta, 1.0) + rho * t_c0_ci;
         Scalar &h1 = h(0);
         Scalar &h2 = h(1);
         Scalar &h3 = h(2);
 
         // Compute the Jacobian.
         Matrix33 W;
-        W.leftCols<2>() = R_c0_ci.toRotationMatrix().leftCols<2>();
+        W.leftCols<2>() = q_c0_ci.toRotationMatrix().leftCols<2>();
         W.rightCols<1>() = t_c0_ci;
 
         J.row(0) = 1 / h3 * W.row(0) - h1 / (h3 * h3) * W.row(2);
@@ -156,30 +156,18 @@ namespace ESKF_VIO_BACKEND {
         if (e <= huber_epsilon) {
             w = 1.0;
         } else {
-            w = std::sqrt(2.0* huber_epsilon / e);
+            w = std::sqrt(2.0 * huber_epsilon / e);
         }
         return;
     }
 
     /* measure the accuracy of the reprojection estimation */
-    Scalar Trianglator::ComputeResidual(const Quaternion &q,
-                                        const Vector3 &t,
-                                        const Vector3 &lm,
-                                        const Vector2 &groundtruth) { 
-        // Compute hi1, hi2, and hi3 as Equation (37).
-        const Scalar &alpha = lm(0) / lm(2);
-        const Scalar &beta = lm(1) / lm(2);
-        const Scalar &rho = 1.0 / lm(2);
-
-        Vector3 h = q.toRotationMatrix()* Vector3(alpha, beta, 1.0) + rho * t;
-        Scalar &h1 = h(0);
-        Scalar &h2 = h(1);
-        Scalar &h3 = h(2);
-
-        // Predict the feature observation in ci frame.
-        Vector2 z_hat(h1 / h3, h2 / h3);
-
-        // Compute the residual.
-        return (z_hat - groundtruth).squaredNorm();
+    Scalar Trianglator::ComputeResidual(const Quaternion &q_wc,
+                                        const Vector3 &p_wc,
+                                        const Vector3 &p_w,
+                                        const Vector2 &observe) { 
+        Vector3 p_c = q_wc * p_w + p_wc;
+        Vector2 residual = Vector2(p_c(0) / p_c(2), p_c(1) / p_c(2)) - observe;
+        return residual.squaredNorm();
     }
 }
