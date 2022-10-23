@@ -1,5 +1,5 @@
 /* 外部依赖 */
-#define TEST 1
+#define TEST 0
 #include <fstream>
 #include <iostream>
 
@@ -126,7 +126,7 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
 bool test_triangulation()
 {
-    int poseNums = 2;      // 相机数目
+    int poseNums = 6;      // 相机数目
 
     Vector3 landmark{2, 2, 2};
     std::vector<Vector2> observe_vec;
@@ -188,13 +188,56 @@ bool test_getReprojectionCost()
         LogError("test_getReprojectionCost not passed");
         return true;
     }
+}
+
+bool test_TrianglateIterative()
+{
+    int poseNums = 6;      // 相机数目
+    Vector3 landmark{2, 2, 2};
+    std::vector<Vector2> observe_vec;
+    std::vector<Quaternion> quat_vec;
+    std::vector<Vector3> t_vec;
+
+    Scalar radius = 8;
+    for (int n = 0; n < poseNums; ++n) {
+        Scalar theta = n * 2 * M_PI / (poseNums * 16); // 1/16 圆弧
+        // 绕 z 轴 旋转
+        Matrix33 R;
+        R = Eigen::AngleAxis<Scalar>(theta, Vector3::UnitZ());
+        Vector3 t = Vector3(radius * cos(theta) - radius, radius * sin(theta), 1 * sin(2 * theta));
+        //cameraPoses.push_back(Frame(R, t));
+        auto res = R * landmark + t;
+        observe_vec.emplace_back(res[0]/res[2],res[1]/res[2]);
+        quat_vec.emplace_back(R);
+        t_vec.emplace_back(t);
+    }
+
+    Vector3 lm_noise = Vector3(0.4, 0.4, 0.4);
+    Vector3 lm_esti = landmark + lm_noise;
+
+    Trianglator::TrianglateIterative(quat_vec, t_vec, observe_vec, lm_esti);
+    // std::cout<<"lm_esti :"<<lm_esti.transpose()<<std::endl;
+    if ((lm_esti - landmark).norm() < 1e-6)
+    {
+        LogInfo("iterative triangulation test passed");
+        return true;
+    }
+    else
+    {
+        LogError("iterative triangulation test not passed");
+        return false;
+    }
+
+    return true;
 
 }
+
 
 int main(int argc, char **argv) {
 #if TEST
     test_triangulation();
     test_getReprojectionCost();
+    test_TrianglateIterative();
     return 0;
 #else
     // 处理输入的配置参数路径和数据路径

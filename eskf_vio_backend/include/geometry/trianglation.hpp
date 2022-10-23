@@ -19,12 +19,15 @@ namespace ESKF_VIO_BACKEND {
                                 Vector3 &p_w);
 
         /* 高斯牛顿迭代法三角测量特征点 */
-        // bool TrianglateIterative(const std::vector<Quaternion> &q_wc,
-        //                          const std::vector<Vector3> &p_wc,
-        //                          const std::vector<Vector2> &norm,
-        //                          Vector3 &p_w);
+        static bool TrianglateIterative(const std::vector<Quaternion> &q_wc,
+                                 const std::vector<Vector3> &p_wc,
+                                 const std::vector<Vector2> &norm,
+                                 Vector3 &p_w);
         static Scalar getReprojectionCost(const Quaternion& q, const Vector3& t,
         const Vector3& lm, const Vector2& groundtruth );
+        static void jacobian(const Quaternion& R_c0_ci, const Vector3& t_c0_ci,
+        const Vector3& x, const Vector2& z, Eigen::Matrix<Scalar, 2, 3>& J, Vector2& r,
+        Scalar& w);
 
     };
 }
