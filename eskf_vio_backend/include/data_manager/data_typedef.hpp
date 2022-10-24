@@ -14,7 +14,7 @@ namespace ESKF_VIO_BACKEND {
     public:
         FeatureObserve() {}
         ~FeatureObserve() {}
-        FeatureObserve(const std::unordered_map<uint32_t, Vector2> &norms) :
+        explicit FeatureObserve(const std::unordered_map<uint32_t, Vector2> &norms) :
             norms(norms) {}
     public:
         /* 清空保存的数据 */
@@ -38,10 +38,10 @@ namespace ESKF_VIO_BACKEND {
     public:
         FeaturesMessage() {}
         ~FeaturesMessage() {}
-        FeaturesMessage(const std::vector<uint32_t> &ids,
-                        const std::vector<std::shared_ptr<FeatureObserve>> &observes,
-                        const std::vector<uint8_t> &flag,
-                        const fp64 &timeStamp);
+        explicit FeaturesMessage(const std::vector<uint32_t> &ids,
+                                 const std::vector<std::shared_ptr<FeatureObserve>> &observes,
+                                 const std::vector<uint8_t> &flag,
+                                 const fp64 &timeStamp);
     public:
         /* 清空保存的数据 */
         void Clear(void);
@@ -62,9 +62,9 @@ namespace ESKF_VIO_BACKEND {
     public:
         IMUMessage() {}
         ~IMUMessage() {}
-        IMUMessage(const Vector3 &gyro,
-                   const Vector3 &accel,
-                   const fp64 &timeStamp);
+        explicit IMUMessage(const Vector3 &gyro,
+                            const Vector3 &accel,
+                            const fp64 &timeStamp);
     public:
         /* 自我打印保存信息 */
         void Information(void);
@@ -79,10 +79,10 @@ namespace ESKF_VIO_BACKEND {
     public:
         CombinedMessage() {}
         ~CombinedMessage() {}
-        CombinedMessage(const std::shared_ptr<FeaturesMessage> &featMeas,
-                        const std::shared_ptr<IMUMessage> &imuMeas);
-        CombinedMessage(const std::shared_ptr<FeaturesMessage> &featMeas,
-                        const std::vector<std::shared_ptr<IMUMessage>> &imuMeas);
+        explicit CombinedMessage(const std::shared_ptr<FeaturesMessage> &featMeas,
+                                 const std::shared_ptr<IMUMessage> &imuMeas);
+        explicit CombinedMessage(const std::shared_ptr<FeaturesMessage> &featMeas,
+                                 const std::vector<std::shared_ptr<IMUMessage>> &imuMeas);
     public:
         /* 清空保存的数据 */
         void Clear(void);

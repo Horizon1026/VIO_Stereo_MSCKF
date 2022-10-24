@@ -25,7 +25,7 @@ namespace ESKF_VIO_BACKEND {
         } status = UNSOLVED;
     public:
         /* 构造函数与析构函数 */
-        Feature(const uint32_t id,
+        explicit Feature(const uint32_t id,
                 const uint32_t firstFrameID,
                 const std::vector<std::shared_ptr<FeatureObserve>> &observes) :
             id(id), firstFrameID(firstFrameID), observes(observes) {

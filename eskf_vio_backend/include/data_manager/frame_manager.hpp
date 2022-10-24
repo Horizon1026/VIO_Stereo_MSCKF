@@ -21,9 +21,9 @@ namespace ESKF_VIO_BACKEND {
         double timeStamp;
     public:
         /* 构造函数与析构函数 */
-        Frame(const uint32_t id, const double timeStamp) :
+        explicit Frame(const uint32_t id, const double timeStamp) :
             id(id), timeStamp(timeStamp) {}
-        Frame(const double timeStamp) :
+        explicit Frame(const double timeStamp) :
             timeStamp(timeStamp) {}
         ~Frame() {}
     public:

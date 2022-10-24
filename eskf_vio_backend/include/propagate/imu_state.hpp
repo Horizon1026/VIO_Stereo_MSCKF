@@ -39,17 +39,17 @@ namespace ESKF_VIO_BACKEND {
         /* 构造函数与析构函数 */
         IMUFullState() {}
         ~IMUFullState() {}
-        IMUFullState(const Vector3 &p_wb,
-                     const Quaternion &q_wb,
-                     const Vector3 &v_wb,
-                     const Vector3 &bias_a,
-                     const Vector3 &bias_g) :
+        explicit IMUFullState(const Vector3 &p_wb,
+                              const Quaternion &q_wb,
+                              const Vector3 &v_wb,
+                              const Vector3 &bias_a,
+                              const Vector3 &bias_g) :
             p_wb(p_wb), v_wb(v_wb), q_wb(q_wb), bias_a(bias_a), bias_g(bias_g) {}
-        IMUFullState(const Vector3 &p_wb,
-                     const Vector3 &theta_wb,
-                     const Vector3 &v_wb,
-                     const Vector3 &bias_a,
-                     const Vector3 &bias_g) :
+        explicit IMUFullState(const Vector3 &p_wb,
+                              const Vector3 &theta_wb,
+                              const Vector3 &v_wb,
+                              const Vector3 &bias_a,
+                              const Vector3 &bias_g) :
             p_wb(p_wb), v_wb(v_wb), theta_wb(theta_wb), bias_a(bias_a), bias_g(bias_g) {}
     public:
         /* 状态清零 */
