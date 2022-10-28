@@ -8,16 +8,16 @@ namespace ESKF_VIO_BACKEND {
     class AttitudeEstimateItem {
     public:
         // 解算所得姿态
-        Quaternion q_wb;
+        Quaternion q_wb = Quaternion::Identity();
         // 当前时刻点对应的 IMU 量测值
-        Vector3 accel;
-        Vector3 gyro;
+        Vector3 accel = Vector3::Zero();
+        Vector3 gyro = Vector3::Zero();
         // 当前时间戳
-        fp64 timeStamp;
+        fp64 timeStamp = 0;
     public:
         /* 构造函数与析构函数 */
-        AttitudeEstimateItem() {}
-        ~AttitudeEstimateItem() {}
+        AttitudeEstimateItem() = default;
+        virtual ~AttitudeEstimateItem() = default;
     };
 
 
@@ -35,8 +35,8 @@ namespace ESKF_VIO_BACKEND {
         Vector3 errInt = Vector3::Zero();
     public:
         /* 构造函数与析构函数 */
-        AttitudeEstimate() {}
-        ~AttitudeEstimate() {}
+        AttitudeEstimate() = default;
+        virtual ~AttitudeEstimate() = default;
     public:
         /* 姿态解算进行一步更新 */
         bool Propagate(const Vector3 &accel, const Vector3 &gyro, const fp64 timeStamp);

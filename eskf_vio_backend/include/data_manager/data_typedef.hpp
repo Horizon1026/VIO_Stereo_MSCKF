@@ -12,8 +12,8 @@ namespace ESKF_VIO_BACKEND {
         // 特征点在对应 camera ID 中的归一化平面坐标观测
         std::unordered_map<uint32_t, Vector2> norms;
     public:
-        FeatureObserve() {}
-        ~FeatureObserve() {}
+        FeatureObserve() = default;
+        virtual ~FeatureObserve() = default;
         explicit FeatureObserve(const std::unordered_map<uint32_t, Vector2> &norms) :
             norms(norms) {}
     public:
@@ -34,10 +34,10 @@ namespace ESKF_VIO_BACKEND {
         // 标志位
         std::vector<uint8_t> flag;
         // 时间戳（单位 s）
-        fp64 timeStamp;
+        fp64 timeStamp = 0.0;
     public:
-        FeaturesMessage() {}
-        ~FeaturesMessage() {}
+        FeaturesMessage() = default;
+        virtual ~FeaturesMessage() = default;
         explicit FeaturesMessage(const std::vector<uint32_t> &ids,
                                  const std::vector<std::shared_ptr<FeatureObserve>> &observes,
                                  const std::vector<uint8_t> &flag,
@@ -54,14 +54,14 @@ namespace ESKF_VIO_BACKEND {
     class IMUMessage {
     public:
         // body 系角速度量测（单位 rad/s）
-        Vector3 gyro;
+        Vector3 gyro = Vector3::Zero();
         // body 系加速度量测（单位 m/s^2）
-        Vector3 accel;
+        Vector3 accel = Vector3::Zero();
         // 时间戳（单位 s）
-        fp64 timeStamp;
+        fp64 timeStamp = 0.0;
     public:
-        IMUMessage() {}
-        ~IMUMessage() {}
+        IMUMessage() = default;
+        virtual ~IMUMessage() = default;
         explicit IMUMessage(const Vector3 &gyro,
                             const Vector3 &accel,
                             const fp64 &timeStamp);
@@ -77,8 +77,8 @@ namespace ESKF_VIO_BACKEND {
         std::shared_ptr<FeaturesMessage> featMeas;
         std::vector<std::shared_ptr<IMUMessage>> imuMeas;
     public:
-        CombinedMessage() {}
-        ~CombinedMessage() {}
+        CombinedMessage() = default;
+        virtual ~CombinedMessage() = default;
         explicit CombinedMessage(const std::shared_ptr<FeaturesMessage> &featMeas,
                                  const std::shared_ptr<IMUMessage> &imuMeas);
         explicit CombinedMessage(const std::shared_ptr<FeaturesMessage> &featMeas,

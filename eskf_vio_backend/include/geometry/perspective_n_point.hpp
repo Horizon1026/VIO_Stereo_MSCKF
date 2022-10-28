@@ -14,16 +14,16 @@ namespace ESKF_VIO_BACKEND {
         Scalar maxNormDeltaX = Scalar(1e-6);
         // RANSAC 内嵌算法相关参数
         struct PnP_RANSAC_Param {
-            Scalar inlierThres = 1e-3;
+            Scalar inlierThres = Scalar(1e-3);
             uint32_t maxIterateTimes = 20;
-            Scalar inlierRateThres = 0.9;
+            Scalar inlierRateThres = Scalar(0.9);
         } ransacParam;
         
 
     public:
         /* 构造函数与析构函数 */
-        PnPSolver() {}
-        ~PnPSolver() {}
+        PnPSolver() = default;
+        virtual ~PnPSolver() = default;
     public:
         /* 使用所有输入的点进行估计，输入 pose 为初值 */
         bool EstimatePose(const std::vector<Vector3> &pts_3d,

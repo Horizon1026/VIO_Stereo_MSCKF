@@ -12,8 +12,8 @@ namespace ESKF_VIO_BACKEND {
         } analyticTemp;
     public:
         /* 构造函数与析构函数 */
-        Trianglator() {}
-        ~Trianglator() {}
+        Trianglator() = default;
+        virtual ~Trianglator() = default;
     public:
         /* 数值解析法三角测量特征点 */
         bool TrianglateAnalytic(const std::vector<Quaternion> &q_wc,

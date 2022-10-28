@@ -10,13 +10,13 @@ namespace ESKF_VIO_BACKEND {
         // 此特征点的全局索引
         const uint32_t id;
         // 首次观测到此特征点的关键帧的全局索引
-        uint32_t firstFrameID;
+        uint32_t firstFrameID = 0;
         // 此特征点在以第 firstFrameID 帧为起始的连续几帧中的观测
         std::vector<std::shared_ptr<FeatureObserve>> observes;
         // 观测到此特征点的 camera pose 数量
-        uint32_t observeNum;
+        uint32_t observeNum = 0;
         // 此特征点在世界坐标系中的位置
-        Vector3 p_w;
+        Vector3 p_w = Vector3::Zero();
         // 此特征点的状态
         enum Status {
             UNSOLVED = 1,   // 尚未被三角化
@@ -25,13 +25,14 @@ namespace ESKF_VIO_BACKEND {
         } status = UNSOLVED;
     public:
         /* 构造函数与析构函数 */
+        Feature() = delete;
         explicit Feature(const uint32_t id,
                 const uint32_t firstFrameID,
                 const std::vector<std::shared_ptr<FeatureObserve>> &observes) :
             id(id), firstFrameID(firstFrameID), observes(observes) {
             this->observeNum = observes.front()->norms.size();
         }
-        ~Feature() {}
+        virtual ~Feature() = default;
     public:
         /* 为此特征点添加一个观测 */
         void AddNewObserve(const std::shared_ptr<FeatureObserve> &newObserve);
@@ -51,8 +52,8 @@ namespace ESKF_VIO_BACKEND {
         std::unordered_map<uint32_t, std::shared_ptr<Feature>> features;
     public:
         /* 构造函数与析构函数 */
-        FeatureManager() {}
-        ~FeatureManager() {}
+        FeatureManager() = default;
+        virtual ~FeatureManager() = default;
     public:
         /* 添加前端提供的特征点最新追踪结果信息，返回有所变动的特征点 */
         bool AddNewFeatures(const std::vector<uint32_t> &ids,

@@ -23,22 +23,21 @@ namespace ESKF_VIO_BACKEND {
     class IMUFullState {
     public:
         // 位置
-        Vector3 p_wb;
+        Vector3 p_wb = Vector3::Zero();
         // 速度
-        Vector3 v_wb;
+        Vector3 v_wb = Vector3::Zero();
         // 姿态（名义状态与误差状态二选一）
-        Quaternion q_wb;
-        Vector3 theta_wb;
+        Quaternion q_wb = Quaternion::Identity();
+        Vector3 theta_wb = Vector3::Zero();
         // 加速度偏差
-        Vector3 bias_a;
+        Vector3 bias_a = Vector3::Zero();
         // 角速度偏差
-        Vector3 bias_g;
+        Vector3 bias_g = Vector3::Zero();
         // 在 w 系下的重力加速度
         static Vector3 gravity_w;
     public:
         /* 构造函数与析构函数 */
-        IMUFullState() {}
-        ~IMUFullState() {}
+        IMUFullState() = default;
         explicit IMUFullState(const Vector3 &p_wb,
                               const Quaternion &q_wb,
                               const Vector3 &v_wb,
@@ -51,6 +50,7 @@ namespace ESKF_VIO_BACKEND {
                               const Vector3 &bias_a,
                               const Vector3 &bias_g) :
             p_wb(p_wb), v_wb(v_wb), theta_wb(theta_wb), bias_a(bias_a), bias_g(bias_g) {}
+        virtual ~IMUFullState() = default;
     public:
         /* 状态清零 */
         void Reset(void);

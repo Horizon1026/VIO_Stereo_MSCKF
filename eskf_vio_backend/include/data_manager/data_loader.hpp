@@ -19,7 +19,7 @@ namespace ESKF_VIO_BACKEND {
     public:
         /* 构造函数与析构函数 */
         DataLoader() { this->Clear(); }
-        ~DataLoader() {}
+        virtual ~DataLoader() = default;
     public:
         /* 清空缓冲区 */
         void Clear(void);

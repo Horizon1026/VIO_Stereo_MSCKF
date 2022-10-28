@@ -13,11 +13,11 @@ namespace ESKF_VIO_BACKEND {
     class MultiViewVisionUpdate {
     public:
         // 指向相关管理器或工具的指针
-        PropagateQueue *propagator;
-        FeatureManager *featureManager;
-        FrameManager *frameManager;
-        Trianglator *trianglator;
-        PnPSolver *pnpSolver;
+        PropagateQueue *propagator = nullptr;
+        FeatureManager *featureManager = nullptr;
+        FrameManager *frameManager = nullptr;
+        Trianglator *trianglator = nullptr;
+        PnPSolver *pnpSolver = nullptr;
         // 用于构造量测方程的特征点
         std::vector<std::shared_ptr<Feature>> features;
         // propagator 预测的，以及 update 过程输出的 errorState 结果
@@ -32,21 +32,19 @@ namespace ESKF_VIO_BACKEND {
         // 所有特征点共同构造出来的量测方程 [Hx | r]
         Matrix Hx_r;
         // 每个特征点投影到左零空间的子量测方程的量测维度之和
-        uint32_t Hx_cols;
-        uint32_t Hx_rows;
+        uint32_t Hx_cols = 0;
+        uint32_t Hx_rows = 0;
         // ESKF 中的卡尔曼增益
         Matrix K;
         // 量测噪声（使用时默认为对角矩阵 R ）
-        Scalar measureNoise;
+        Scalar measureNoise = Scalar(0);
         // 边缘化策略
         MargPolicy margPolicy = NO_MARG;
 
     public:
         /* 构造函数与析构函数 */
-        MultiViewVisionUpdate() {
-            this->features.reserve(100);
-        }
-        ~MultiViewVisionUpdate() {}
+        MultiViewVisionUpdate();
+        virtual ~MultiViewVisionUpdate() = default;
     public:
         /* 执行一次 update 过程 */
         bool Update(const fp64 timeStamp, const fp64 threshold);

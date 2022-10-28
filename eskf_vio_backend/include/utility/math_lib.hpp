@@ -131,7 +131,7 @@ namespace ESKF_VIO_BACKEND {
         static Matrix Inverse(const Matrix &A) {
             Eigen::SelfAdjointEigenSolver<Matrix> saes(A);
             Matrix Ainv = saes.eigenvectors() * Vector(
-                (saes.eigenvalues().array() > Scalar(1e-8)).select(
+                (saes.eigenvalues().array() > ZERO).select(
                     saes.eigenvalues().array().inverse(), 0
                 )).asDiagonal() * saes.eigenvectors().transpose();
             return Ainv;
@@ -148,7 +148,7 @@ namespace ESKF_VIO_BACKEND {
 
     public:
         /* 构造函数与析构函数 */
-        Utility() {}
-        ~Utility() {}
+        Utility() = default;
+        virtual ~Utility() = default;
     };
 }

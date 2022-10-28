@@ -13,7 +13,7 @@ namespace ESKF_VIO_BACKEND {
     public:
         /* 构造函数与析构函数 */
         TickTockTimer();
-        ~TickTockTimer();
+        virtual ~TickTockTimer();
     public:
         Scalar TickTock();
     };

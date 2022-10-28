@@ -6,7 +6,7 @@ namespace ESKF_VIO_BACKEND {
     TickTockTimer::TickTockTimer() {
         this->timeStamp = std::chrono::system_clock::now();
     }
-    TickTockTimer::~TickTockTimer() {}
+    TickTockTimer::~TickTockTimer() = default;
 
     Scalar TickTockTimer::TickTock() {
         auto newTimeStamp = std::chrono::system_clock::now();
@@ -14,6 +14,4 @@ namespace ESKF_VIO_BACKEND {
         this->timeStamp = newTimeStamp;
         return Scalar(diff.count() * 1000.0);
     }
-
-
 }

@@ -32,8 +32,8 @@ namespace ESKF_VIO_BACKEND {
         Status status = NEED_INIT;
     public:
         /* 构造函数与析构函数 */
-        Backend() {}
-        ~Backend() {}
+        Backend() = default;
+        virtual ~Backend() = default;
     /* 对外接口 interface */
     public:
         /* 后端优化器读取配置并初始化 */

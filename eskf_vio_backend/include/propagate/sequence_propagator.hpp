@@ -33,22 +33,22 @@ namespace ESKF_VIO_BACKEND {
         // propagate 之后需要记录的变化的相关元素
         std::deque<std::shared_ptr<IMUPropagateQueueItem>> items;
         // 滑动窗口内的关键帧
-        FrameManager *propagator;
+        FrameManager *propagator = nullptr;
         // 滑动窗口内 camera pose 的协方差矩阵
         Matrix camCov;
         // 无 update 时的 IMU bias
-        Vector3 bias_a;
-        Vector3 bias_g;
+        Vector3 bias_a = Vector3::Zero();
+        Vector3 bias_g = Vector3::Zero();
         // 无 update 且 items 为空时的 motion state 初值，初值将在 eskf vio backend 初始化时从姿态解算结果中获取
         IMUMotionState initState;
         // 离散时间状态方程和过程噪声
-        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> F;
-        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_NOISE_SIZE> G;
-        Eigen::Matrix<Scalar, IMU_NOISE_SIZE, IMU_NOISE_SIZE> Q;
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE> F = Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_STATE_SIZE>::Identity();
+        Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_NOISE_SIZE> G = Eigen::Matrix<Scalar, IMU_STATE_SIZE, IMU_NOISE_SIZE>::Zero();
+        Eigen::Matrix<Scalar, IMU_NOISE_SIZE, IMU_NOISE_SIZE> Q = Eigen::Matrix<Scalar, IMU_NOISE_SIZE, IMU_NOISE_SIZE>::Zero();
     public:
         /* 构造函数与析构函数 */
-        PropagateQueue() {}
-        ~PropagateQueue() {}
+        PropagateQueue() = default;
+        virtual ~PropagateQueue() = default;
     public:
         /* 初始化过程噪声矩阵 */
         void InitializeProcessNoiseMatrix(const Scalar noise_accel,

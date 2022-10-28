@@ -5,6 +5,11 @@
 /* 外部依赖 */
 
 namespace ESKF_VIO_BACKEND {
+    /* 构造函数 */
+    MultiViewVisionUpdate::MultiViewVisionUpdate() {
+        this->features.reserve(100);
+    }
+
     /* 执行一次 update 过程 */
     bool MultiViewVisionUpdate::Update(const fp64 timeStamp, const fp64 threshold) {
         // Step 1: 定位到 propagator 序列中对应时间戳的地方，提取对应时刻状态，清空在这之前的序列 item

@@ -12,20 +12,20 @@ namespace ESKF_VIO_BACKEND {
         // 此帧所有 camera 观测到的所有特征点，保存为 <feature ID, ptr of feature>
         std::unordered_map<uint32_t, std::shared_ptr<Feature>> features;
         // 此帧对应的 IMU 系的位姿和速度
-        Quaternion q_wb;
-        Vector3 p_wb;
-        Vector3 v_wb;
+        Quaternion q_wb = Quaternion::Identity();
+        Vector3 p_wb = Vector3::Zero();
+        Vector3 v_wb = Vector3::Zero();
         // 此帧的全局索引
-        uint32_t id;
+        uint32_t id = 0;
         // 此帧对应的时间戳
-        double timeStamp;
+        double timeStamp = 0.0;
     public:
         /* 构造函数与析构函数 */
         explicit Frame(const uint32_t id, const double timeStamp) :
             id(id), timeStamp(timeStamp) {}
         explicit Frame(const double timeStamp) :
             timeStamp(timeStamp) {}
-        ~Frame() {}
+        virtual ~Frame() = default;
     public:
         /* 初始化关键帧 */
         bool Initialize(const uint32_t id, const double timeStamp);
