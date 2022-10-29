@@ -57,6 +57,11 @@ namespace ESKF_VIO_BACKEND {
         Vector3 solution(p_w(0) / p_w(2), p_w(1) / p_w(2), 1.0 / p_w(2));
         uint32_t total_poses = q_wc.size();
 
+        //from world2camera  -> camera2world
+        std::vector<Quaternion> q_cw;
+        std::vector<Vector3> p_cw;
+
+
         // Apply Levenberg-Marquart method to solve for the 3d position.
         Scalar lambda = 1e-3;   /*initial_damping*/
         uint32_t inner_loop_cntr = 0;
@@ -67,7 +72,9 @@ namespace ESKF_VIO_BACKEND {
         // Compute the initial cost.
         Scalar total_cost = 0.0;
         for (uint32_t i = 0; i < total_poses; ++i) {
-            total_cost += ComputeResidual(q_wc[i], p_wc[i], p_w, norm[i]);
+            q_cw.emplace_back(q_wc[i].inverse());
+            p_cw.emplace_back(q_wc[i].inverse() * - p_wc[i]);
+            total_cost += ComputeResidual(q_cw[i], p_cw[i], p_w, norm[i]);
         }
 
         // Outer loop.
@@ -80,7 +87,7 @@ namespace ESKF_VIO_BACKEND {
                 Vector2 r;
                 Scalar w;
 
-                this->CumputeJacobian(q_wc[i], p_wc[i], solution, norm[i], J, r, w);
+                this->CumputeJacobian(q_cw[i], p_cw[i], solution, norm[i], J, r, w);
 
                 if (w == 1) {
                     A += J.transpose() * J;
@@ -104,7 +111,7 @@ namespace ESKF_VIO_BACKEND {
                 delta_norm = delta.norm();
                 Scalar new_cost = 0.0;
                 for (uint32_t i = 0; i < total_poses; ++i) {
-                    new_cost += this->ComputeResidual(q_wc[i], p_wc[i], p_w, norm[i]);
+                    new_cost += this->ComputeResidual(q_cw[i], p_cw[i], p_w, norm[i]);
                 }
                 if (new_cost < total_cost) {
                     is_cost_reduced = true;
@@ -169,11 +176,11 @@ namespace ESKF_VIO_BACKEND {
     }
 
     /* measure the accuracy of the reprojection estimation */
-    Scalar Trianglator::ComputeResidual(const Quaternion &q_wc,
-                                        const Vector3 &p_wc,
+    Scalar Trianglator::ComputeResidual(const Quaternion &q_cw,
+                                        const Vector3 &p_cw,
                                         const Vector3 &p_w,
                                         const Vector2 &observe) { 
-        Vector3 p_c = q_wc * p_w + p_wc;
+        Vector3 p_c = q_cw * p_w + p_cw;
         Vector2 residual = Vector2(p_c(0) / p_c(2), p_c(1) / p_c(2)) - observe;
         return residual.squaredNorm();
     }
