@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
     fp64 lastTimeStamp = NAN;
 
     // 运行测试
-    for (uint32_t i = 0; i < 2500; ++i) {
+    for (uint32_t i = 0; i < 2750; ++i) {
         std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;

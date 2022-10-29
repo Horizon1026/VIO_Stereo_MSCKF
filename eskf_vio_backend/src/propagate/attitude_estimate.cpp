@@ -13,7 +13,7 @@ namespace ESKF_VIO_BACKEND {
             Vector3 g_imu = accel - this->bias_a;
             Vector3 g_word = IMUFullState::gravity_w;
             // 首先需要检查 accel 的模长是否和重力加速度一致，不一致的话不能初始化
-            if (std::fabs(g_word.norm() - g_imu.norm()) > fp64(0.05)) {
+            if (std::fabs(g_word.norm() - g_imu.norm()) > fp64(0.04)) {
                 LogInfo(">> Attitude estimator: imu accel norm " << g_imu.norm() <<
                     " is not equal to gravity, attitude estimator init failed.");
                 return false;
@@ -54,7 +54,7 @@ namespace ESKF_VIO_BACKEND {
             Vector3 gyrCorrect = gyrMid + err * this->Kp + this->errInt;
 
             // 更新姿态
-            Quaternion dq = Utility::DeltaQ(gyrCorrect * static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
+            Quaternion dq = Utility::DeltaQ(- gyrCorrect * static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
             item_1->q_wb = item_0->q_wb * dq;
             item_1->q_wb.normalize();
         }
@@ -64,6 +64,9 @@ namespace ESKF_VIO_BACKEND {
 
     /* 提取出指定时刻点附近的姿态估计结果 */
     bool AttitudeEstimate::GetAttitude(const fp64 timeStamp, const fp64 threshold, Quaternion &atti) {
+        if (this->items.empty()) {
+            return false;
+        }
         // 最大的时间戳也小于目标时间戳
         if (this->items.back()->timeStamp <= timeStamp) {
             if (timeStamp - this->items.back()->timeStamp < threshold) {
