@@ -13,7 +13,7 @@ namespace ESKF_VIO_BACKEND {
             Vector3 g_imu = accel - this->bias_a;
             Vector3 g_word = IMUFullState::gravity_w;
             // 首先需要检查 accel 的模长是否和重力加速度一致，不一致的话不能初始化
-            if (std::fabs(g_word.norm() - g_imu.norm()) > fp64(0.05)) {
+            if (std::fabs(g_word.norm() - g_imu.norm()) > fp64(0.04)) {
                 LogInfo(">> Attitude estimator: imu accel norm " << g_imu.norm() <<
                     " is not equal to gravity, attitude estimator init failed.");
                 return false;
@@ -54,7 +54,7 @@ namespace ESKF_VIO_BACKEND {
             Vector3 gyrCorrect = gyrMid + err * this->Kp + this->errInt;
 
             // 更新姿态
-            Quaternion dq = Utility::DeltaQ(gyrCorrect * static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
+            Quaternion dq = Utility::DeltaQ(- gyrCorrect * static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp));
             item_1->q_wb = item_0->q_wb * dq;
             item_1->q_wb.normalize();
         }
@@ -64,28 +64,44 @@ namespace ESKF_VIO_BACKEND {
 
     /* 提取出指定时刻点附近的姿态估计结果 */
     bool AttitudeEstimate::GetAttitude(const fp64 timeStamp, const fp64 threshold, Quaternion &atti) {
+        if (this->items.empty()) {
+            return false;
+        }
+        // 最大的时间戳也小于目标时间戳
+        if (this->items.back()->timeStamp <= timeStamp) {
+            if (timeStamp - this->items.back()->timeStamp < threshold) {
+                atti = this->items.back()->q_wb;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // 最小的时间戳也大于目标时间戳
+        if (this->items.size() > 1 && this->items.front()->timeStamp >= timeStamp) {
+            if (this->items.front()->timeStamp - timeStamp < threshold) {
+                atti = this->items.front()->q_wb;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         // 从后往前找
         for (auto it = this->items.rbegin(); it != this->items.rend(); ++it) {
+            // 找到的 it 是时间戳小于目标的第一个元素，且不可能是首尾两个元素
             if ((*it)->timeStamp <= timeStamp) {
-                if (it == this->items.rbegin()) {
-                    // 如果这个 item 就是遍历到的第一个，相差不大就可以返回
-                    if (std::fabs((*it)->timeStamp - timeStamp) < threshold) {
-                        atti = (*it)->q_wb;
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    // 如果不是遍历的第一个，那么和他上一个作比较，选择相近的
-                    auto it_pre = std::prev(it);
-                    if (std::fabs((*it_pre)->timeStamp - timeStamp) < std::fabs((*it)->timeStamp - timeStamp)) {
-                        atti = (*it_pre)->q_wb;
-                        return true;
-                    } else {
-                        atti = (*it)->q_wb;
-                        return true;
-                    }
+                const auto prevIt = std::prev(it);
+                const fp64 prevDiff = (*prevIt)->timeStamp - timeStamp;
+                const fp64 diff = timeStamp - (*it)->timeStamp;
+                if (prevDiff < diff && prevDiff < threshold) {
+                    atti = (*prevIt)->q_wb;
+                    return true;
+                } else if (diff < threshold) {
+                    atti = (*it)->q_wb;
+                    return true;
                 }
+                break;
             }
         }
         return false;

@@ -47,9 +47,9 @@ namespace ESKF_VIO_BACKEND {
         /* 单步运行的测试 */
         bool RunOnceTest(void);
         /* 输出最新 Propagate 点估计 */
-        bool PublishPropagateState(IMUFullState &state);
+        bool PublishPropagateState(IMUFullState &state, fp64 &timeStamp);
         /* 输出最新 Update 点估计 */
-        bool PublishUpdateState(IMUFullState &state);
+        bool PublishUpdateState(IMUFullState &state, fp64 &timeStamp);
         /* 重置 */
         void Reset(void);
 

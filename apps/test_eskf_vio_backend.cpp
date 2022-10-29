@@ -9,8 +9,9 @@ using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
 /* 测试用相关定义 */
-std::string simPath = "../simulate/";
-std::string configPath = "../eskf_vio_backend/config";
+std::string simPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/simulate/";
+std::string configPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/eskf_vio_backend/config/";
+std::string savePath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/saved_pose/";
 double maxTimeStamp = 20;
 
 /* 载入 IMU 数据 */
@@ -136,15 +137,33 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
     std::cout << "   " << cnt << " features track data loaded." << std::endl;
 }
 
+void SavePose(const std::vector<fp64> &timeStamps,
+              const std::vector<Quaternion> &q_wbs,
+              const std::vector<Vector3> &p_wbs,
+              const std::vector<Vector3> &v_wbs,
+              const std::string &savePath) {
+    std::ofstream outFile;
+    outFile.open(savePath + "estimated_poses.txt");
+    if (!outFile) {
+        std::cout << "CANNOT save results into " << savePath << "estimated_poses.txt" << std::endl;
+        return;
+    }
+    for (uint32_t i = 0; i < timeStamps.size(); ++i) {
+        outFile << timeStamps[i] << " "
+                << q_wbs[i].w() << " " << q_wbs[i].x() << " " << q_wbs[i].y() << " " << q_wbs[i].z() << " "
+                << p_wbs[i].transpose() << " "
+                << v_wbs[i].transpose() << std::endl;
+    }
+    outFile.close();
+}
+
 
 int main(int argc, char **argv) {
     // 处理输入的配置参数路径和数据路径
-    if (argc != 3) {
-        std::cerr << "Data path and Config path are needed." << std::endl;
-        return -1;
+    if (argc == 3) {
+        simPath = argv[1];
+        configPath = argv[2];
     }
-    simPath = argv[1];
-    configPath = argv[2];
 
     // 配置 std::cout 打印到指定文件
     // std::ofstream logFile("../test_log/20221023_test_trianglize_in_initialization.txt");
@@ -157,12 +176,20 @@ int main(int argc, char **argv) {
     LoadIMUData(backend);
     LoadFeaturesData(backend);
 
+    // 准备记录结果
+    std::vector<fp64> timeStamps;
+    std::vector<Quaternion> q_wbs;
+    std::vector<Vector3> p_wbs;
+    std::vector<Vector3> v_wbs;
+    fp64 lastTimeStamp = NAN;
+
     // 运行测试
-    for (uint32_t i = 0; i < 15; ++i) {
+    for (uint32_t i = 0; i < 2750; ++i) {
         std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
-        bool res = backend->PublishPropagateState(state);
+        fp64 timeStamp;
+        bool res = backend->PublishPropagateState(state, timeStamp);
         if (res == true) {
             // Vector3 pitch_roll_yaw = ESKF_VIO_BACKEND::Utility::QuaternionToEuler(state.q_wb);
             // std::cout << pitch_roll_yaw.x() << " " << pitch_roll_yaw.y() << " " << pitch_roll_yaw.z() << " ";
@@ -170,9 +197,21 @@ int main(int argc, char **argv) {
             if (std::isnan(state.p_wb.x())) {
                 break;
             }
+
+            if (lastTimeStamp == timeStamp) {
+                break;
+            }
+            lastTimeStamp = timeStamp;
+
+            timeStamps.emplace_back(timeStamp);
+            q_wbs.emplace_back(state.q_wb);
+            p_wbs.emplace_back(state.p_wb);
+            v_wbs.emplace_back(state.v_wb);
         } else {
             std::cout << "backend is not ready." << std::endl;
         }
     }
+    // 保存运行结果
+    SavePose(timeStamps, q_wbs, p_wbs, v_wbs, savePath);
     return 0;
 }

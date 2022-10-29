@@ -114,23 +114,22 @@ namespace ESKF_VIO_BACKEND {
 
 
     /* 输出最新 Propagate 点估计 */
-    bool Backend::PublishPropagateState(IMUFullState &state) {
+    bool Backend::PublishPropagateState(IMUFullState &state, fp64 &timeStamp) {
         if (this->propagator.items.empty()) {
             return false;
         }
         state.p_wb = this->propagator.items.back()->nominalState.p_wb;
         state.q_wb = this->propagator.items.back()->nominalState.q_wb;
         state.v_wb = this->propagator.items.back()->nominalState.v_wb;
-        state.v_wb = this->propagator.items.back()->nominalState.v_wb;
-        state.v_wb = this->propagator.items.back()->nominalState.v_wb;
         state.bias_a = this->propagator.bias_a;
         state.bias_g = this->propagator.bias_g;
+        timeStamp = this->propagator.items.back()->timeStamp;
         return true;
     }
 
 
     /* 输出最新 Update 点估计 */
-    bool Backend::PublishUpdateState(IMUFullState &state) {
+    bool Backend::PublishUpdateState(IMUFullState &state, fp64 &timeStamp) {
         if (this->propagator.items.empty()) {
             return false;
         }
@@ -139,6 +138,7 @@ namespace ESKF_VIO_BACKEND {
         state.v_wb = this->propagator.items.front()->nominalState.v_wb;
         state.bias_a = this->propagator.bias_a;
         state.bias_g = this->propagator.bias_g;
+        timeStamp = this->propagator.items.front()->timeStamp;
         return true;
     }
 
