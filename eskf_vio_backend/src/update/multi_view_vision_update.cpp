@@ -313,6 +313,34 @@ namespace ESKF_VIO_BACKEND {
         I_KH.diagonal().array() += Scalar(1);
         this->covariance = I_KH * this->covariance;     // P = (I - K * H) * P
 
+#if 1
+        // Step 2: 结果更新到 propagator
+        // 更新名义状态
+        this->propagator->items.front()->nominalState.p_wb -= this->delta_x.segment<3>(INDEX_P);
+        this->propagator->items.front()->nominalState.v_wb -= this->delta_x.segment<3>(INDEX_V);
+        this->propagator->items.front()->nominalState.q_wb = this->propagator->items.front()->nominalState.q_wb *
+            Utility::DeltaQ(-this->delta_x.segment<3>(INDEX_R));
+        this->propagator->items.front()->nominalState.q_wb.normalize();
+        // 更新 bias
+        this->propagator->bias_a -= this->delta_x.segment<3>(INDEX_BA);
+        this->propagator->bias_g -= this->delta_x.segment<3>(INDEX_BG);
+        // 更新相机与 imu 之间的标定参数
+        for (uint32_t i = 0; i < this->frameManager->extrinsics.size(); ++i) {
+            this->frameManager->extrinsics[i].p_bc -= this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
+            this->frameManager->extrinsics[i].q_bc = this->frameManager->extrinsics[i].q_bc *
+                Utility::DeltaQ(-this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
+            this->frameManager->extrinsics[i].q_bc.normalize();
+        }
+        // 更新关键帧的位姿（速度不用管）
+        uint32_t idx = 0;
+        const uint32_t offset = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6;
+        for (auto it = this->frameManager->frames.begin(); it != this->frameManager->frames.end(); ++it) {
+            (*it)->p_wb -= this->delta_x.segment<3>(offset + idx * 6);
+            (*it)->q_wb = (*it)->q_wb * Utility::DeltaQ(-this->delta_x.segment<3>(offset + idx * 6 + 3));
+            (*it)->q_wb.normalize();
+            ++idx;
+        }
+#else
         // Step 2: 结果更新到 propagator
         // 更新名义状态
         this->propagator->items.front()->nominalState.p_wb += this->delta_x.segment<3>(INDEX_P);
@@ -324,12 +352,12 @@ namespace ESKF_VIO_BACKEND {
         this->propagator->bias_a += this->delta_x.segment<3>(INDEX_BA);
         this->propagator->bias_g += this->delta_x.segment<3>(INDEX_BG);
         // 更新相机与 imu 之间的标定参数
-        // for (uint32_t i = 0; i < this->frameManager->extrinsics.size(); ++i) {
-        //     this->frameManager->extrinsics[i].p_bc += this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
-        //     this->frameManager->extrinsics[i].q_bc = this->frameManager->extrinsics[i].q_bc *
-        //         Utility::DeltaQ(this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
-        //     this->frameManager->extrinsics[i].q_bc.normalize();
-        // }
+        for (uint32_t i = 0; i < this->frameManager->extrinsics.size(); ++i) {
+            this->frameManager->extrinsics[i].p_bc += this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
+            this->frameManager->extrinsics[i].q_bc = this->frameManager->extrinsics[i].q_bc *
+                Utility::DeltaQ(this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
+            this->frameManager->extrinsics[i].q_bc.normalize();
+        }
         // 更新关键帧的位姿（速度不用管）
         uint32_t idx = 0;
         const uint32_t offset = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6;
@@ -339,6 +367,7 @@ namespace ESKF_VIO_BACKEND {
             (*it)->q_wb.normalize();
             ++idx;
         }
+#endif
         return true;
     }
 
