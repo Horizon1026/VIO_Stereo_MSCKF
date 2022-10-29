@@ -12,7 +12,7 @@ namespace ESKF_VIO_BACKEND {
         std::deque<std::shared_ptr<FeaturesMessage>> featMeas;
         std::deque<std::shared_ptr<IMUMessage>> imuMeas;
         // 时间戳起点
-        fp64 timeStampOffset = -1.0;
+        fp64 timeStampOffset = NAN;
     public:
         // IMU 数据周期
         fp64 imuPeriod = 0.005;

@@ -77,15 +77,26 @@ namespace ESKF_VIO_BACKEND {
                     }
                 } else {
                     // 如果不是遍历的第一个，那么和他上一个作比较，选择相近的
-                    auto it_pre = std::prev(it);
-                    if (std::fabs((*it_pre)->timeStamp - timeStamp) < std::fabs((*it)->timeStamp - timeStamp)) {
-                        atti = (*it_pre)->q_wb;
-                        return true;
-                    } else {
+                    auto it_pre = std::next(it);
+                    const fp64 delay_time = std::fabs((*it)->timeStamp - timeStamp);
+                    const fp64 prev_time = std::fabs((*it_pre)->timeStamp - timeStamp);
+                    // 如果他上一个是存在的，则比较两者哪个更近
+                    if (it_pre != this->items.rend()) {
+                        if (prev_time < delay_time && prev_time < threshold) {
+                            atti = (*it_pre)->q_wb;
+                            return true;
+                        }
+                    }
+                    // 他上一个不存在的话，判断他自己是否满足要求
+                    if (delay_time < threshold) {
                         atti = (*it)->q_wb;
                         return true;
+                    } else {
+                        return false;
                     }
                 }
+            } else {
+                break;
             }
         }
         return false;

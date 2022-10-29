@@ -19,11 +19,16 @@ namespace ESKF_VIO_BACKEND {
             return false;
         }
         // 校准时间戳
-        if (this->timeStampOffset < static_cast<fp64>(0)) {
+        if (std::isnan(this->timeStampOffset)) {
             this->timeStampOffset = newFeatMeas->timeStamp;
         }
         newFeatMeas->timeStamp -= this->timeStampOffset;
-        this->featMeas.emplace_back(newFeatMeas);
+        // 仅接受时间戳递增的输入
+        static fp64 lastTimeStamp = newFeatMeas->timeStamp - 1;
+        if (newFeatMeas->timeStamp > lastTimeStamp) {
+            this->featMeas.emplace_back(newFeatMeas);
+        }
+        lastTimeStamp = newFeatMeas->timeStamp;
         return true;
     }
 
@@ -31,11 +36,15 @@ namespace ESKF_VIO_BACKEND {
     /* 输入一刻 IMU 量测结果 */
     bool DataLoader::PushIMUMessage(const std::shared_ptr<IMUMessage> &newImuMeas) {
         // 校准时间戳
-        if (this->timeStampOffset < static_cast<fp64>(0)) {
+        if (std::isnan(this->timeStampOffset)) {
             this->timeStampOffset = newImuMeas->timeStamp;
         }
         newImuMeas->timeStamp -= this->timeStampOffset;
-        this->imuMeas.emplace_back(newImuMeas);
+        static fp64 lastTimeStamp = newImuMeas->timeStamp - 1;
+        if (newImuMeas->timeStamp > lastTimeStamp) {
+            this->imuMeas.emplace_back(newImuMeas);
+        }
+        lastTimeStamp = newImuMeas->timeStamp;
         return true;
     }
 
