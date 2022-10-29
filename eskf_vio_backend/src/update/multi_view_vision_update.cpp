@@ -19,7 +19,7 @@ namespace ESKF_VIO_BACKEND {
         // Step 3: 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值
         RETURN_FALSE_IF_FALSE(this->ExpandCameraStateCovariance());
         // Step 4: 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点
-        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(2)); // TODO: 用 2 个点来测试
+        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(30));
         if (this->features.empty()) {
             // Step 4.1: 根据边缘化策略，选择跳过此步，或裁减 update 时刻点上的状态和协方差矩阵
             RETURN_FALSE_IF_FALSE(this->ReduceCameraStateCovariance());
@@ -57,7 +57,7 @@ namespace ESKF_VIO_BACKEND {
         if (this->frameManager->NeedMarginalize()) {
             // 最新帧已经加入到 sliding window 中
             auto subnew = *std::next(this->frameManager->frames.rbegin());
-            if (this->frameManager->IsKeyFrame(subnew)) {   // iskeyframe() TODO:
+            if (this->frameManager->IsKeyFrame(subnew)) {   // iskeyframe() TODO: now is alway key frame
                 LogInfo(">> Need marg oldest key frame.");
                 this->margPolicy = MARG_OLDEST;
             } else {
@@ -121,6 +121,49 @@ namespace ESKF_VIO_BACKEND {
     }
 
 
+    /* 利用所有观测，三角测量一个特征点 */
+    bool MultiViewVisionUpdate::TrianglizeMultiFrame(const std::shared_ptr<Feature> &feature) {
+        if (feature == nullptr) {
+            return false;
+        }
+        static std::vector<Quaternion> all_q_wc(50);
+        static std::vector<Vector3> all_p_wc(50);
+        static std::vector<Vector2> all_norm(50);
+        all_q_wc.clear();
+        all_p_wc.clear();
+        all_norm.clear();
+        for (uint32_t i = 0; i < feature->observes.size(); ++i) {
+            const uint32_t frameID = i + feature->firstFrameID;
+            const auto frame = this->frameManager->GetFrame(frameID);
+            const Quaternion &q_wb = frame->q_wb;
+            const Vector3 &p_wb = frame->p_wb;
+            for (auto it = feature->observes[i]->norms.begin(); it != feature->observes[i]->norms.end(); ++it) {
+                const uint32_t cameraID = it->first;
+                const Quaternion &q_bc = this->frameManager->extrinsics[cameraID].q_bc;
+                const Vector3 &p_bc = this->frameManager->extrinsics[cameraID].p_bc;
+
+                /* T_wc = T_wb * T_bc */
+                /* [R_wc  t_wc] = [R_wb  t_wb]  *  [R_bc  t_bc] = [ R_wb * R_bc  R_wb * t_bc + t_wb]
+                   [  0    1  ]   [  0     1 ]     [  0     1 ]   [      0                1        ] */
+                /* T_wb = T_wc * T_bc.inv */
+                /* [R_wb  t_wb] = [R_wc  t_wc]  *  [R_bc.t  - R_bc.t * t_bc] = [ R_wc * R_bc.t  - R_wc * R_bc.t * t_bc + t_wc]
+                   [  0    1  ]   [  0     1 ]     [  0             1      ]   [      0                       1              ] */
+                all_q_wc.emplace_back(Quaternion(q_wb * q_bc));
+                all_p_wc.emplace_back(Vector3(q_wb * p_bc + p_wb));
+                all_norm.emplace_back(it->second);
+            }
+        }
+
+        if (this->trianglator->TrianglateAnalytic(all_q_wc, all_p_wc, all_norm, feature->p_w) == true) {
+            feature->status = Feature::SOLVED;
+            return true;
+        } else {
+            feature->status = Feature::UNSOLVED;
+            return false;
+        }
+    }
+
+
     /* 三角测量在最新一帧中被追踪到的特征点。已被测量过的选择迭代法，没被测量过的选择数值法。*/
     /* 更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
     bool MultiViewVisionUpdate::SelectGoodFeatures(const uint32_t num) {
@@ -128,16 +171,10 @@ namespace ESKF_VIO_BACKEND {
         std::map<fp32, std::shared_ptr<Feature>> goodFeatures;  // <score, feature_ptr>
         for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
             auto feature = (*it).second;
-            if ((*it).second->status == Feature::SOLVED) {
-                // 迭代法三角测量
-                // TODO: 三角测量成功后，连同打分塞到 goodFeatures
-
-            } else {
-                // 解析法三角测量
-                // TODO：同上
-                // std::cout <<"id: "<<it->second->id<<std::endl;
+            if (this->TrianglizeMultiFrame(feature) == true) {
+                // TODO: 得分
+                goodFeatures.insert(std::make_pair(std::rand(), feature));
             }
-            // goodFeatures.insert(std::make_pair(std::rand(), feature));
         }
         // 从高分到低分选择特征点，存入到 this->features 中
         this->features.clear();
@@ -218,7 +255,7 @@ namespace ESKF_VIO_BACKEND {
                 // 计算残差和雅可比矩阵，并填充到 Hf_Hx_r 对应位置
                 Vector3 p_b = R_bw * (p_w - p_wb);
                 Vector3 p_c = R_cb * (p_b - p_bc);
-                if (std::fabs(p_c.z()) > Scalar(1e-10)) {
+                if (std::fabs(p_c.z()) > ZERO) {
                     // 计算残差
                     Vector2 residual = (p_c / p_c.z()).head<2>() - measure;
                     Hf_Hx_r.block<2, 1>(row, Hf_Hx_r.cols() - 1) = residual;
@@ -254,8 +291,6 @@ namespace ESKF_VIO_BACKEND {
 
         // 裁剪出投影结果
         Hx_r = Hf_Hx_r.block(3, 3, Hf_Hx_r.rows() - 3, Hf_Hx_r.cols() - 3);
-        // TODO: 在三角化和 PnP 模块完工之前，量测方程设置为全零，防止产生错误的 update 行为
-        Hx_r.setZero();
         // TODO: 添加 Huber 核函数，调整此特征点的 scale
         // Hx_r *= scale;
         return true;
@@ -280,27 +315,27 @@ namespace ESKF_VIO_BACKEND {
 
         // Step 2: 结果更新到 propagator
         // 更新名义状态
-        this->propagator->items.front()->nominalState.p_wb -= this->delta_x.segment<3>(INDEX_P);
-        this->propagator->items.front()->nominalState.v_wb -= this->delta_x.segment<3>(INDEX_V);
+        this->propagator->items.front()->nominalState.p_wb += this->delta_x.segment<3>(INDEX_P);
+        this->propagator->items.front()->nominalState.v_wb += this->delta_x.segment<3>(INDEX_V);
         this->propagator->items.front()->nominalState.q_wb = this->propagator->items.front()->nominalState.q_wb *
-            Utility::DeltaQ(-this->delta_x.segment<3>(INDEX_R));
+            Utility::DeltaQ(this->delta_x.segment<3>(INDEX_R));
         this->propagator->items.front()->nominalState.q_wb.normalize();
         // 更新 bias
-        this->propagator->bias_a -= this->delta_x.segment<3>(INDEX_BA);
-        this->propagator->bias_g -= this->delta_x.segment<3>(INDEX_BG);
+        this->propagator->bias_a += this->delta_x.segment<3>(INDEX_BA);
+        this->propagator->bias_g += this->delta_x.segment<3>(INDEX_BG);
         // 更新相机与 imu 之间的标定参数
-        for (uint32_t i = 0; i < this->frameManager->extrinsics.size(); ++i) {
-            this->frameManager->extrinsics[i].p_bc -= this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
-            this->frameManager->extrinsics[i].q_bc = this->frameManager->extrinsics[i].q_bc *
-                Utility::DeltaQ(-this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
-            this->frameManager->extrinsics[i].q_bc.normalize();
-        }
+        // for (uint32_t i = 0; i < this->frameManager->extrinsics.size(); ++i) {
+        //     this->frameManager->extrinsics[i].p_bc += this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
+        //     this->frameManager->extrinsics[i].q_bc = this->frameManager->extrinsics[i].q_bc *
+        //         Utility::DeltaQ(this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
+        //     this->frameManager->extrinsics[i].q_bc.normalize();
+        // }
         // 更新关键帧的位姿（速度不用管）
         uint32_t idx = 0;
-        uint32_t offset = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6;
+        const uint32_t offset = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6;
         for (auto it = this->frameManager->frames.begin(); it != this->frameManager->frames.end(); ++it) {
-            (*it)->p_wb -= this->delta_x.segment<3>(offset + idx * 6);
-            (*it)->q_wb = (*it)->q_wb * Utility::DeltaQ(-this->delta_x.segment<3>(offset + idx * 6 + 3));
+            (*it)->p_wb += this->delta_x.segment<3>(offset + idx * 6);
+            (*it)->q_wb = (*it)->q_wb * Utility::DeltaQ(this->delta_x.segment<3>(offset + idx * 6 + 3));
             (*it)->q_wb.normalize();
             ++idx;
         }

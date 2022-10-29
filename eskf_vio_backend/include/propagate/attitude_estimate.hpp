@@ -30,7 +30,7 @@ namespace ESKF_VIO_BACKEND {
         Vector3 bias_a = Vector3::Zero();
         Vector3 bias_g = Vector3::Zero();
         // 姿态解算的 PI 控制器，积分部分的误差累加值
-        Scalar Kp = Scalar(0.1);
+        Scalar Kp = Scalar(0.001);
         Scalar Ki = Scalar(0.0001);
         Vector3 errInt = Vector3::Zero();
     public:
