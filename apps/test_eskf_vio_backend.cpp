@@ -139,12 +139,12 @@ void LoadFeaturesData(const std::shared_ptr<Backend> &backend) {
 
 int main(int argc, char **argv) {
     // 处理输入的配置参数路径和数据路径
-    if (argc != 3) {
-        std::cerr << "Data path and Config path are needed." << std::endl;
-        return -1;
+    simPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/simulate/";
+    configPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/eskf_vio_backend/config/";
+    if (argc == 3) {
+        simPath = argv[1];
+        configPath = argv[2];
     }
-    simPath = argv[1];
-    configPath = argv[2];
 
     // 配置 std::cout 打印到指定文件
     // std::ofstream logFile("../test_log/20221023_test_trianglize_in_initialization.txt");
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
     LoadFeaturesData(backend);
 
     // 运行测试
-    for (uint32_t i = 0; i < 15; ++i) {
+    for (uint32_t i = 0; i < 4000; ++i) {
         std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;

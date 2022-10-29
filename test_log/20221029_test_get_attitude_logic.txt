@@ -1,0 +1,19 @@
+>> Start initialization.
+[Debug] GetAttitude : target 1.004, obtain 1.005
+[Debug] GetAttitude : target 1.008, obtain 1.01
+[Debug] GetAttitude : target 1.012, obtain 1.01
+[Debug] GetAttitude : target 1.016, obtain 1.015
+[Debug] GetAttitude : target 1.02, obtain 1.02
+[Debug] GetAttitude : target 1.024, obtain 1.025
+[Debug] GetAttitude : target 1.028, obtain 1.03
+[Debug] GetAttitude : target 1.032, obtain 1.03
+[Debug] GetAttitude : target 1.036, obtain 1.035
+[Debug] GetAttitude : target 1.04, obtain 1.04
+[Debug] GetAttitude : target 1.044, obtain 1.045
+[Debug] GetAttitude : target 1.048, obtain 1.05
+[Debug] GetAttitude : target 1.052, obtain 1.05
+[Debug] GetAttitude : target 1.056, obtain 1.055
+[Debug] GetAttitude : target 1.06, obtain 1.06
+[Debug] GetAttitude : target 1.064, obtain 1.065
+[Debug] GetAttitude : target 1.068, obtain 1.07
+[Debug] GetAttitude : target 1.072, obtain 1.07

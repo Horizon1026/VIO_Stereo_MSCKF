@@ -64,38 +64,40 @@ namespace ESKF_VIO_BACKEND {
 
     /* 提取出指定时刻点附近的姿态估计结果 */
     bool AttitudeEstimate::GetAttitude(const fp64 timeStamp, const fp64 threshold, Quaternion &atti) {
+        // 最大的时间戳也小于目标时间戳
+        if (this->items.back()->timeStamp <= timeStamp) {
+            if (timeStamp - this->items.back()->timeStamp < threshold) {
+                atti = this->items.back()->q_wb;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // 最小的时间戳也大于目标时间戳
+        if (this->items.size() > 1 && this->items.front()->timeStamp >= timeStamp) {
+            if (this->items.front()->timeStamp - timeStamp < threshold) {
+                atti = this->items.front()->q_wb;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         // 从后往前找
         for (auto it = this->items.rbegin(); it != this->items.rend(); ++it) {
+            // 找到的 it 是时间戳小于目标的第一个元素，且不可能是首尾两个元素
             if ((*it)->timeStamp <= timeStamp) {
-                if (it == this->items.rbegin()) {
-                    // 如果这个 item 就是遍历到的第一个，相差不大就可以返回
-                    if (std::fabs((*it)->timeStamp - timeStamp) < threshold) {
-                        atti = (*it)->q_wb;
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    // 如果不是遍历的第一个，那么和他上一个作比较，选择相近的
-                    auto it_pre = std::next(it);
-                    const fp64 delay_time = std::fabs((*it)->timeStamp - timeStamp);
-                    const fp64 prev_time = std::fabs((*it_pre)->timeStamp - timeStamp);
-                    // 如果他上一个是存在的，则比较两者哪个更近
-                    if (it_pre != this->items.rend()) {
-                        if (prev_time < delay_time && prev_time < threshold) {
-                            atti = (*it_pre)->q_wb;
-                            return true;
-                        }
-                    }
-                    // 他上一个不存在的话，判断他自己是否满足要求
-                    if (delay_time < threshold) {
-                        atti = (*it)->q_wb;
-                        return true;
-                    } else {
-                        return false;
-                    }
+                const auto prevIt = std::prev(it);
+                const fp64 prevDiff = (*prevIt)->timeStamp - timeStamp;
+                const fp64 diff = timeStamp - (*it)->timeStamp;
+                if (prevDiff < diff && prevDiff < threshold) {
+                    atti = (*prevIt)->q_wb;
+                    return true;
+                } else if (diff < threshold) {
+                    atti = (*it)->q_wb;
+                    return true;
                 }
-            } else {
                 break;
             }
         }
