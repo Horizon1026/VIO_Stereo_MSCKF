@@ -21,7 +21,7 @@ namespace ESKF_VIO_BACKEND {
             RETURN_FALSE_IF_FALSE(this->TrianglizeMultiView(frame_i));
             // Step 3: 利用这些特征点在下一帧中的观测，通过重投影 PnP 迭代，估计出下一帧基于首帧参考系 w 系的相对位姿 p_wb 和 q_wb
             frame_j->q_wb = frame_i->q_wb;
-            frame_j->p_wb = frame_j->p_wb;
+            frame_j->p_wb = frame_i->p_wb;
             RETURN_FALSE_IF_FALSE(this->EstimateFramePose(frame_j));
             // Step 4: 两帧位置对时间进行差分，得到两帧在 w 系中的速度估计，至此首帧对应时刻点的 q_wb 和 v_wb 都已经确定
             frame_j->v_wb = (frame_j->p_wb - frame_i->p_wb) / Scalar(diffTime);
