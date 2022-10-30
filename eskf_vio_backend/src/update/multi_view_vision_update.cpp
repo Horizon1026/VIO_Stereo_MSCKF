@@ -317,6 +317,8 @@ namespace ESKF_VIO_BACKEND {
         for (uint32_t i = 0; i < newCov.rows(); ++i) {
             if (newCov(i, i) < 0) {
                 LogError("full state cov has items < 0 in diagnal!");
+                LogDebug("diagnal of P before update is\n" << this->covariance.diagonal().transpose());
+                LogDebug("diagnal of P after update is\n" << newCov.diagonal().transpose());
                 return true;
             }
         }

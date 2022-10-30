@@ -167,8 +167,8 @@ int main(int argc, char **argv) {
     }
 
     // 配置 std::cout 打印到指定文件
-    std::ofstream logFile("../test_log/20221030_test_msckf_backend_in_static_scene.txt");
-    std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
+    // std::ofstream logFile("../test_log/20221030_test_msckf_backend_in_static_scene.txt");
+    // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     // 初始化配置 vio backend，并载入数据
     std::cout << "This is a vio backend with filter estimator." << std::endl;

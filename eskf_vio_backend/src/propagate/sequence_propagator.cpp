@@ -137,6 +137,8 @@ namespace ESKF_VIO_BACKEND {
         for (uint32_t i = 0; i < item_1->imuCov.rows(); ++i) {
             if (item_1->imuCov(i, i) < 0) {
                 LogError("IMU cov has items < 0 in diagnal!");
+                LogDebug("diagnal of item_0->imuCov is\n" << item_0->imuCov.diagonal().transpose());
+                LogDebug("diagnal of item_1->imuCov is\n" << item_1->imuCov.diagonal().transpose());
                 break;
             }
         }
