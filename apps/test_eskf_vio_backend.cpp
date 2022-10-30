@@ -9,7 +9,7 @@ using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
 /* 测试用相关定义 */
-std::string simPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/simulate/dynamic_scenes/";
+std::string simPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/simulate/static_scenes/";
 std::string configPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/eskf_vio_backend/config/";
 std::string savePath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/saved_pose/";
 double maxTimeStamp = 20;
@@ -167,8 +167,8 @@ int main(int argc, char **argv) {
     }
 
     // 配置 std::cout 打印到指定文件
-    // std::ofstream logFile("../test_log/20221023_test_trianglize_in_initialization.txt");
-    // std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
+    std::ofstream logFile("../test_log/20221030_test_msckf_backend_in_static_scene.txt");
+    std::streambuf *buf = std::cout.rdbuf(logFile.rdbuf());
 
     // 初始化配置 vio backend，并载入数据
     std::cout << "This is a vio backend with filter estimator." << std::endl;

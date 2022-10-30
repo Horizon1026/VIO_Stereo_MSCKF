@@ -3,5 +3,5 @@
 
 # method 2
 cd output/
-./test_eskf_vio_backend ../simulate/dynamic_scenes/ ../eskf_vio_backend/config
+./test_eskf_vio_backend
 cd ..

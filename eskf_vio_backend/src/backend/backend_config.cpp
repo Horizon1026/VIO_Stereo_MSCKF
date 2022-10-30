@@ -26,7 +26,7 @@ namespace ESKF_VIO_BACKEND {
             LogInfo("     imu accel noise : " << this->propagator.Q(INDEX_NA, INDEX_NA));
             LogInfo("     imu gyro noise : " << this->propagator.Q(INDEX_NG, INDEX_NG));
             LogInfo("     imu accel random walk : " << this->propagator.Q(INDEX_NWA, INDEX_NWA));
-            LogInfo("     imu gyro random walk : " << this->propagator.Q(INDEX_NWG, INDEX_NA));
+            LogInfo("     imu gyro random walk : " << this->propagator.Q(INDEX_NWG, INDEX_NWG));
         }
 
         // 加载 IMU bias 初值
@@ -43,7 +43,7 @@ namespace ESKF_VIO_BACKEND {
 
         // 加载 w 系的重力加速度初值
         LogInfo(">> Load gravity in w frame...");
-        if (this->LoadMatrix(configPath + "/gravity_in_w_init.txt", 1, 1, tempMat) == true) {
+        if (this->LoadMatrix(configPath + "/gravity_norm.txt", 1, 1, tempMat) == true) {
             IMUFullState::gravity_w << 0.0, 0.0, tempMat(0, 0);
         } else {
             IMUFullState::gravity_w << 0.0, 0.0, 9.8;

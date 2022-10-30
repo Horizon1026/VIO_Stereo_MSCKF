@@ -305,7 +305,7 @@ namespace ESKF_VIO_BACKEND {
         Vector &&r = this->Hx_r.block(0, this->Hx_r.cols() - 1, this->Hx_r.rows(), 1);
         Matrix PHt = this->covariance * H.transpose();
         this->meas_covariance = H * PHt;
-        this->meas_covariance.diagonal().array() += this->measureNoise;     // S = H * P * Ht + R
+        this->meas_covariance.diagonal().array() += this->measureNoise * this->measureNoise;     // S = H * P * Ht + R
         this->K = PHt * Utility::Inverse(this->meas_covariance);    // K = P * Ht * Sinv
         // 更新误差状态向量
         this->delta_x = this->K * r;       // dx = K * r
