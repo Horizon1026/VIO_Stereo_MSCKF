@@ -311,7 +311,16 @@ namespace ESKF_VIO_BACKEND {
         this->delta_x = this->K * r;       // dx = K * r
         Matrix I_KH = - this->K * H;
         I_KH.diagonal().array() += Scalar(1);
-        this->covariance = I_KH * this->covariance;     // P = (I - K * H) * P
+        static Matrix newCov;
+        newCov = I_KH * this->covariance;     // P = (I - K * H) * P
+        // 检查协方差，如果对角线元素出现负数，则本次不更新
+        for (uint32_t i = 0; i < newCov.rows(); ++i) {
+            if (newCov(i, i) < 0) {
+                LogError("full state cov has items < 0 in diagnal!");
+                return true;
+            }
+        }
+        this->covariance = newCov;
 
         // Step 2: 结果更新到 propagator
         // 更新名义状态

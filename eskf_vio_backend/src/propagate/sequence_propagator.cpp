@@ -133,6 +133,14 @@ namespace ESKF_VIO_BACKEND {
         // propagate 误差状态对应的 IMU 协方差矩阵
         item_1->imuCov = this->F * item_0->imuCov * this->F.transpose() + this->G * this->Q * this->G.transpose();
 
+        // check cov
+        for (uint32_t i = 0; i < item_1->imuCov.rows(); ++i) {
+            if (item_1->imuCov(i, i) < 0) {
+                LogError("IMU cov has items < 0 in diagnal!");
+                break;
+            }
+        }
+
         // propagate IMU 与相机之间的协方差矩阵
         item_1->imuCamCov = this->F * item_0->imuCamCov;
 

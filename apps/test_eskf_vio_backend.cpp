@@ -9,20 +9,20 @@ using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
 /* 测试用相关定义 */
-std::string simPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/simulate/";
+std::string simPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/simulate/dynamic_scenes/";
 std::string configPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/eskf_vio_backend/config/";
 std::string savePath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/saved_pose/";
 double maxTimeStamp = 20;
 
 /* 载入 IMU 数据 */
-void LoadIMUData(const std::shared_ptr<Backend> &backend) {
-    std::string imu_file = simPath + "imu_pose.txt";
+uint32_t LoadIMUData(const std::shared_ptr<Backend> &backend) {
+    std::string imu_file = simPath + "imu_pose_noise.txt";
     std::cout << ">> Load imu data from " << imu_file << std::endl;
     std::ifstream fsIMU;
     fsIMU.open(imu_file.c_str());
     if (!fsIMU.is_open()) {
         std::cout << "   failed." << std::endl;
-        return;
+        return 0;
     }
     std::string oneLine;
     double timeStamp;
@@ -42,6 +42,7 @@ void LoadIMUData(const std::shared_ptr<Backend> &backend) {
         }
     }
     std::cout << "   " << cnt << " imu raw data loaded." << std::endl;
+    return cnt;
 }
 
 /* 载入特征点追踪数据 */
@@ -173,7 +174,7 @@ int main(int argc, char **argv) {
     std::cout << "This is a vio backend with filter estimator." << std::endl;
     std::shared_ptr<Backend> backend(new Backend());
     backend->Initialize(configPath);
-    LoadIMUData(backend);
+    uint32_t cnt = LoadIMUData(backend);
     LoadFeaturesData(backend);
 
     // 准备记录结果
@@ -184,7 +185,7 @@ int main(int argc, char **argv) {
     fp64 lastTimeStamp = NAN;
 
     // 运行测试
-    for (uint32_t i = 0; i < 2750; ++i) {
+    for (uint32_t i = 0; i < cnt; ++i) {
         std::cout << "\n --- \n";
         backend->RunOnce();
         ESKF_VIO_BACKEND::IMUFullState state;
