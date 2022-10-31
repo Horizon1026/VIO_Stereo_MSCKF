@@ -257,7 +257,7 @@ namespace ESKF_VIO_BACKEND {
                 Vector3 p_c = R_cb * (p_b - p_bc);
                 if (std::fabs(p_c.z()) > ZERO) {
                     // 计算残差
-                    Vector2 residual = (p_c / p_c.z()).head<2>() - measure;
+                    Vector2 residual = measure - (p_c / p_c.z()).head<2>();
                     Hf_Hx_r.block<2, 1>(row, Hf_Hx_r.cols() - 1) = residual;
                     // 计算雅可比（归一化平面误差，对 p_c 求导）
                     Matrix23 jacobian_2d_3d;
@@ -326,27 +326,27 @@ namespace ESKF_VIO_BACKEND {
 
         // Step 2: 结果更新到 propagator
         // 更新名义状态
-        this->propagator->items.front()->nominalState.p_wb -= this->delta_x.segment<3>(INDEX_P);
-        this->propagator->items.front()->nominalState.v_wb -= this->delta_x.segment<3>(INDEX_V);
+        this->propagator->items.front()->nominalState.p_wb += this->delta_x.segment<3>(INDEX_P);
+        this->propagator->items.front()->nominalState.v_wb += this->delta_x.segment<3>(INDEX_V);
         this->propagator->items.front()->nominalState.q_wb = this->propagator->items.front()->nominalState.q_wb *
-            Utility::DeltaQ(-this->delta_x.segment<3>(INDEX_R));
+            Utility::DeltaQ(this->delta_x.segment<3>(INDEX_R));
         this->propagator->items.front()->nominalState.q_wb.normalize();
         // 更新 bias
-        this->propagator->bias_a -= this->delta_x.segment<3>(INDEX_BA);
-        this->propagator->bias_g -= this->delta_x.segment<3>(INDEX_BG);
+        this->propagator->bias_a += this->delta_x.segment<3>(INDEX_BA);
+        this->propagator->bias_g += this->delta_x.segment<3>(INDEX_BG);
         // 更新相机与 imu 之间的标定参数
         for (uint32_t i = 0; i < this->frameManager->extrinsics.size(); ++i) {
-            this->frameManager->extrinsics[i].p_bc -= this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
+            this->frameManager->extrinsics[i].p_bc += this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6);
             this->frameManager->extrinsics[i].q_bc = this->frameManager->extrinsics[i].q_bc *
-                Utility::DeltaQ(-this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
+                Utility::DeltaQ(this->delta_x.segment<3>(IMU_STATE_SIZE + i * 6 + 3));
             this->frameManager->extrinsics[i].q_bc.normalize();
         }
         // 更新关键帧的位姿（速度不用管）
         uint32_t idx = 0;
         const uint32_t offset = IMU_STATE_SIZE + this->frameManager->extrinsics.size() * 6;
         for (auto it = this->frameManager->frames.begin(); it != this->frameManager->frames.end(); ++it) {
-            (*it)->p_wb -= this->delta_x.segment<3>(offset + idx * 6);
-            (*it)->q_wb = (*it)->q_wb * Utility::DeltaQ(-this->delta_x.segment<3>(offset + idx * 6 + 3));
+            (*it)->p_wb += this->delta_x.segment<3>(offset + idx * 6);
+            (*it)->q_wb = (*it)->q_wb * Utility::DeltaQ(this->delta_x.segment<3>(offset + idx * 6 + 3));
             (*it)->q_wb.normalize();
             ++idx;
         }
