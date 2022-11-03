@@ -11,8 +11,8 @@ namespace ESKF_VIO_BACKEND {
                                    const fp64 timeStamp) {
         // 设置 IMU 和 Cam 的状态维度，初始化完成后，滑动窗口内应当仅仅保留 frame i
         // 虽然初始化时，窗口内肯定有两帧，但是初始化后需要进行一次 update，期间会有 state expand，因此初始化成只有一帧的情况
-        uint32_t imuSize = IMU_STATE_SIZE;
-        uint32_t camSize = 6 + this->propagator->extrinsics.size() * 6;
+        const uint32_t imuSize = IMU_STATE_SIZE;
+        const uint32_t camExSize = this->propagator->extrinsics.size() * 6 + 6;
 
         // 如果序列为空，则构造新的起点
         if (this->items.empty()) {
@@ -25,9 +25,9 @@ namespace ESKF_VIO_BACKEND {
             newItem->gyro = gyro;
             newItem->timeStamp = timeStamp;
             newItem->imuCov.setZero();
-            if (camSize > 0) {
-                newItem->imuCamCov.setZero(imuSize, camSize);
-                this->camCov.setZero(camSize, camSize);
+            if (camExSize > 0) {
+                newItem->imuExCamCov.setZero(imuSize, camExSize);
+                this->exCamCov.setZero(camExSize, camExSize);
             }
 
             // 从零开始创建的 propagate 起点，名义运动状态归为初值
@@ -144,7 +144,7 @@ namespace ESKF_VIO_BACKEND {
         }
 
         // propagate IMU 与相机之间的协方差矩阵
-        item_1->imuCamCov = this->F * item_0->imuCamCov;
+        item_1->imuExCamCov = this->F * item_0->imuExCamCov;
 
         /* 协方差矩阵 propagate 过程 */
         /*

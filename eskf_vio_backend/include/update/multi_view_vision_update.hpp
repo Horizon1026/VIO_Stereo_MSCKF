@@ -53,8 +53,10 @@ namespace ESKF_VIO_BACKEND {
         bool ResetPropagatorOrigin(const fp64 timeStamp, const fp64 threshold);
         /* 若此时滑动窗口已满，则判断次新帧是否为关键帧，确定边缘化策略 */
         bool DecideMargPolicy(void);
-        /* 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值 */
-        bool ExpandCameraStateCovariance(void);
+        /* 拼接完整的协方差矩阵 */
+        bool ConstructCovariance(void);
+        /* 利用 propagator 的结果更新最新帧的 frame pose */
+        bool UpdateNewestFramePose(void);
         /* 利用所有观测，三角测量一个特征点 */
         bool TrianglizeMultiFrame(const std::shared_ptr<Feature> &feature);
         /* 三角测量在最新一帧中被追踪到的特征点。已被测量过的选择迭代法，没被测量过的选择数值法。*/
@@ -67,9 +69,11 @@ namespace ESKF_VIO_BACKEND {
                                           Matrix &Hx_r);
         /* 更新误差状态和名义状态 */
         bool UpdateState(void);
+        /* 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值 */
+        bool ExpandCameraCovariance(void);
         /* 更新协方差矩阵到 propagator 中 */
         bool UpdateCovariance(void);
         /* 裁减 update 时刻点上的状态和协方差矩阵 */
-        bool ReduceCameraStateCovariance(void);
+        bool ReduceCameraCovariance(void);
     };
 }

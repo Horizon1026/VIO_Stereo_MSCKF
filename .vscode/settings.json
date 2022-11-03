@@ -72,7 +72,9 @@
         "*.txx": "cpp",
         "locale": "cpp",
         "codecvt": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "editor.minimap.enabled": true,
