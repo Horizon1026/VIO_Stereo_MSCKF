@@ -23,21 +23,24 @@ include_directories("/usr/include/eigen3")
 # 添加头文件路径
 include_directories(${CMAKE_SOURCE_DIR}/include/backend)
 include_directories(${CMAKE_SOURCE_DIR}/include/data_manager)
+include_directories(${CMAKE_SOURCE_DIR}/include/data_manager/vision_data)
 include_directories(${CMAKE_SOURCE_DIR}/include/geometry)
 include_directories(${CMAKE_SOURCE_DIR}/include/propagate)
 include_directories(${CMAKE_SOURCE_DIR}/include/update)
 include_directories(${CMAKE_SOURCE_DIR}/include/utility)
 # 添加源文件
-aux_source_directory(${CMAKE_SOURCE_DIR}/src/backend      BACKEND)
-aux_source_directory(${CMAKE_SOURCE_DIR}/src/data_manager DATA_MANAGER)
-aux_source_directory(${CMAKE_SOURCE_DIR}/src/geometry     GEOMETRY)
-aux_source_directory(${CMAKE_SOURCE_DIR}/src/propagate    PROPAGATE)
-aux_source_directory(${CMAKE_SOURCE_DIR}/src/update       UPDATE)
-aux_source_directory(${CMAKE_SOURCE_DIR}/src/utility      UTILITY)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/backend                    BACKEND)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/data_manager               DATA_MANAGER)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/data_manager/vision_data   VISION_DATA)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/geometry                   GEOMETRY)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/propagate                  PROPAGATE)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/update                     UPDATE)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/utility                    UTILITY)
 # 生成库
 add_library(_eskf_vio_backend SHARED
     ${BACKEND}
     ${DATA_MANAGER}
+    ${VISION_DATA}
     ${GEOMETRY}
     ${PROPAGATE}
     ${UPDATE}

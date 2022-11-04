@@ -28,6 +28,7 @@ if (MAKE_LIB)
     set(ESKF_VIO_BACKEND_INCLUDE ${CMAKE_SOURCE_DIR}/eskf_vio_backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager)
+    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager/vision_data)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/geometry)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/propagate)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/update)
@@ -65,22 +66,25 @@ else()
     set(ESKF_VIO_BACKEND_INCLUDE ${CMAKE_SOURCE_DIR}/eskf_vio_backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager)
+    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager/vision_data)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/geometry)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/propagate)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/update)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/utility)
     # 添加源文件
-    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/backend      BACKEND)
-    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/data_manager DATA_MANAGER)
-    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/geometry     GEOMETRY)
-    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/propagate    PROPAGATE)
-    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/update       UPDATE)
-    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/utility      UTILITY)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/backend                    BACKEND)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/data_manager               DATA_MANAGER)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/data_manager/vision_data   VISION_DATA)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/geometry                   GEOMETRY)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/propagate                  PROPAGATE)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/update                     UPDATE)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/utility                    UTILITY)
     # 生成可执行文件
     add_executable(test_eskf_vio_backend
         ${CMAKE_SOURCE_DIR}/apps/test_eskf_vio_backend.cpp
         ${BACKEND}
         ${DATA_MANAGER}
+        ${VISION_DATA}
         ${GEOMETRY}
         ${PROPAGATE}
         ${UPDATE}
