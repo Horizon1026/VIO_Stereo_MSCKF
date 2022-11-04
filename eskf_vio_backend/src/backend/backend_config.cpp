@@ -7,6 +7,11 @@
 namespace ESKF_VIO_BACKEND {
     /* 后端优化器读取配置并初始化 */
     bool Backend::Initialize(const std::string &configPath) {
+        // 获取配置参数
+        this->config = Configurator::GetInstance();
+        RETURN_FALSE_IF_FALSE(this->config->ReadConfigParams(configPath));
+
+        // TODO: 待删除
         Matrix tempMat;
         std::string configFile;
         LogFixPercision();

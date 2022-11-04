@@ -4,7 +4,7 @@ cmake_minimum_required( VERSION 3.10 )
 project(Test_eskf_vio_backend)
 
 # 切换 Release 或者 Debug
-set(CMAKE_MODE_RELEASE TRUE)
+set(CMAKE_MODE_RELEASE FALSE)
 if (CMAKE_MODE_RELEASE)
     # 设置编译类型为发布
     set(CMAKE_BUILD_TYPE "Release")
@@ -27,6 +27,7 @@ if (MAKE_LIB)
     # 添加 eskf_vio_backend 的 so 库对应头文件
     set(ESKF_VIO_BACKEND_INCLUDE ${CMAKE_SOURCE_DIR}/eskf_vio_backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/backend)
+    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/config)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager/vision_data)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/geometry)
@@ -65,6 +66,7 @@ else()
     # 添加头文件路径
     set(ESKF_VIO_BACKEND_INCLUDE ${CMAKE_SOURCE_DIR}/eskf_vio_backend)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/backend)
+    include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/config)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/data_manager/vision_data)
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/geometry)
@@ -73,6 +75,7 @@ else()
     include_directories(${ESKF_VIO_BACKEND_INCLUDE}/include/utility)
     # 添加源文件
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/backend                    BACKEND)
+    aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/config                     CONFIG)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/data_manager               DATA_MANAGER)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/data_manager/vision_data   VISION_DATA)
     aux_source_directory(${ESKF_VIO_BACKEND_INCLUDE}/src/geometry                   GEOMETRY)
@@ -83,6 +86,7 @@ else()
     add_executable(test_eskf_vio_backend
         ${CMAKE_SOURCE_DIR}/apps/test_eskf_vio_backend.cpp
         ${BACKEND}
+        ${CONFIG}
         ${DATA_MANAGER}
         ${VISION_DATA}
         ${GEOMETRY}

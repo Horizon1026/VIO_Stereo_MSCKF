@@ -2,6 +2,7 @@
 /* 外部依赖 */
 /* 内部依赖 */
 #include <math_lib.hpp>
+#include <config.hpp>
 #include <data_loader.hpp>
 #include <feature_manager.hpp>
 #include <frame_manager.hpp>
@@ -15,6 +16,9 @@ namespace ESKF_VIO_BACKEND {
     /* ESKF VIO 后端控制器 */
     class Backend {
     private:
+        /* 参数配置相关 */
+        Configurator *config = nullptr;         // 参数配置器
+
         /* 数据管理相关 */
         DataLoader dataloader;                  // 数据加载器，控制数据流按时间戳顺序输入
         FeatureManager featureManager;          // 视觉特征点管理器
