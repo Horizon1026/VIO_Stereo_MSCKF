@@ -61,6 +61,13 @@ namespace ESKF_VIO_BACKEND {
         if (this->LoadMatrix(configPath + "/vision_measure_noise.txt", 1, 1, tempMat) == true) {
             this->vision.sigmaVision = tempMat(0, 0);
         }
+
+        // 加载关键帧策略
+        if (this->LoadMatrix(configPath + "/keyframe_policy.txt", 1, 3, tempMat) == true) {
+            this->vision.minKeyframeTrackedFeatureNum = static_cast<decltype(this->vision.minKeyframeTrackedFeatureNum)>(tempMat(0, 0));
+            this->vision.minKeyframeMeanParallax = tempMat(0, 1);
+            this->vision.maxKeyframeTranslation = tempMat(0, 2);
+        }
         return true;
     }
 

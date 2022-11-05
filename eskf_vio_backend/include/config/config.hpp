@@ -31,7 +31,7 @@ namespace ESKF_VIO_BACKEND {
 
             uint32_t minKeyframeTrackedFeatureNum = 25;
             Scalar minKeyframeMeanParallax = 0.2f;
-            Scalar maxKeyframeTranslation = 0.00f;
+            Scalar maxKeyframeTranslation = 0.1f;
 
             std::vector<Quaternion> default_q_bc;
             std::vector<Vector3> default_p_bc;

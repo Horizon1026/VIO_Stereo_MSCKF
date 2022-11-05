@@ -62,7 +62,7 @@ namespace ESKF_VIO_BACKEND {
         if (this->frameManager->NeedMarginalize()) {
             // 最新帧已经加入到 sliding window 中
             auto subnew = *std::next(this->frameManager->frames.rbegin());
-            if (this->frameManager->IsKeyFrame(subnew)) {   // iskeyframe() TODO: now is alway key frame
+            if (this->frameManager->IsKeyFrame(subnew)) {
                 LogInfo(">> Need marg oldest key frame.");
                 this->margPolicy = MARG_OLDEST;
             } else {
@@ -417,26 +417,28 @@ namespace ESKF_VIO_BACKEND {
         const uint32_t camSize = this->frameManager->frames.size() * 6;
         const uint32_t camExSize = exSize + camSize;
         const uint32_t imuSize = IMU_STATE_SIZE;
+        const uint32_t imuExSize = imuSize + exSize;
+        const uint32_t fullSize = imuSize + camExSize;
         static Matrix temp;
         switch (this->margPolicy) {
             case NO_MARG:
                 return true;
             case MARG_NEWEST:
-                this->covariance.conservativeResize(imuSize + camExSize - 6, imuSize + camExSize - 6);
+                this->covariance.conservativeResize(fullSize - 6, fullSize - 6);
                 return true;
             case MARG_SUBNEW:
-                this->covariance.block(0, camExSize - 12, camExSize - 12, 6) = this->covariance.block(0, camExSize - 6, camExSize - 12, 6);
-                this->covariance.block(camExSize - 12, 0, 6, camExSize - 12) = this->covariance.block(camExSize - 6, 0, 6, camExSize - 12);
-                this->covariance.block(camExSize - 12, camExSize - 12, 6, 6) = this->covariance.block(camExSize - 6, camExSize - 6, 6, 6);
-                this->covariance.conservativeResize(imuSize + camExSize - 6, imuSize + camExSize - 6);
+                this->covariance.block(0, fullSize - 12, fullSize - 12, 6) = this->covariance.block(0, fullSize - 6, fullSize - 12, 6);
+                this->covariance.block(fullSize - 12, 0, 6, fullSize - 12) = this->covariance.block(fullSize - 6, 0, 6, fullSize - 12);
+                this->covariance.block(fullSize - 12, fullSize - 12, 6, 6) = this->covariance.block(fullSize - 6, fullSize - 6, 6, 6);
+                this->covariance.conservativeResize(fullSize - 6, fullSize - 6);
                 return true;
             case MARG_OLDEST:
-                temp = this->covariance.block(0, imuSize + exSize + 6, imuSize + exSize, camSize - 6);
-                this->covariance.block(0, imuSize + exSize, imuSize + exSize, camSize - 6) = temp;
-                this->covariance.block(imuSize + exSize, 0, camSize - 6, imuSize + exSize) = temp.transpose();
+                temp = this->covariance.block(0, imuExSize + 6, imuExSize, camSize - 6);
+                this->covariance.block(0, imuExSize, imuExSize, camSize - 6) = temp;
+                this->covariance.block(imuExSize, 0, camSize - 6, imuExSize) = temp.transpose();
                 temp = this->covariance.bottomRightCorner(camSize - 6, camSize - 6);
-                this->covariance.block(imuSize + exSize, imuSize + exSize, camSize - 6, camSize - 6) = temp;
-                this->covariance.conservativeResize(imuSize + camExSize - 6, imuSize + camExSize - 6);
+                this->covariance.block(imuExSize, imuExSize, camSize - 6, camSize - 6) = temp;
+                this->covariance.conservativeResize(fullSize - 6, fullSize - 6);
                 return true;
             default:
                 return false;
