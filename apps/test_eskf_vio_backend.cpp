@@ -142,6 +142,8 @@ void SavePose(const std::vector<fp64> &timeStamps,
               const std::vector<Quaternion> &q_wbs,
               const std::vector<Vector3> &p_wbs,
               const std::vector<Vector3> &v_wbs,
+              const std::vector<Vector3> &bias_as,
+              const std::vector<Vector3> &bias_gs,
               const std::string &savePath) {
     std::ofstream outFile;
     outFile.open(savePath + "estimated_poses.txt");
@@ -153,7 +155,10 @@ void SavePose(const std::vector<fp64> &timeStamps,
         outFile << timeStamps[i] << " "
                 << q_wbs[i].w() << " " << q_wbs[i].x() << " " << q_wbs[i].y() << " " << q_wbs[i].z() << " "
                 << p_wbs[i].transpose() << " "
-                << v_wbs[i].transpose() << std::endl;
+                << v_wbs[i].transpose() << " "
+                << bias_as[i].transpose() << " "
+                << bias_gs[i].transpose() << " "
+                << std::endl;
     }
     outFile.close();
 }
@@ -173,7 +178,7 @@ int main(int argc, char **argv) {
     // 初始化配置 vio backend，并载入数据
     std::cout << "This is a vio backend with filter estimator." << std::endl;
     std::shared_ptr<Backend> backend(new Backend());
-    backend->Initialize(configPath);
+    backend->ConfigParams(configPath);
     uint32_t cnt = LoadIMUData(backend);
     LoadFeaturesData(backend);
 
@@ -182,6 +187,8 @@ int main(int argc, char **argv) {
     std::vector<Quaternion> q_wbs;
     std::vector<Vector3> p_wbs;
     std::vector<Vector3> v_wbs;
+    std::vector<Vector3> bias_as;
+    std::vector<Vector3> bias_gs;
     fp64 lastTimeStamp = NAN;
 
     // 运行测试
@@ -208,11 +215,13 @@ int main(int argc, char **argv) {
             q_wbs.emplace_back(state.q_wb);
             p_wbs.emplace_back(state.p_wb);
             v_wbs.emplace_back(state.v_wb);
+            bias_as.emplace_back(state.bias_a);
+            bias_gs.emplace_back(state.bias_g);
         } else {
             std::cout << "backend is not ready." << std::endl;
         }
     }
     // 保存运行结果
-    SavePose(timeStamps, q_wbs, p_wbs, v_wbs, savePath);
+    SavePose(timeStamps, q_wbs, p_wbs, v_wbs, bias_as, bias_gs, savePath);
     return 0;
 }

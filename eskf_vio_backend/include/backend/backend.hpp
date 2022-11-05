@@ -41,7 +41,7 @@ namespace ESKF_VIO_BACKEND {
     /* 对外接口 interface */
     public:
         /* 后端优化器读取配置并初始化 */
-        bool Initialize(const std::string &configPath);
+        bool ConfigParams(const std::string &configPath);
         /* 输入一帧 IMU 数据 */
         bool GetIMUMessage(const std::shared_ptr<IMUMessage> &newImuMeas);
         /* 输入一帧 Features 追踪数据 */
@@ -59,8 +59,6 @@ namespace ESKF_VIO_BACKEND {
 
     /* 对内接口 interface */
     private:
-        /* 从 txt 文件中读取一个矩阵 */
-        bool LoadMatrix(const std::string &matrixFile, const uint32_t rows, const uint32_t cols, Matrix &mat);
         /* 将新输入的 feature message 更新到特征点管理器和帧管理器中 */
         bool UpdateFeatureFrameManager(const std::shared_ptr<FeaturesMessage> &featMeas);
         /* 基于 marg 策略调整特征点管理器和帧管理器 */

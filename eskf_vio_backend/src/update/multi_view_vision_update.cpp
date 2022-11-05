@@ -20,7 +20,7 @@ namespace ESKF_VIO_BACKEND {
         RETURN_FALSE_IF_FALSE(this->ConstructCovariance());
         // Step 4: 三角测量滑动窗口内所有特征点。已被测量过的选择迭代法，没被测量过的选择数值法。更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点
         RETURN_FALSE_IF_FALSE(this->UpdateNewestFramePose());
-        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures(30));
+        RETURN_FALSE_IF_FALSE(this->SelectGoodFeatures());
         if (this->features.empty()) {
             // Step 4.1: 扩展 state 的维度以及协方差矩阵，利用对应时刻的 propagate 名义状态给 frame pose 赋值
             RETURN_FALSE_IF_FALSE(this->ExpandCameraCovariance());
@@ -153,7 +153,7 @@ namespace ESKF_VIO_BACKEND {
 
     /* 三角测量在最新一帧中被追踪到的特征点。已被测量过的选择迭代法，没被测量过的选择数值法。*/
     /* 更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
-    bool MultiViewVisionUpdate::SelectGoodFeatures(const uint32_t num) {
+    bool MultiViewVisionUpdate::SelectGoodFeatures(void) {
         auto frame = this->frameManager->frames.back();
         std::map<fp32, std::shared_ptr<Feature>> goodFeatures;  // <score, feature_ptr>
         for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
@@ -165,7 +165,7 @@ namespace ESKF_VIO_BACKEND {
         }
         // 从高分到低分选择特征点，存入到 this->features 中
         this->features.clear();
-        uint32_t cnt = num;
+        uint32_t cnt = this->maxUsedFeatures;
         for (auto it = goodFeatures.rbegin(); it != goodFeatures.rend(); ++it) {
             if (cnt) {
                 this->features.emplace_back(it->second);

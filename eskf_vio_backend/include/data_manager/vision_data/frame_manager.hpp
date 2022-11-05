@@ -48,8 +48,8 @@ namespace ESKF_VIO_BACKEND {
         Vector3 p_bc;
     public:
         /* 构造函数与析构函数 */
-        Extrinsic() {}
-        ~Extrinsic() {}
+        Extrinsic() = default;
+        virtual ~Extrinsic() = default;
         Extrinsic(const Quaternion &q_bc, const Vector3 &p_bc) :
             q_bc(q_bc), p_bc(p_bc) {}
     };
@@ -60,14 +60,19 @@ namespace ESKF_VIO_BACKEND {
     public:
         // 滑动窗口内所有关键帧
         std::deque<std::shared_ptr<Frame>> frames;
+    public:
         // 相机与 IMU 之间的外参
         std::vector<Extrinsic> extrinsics;
-        // 滑动窗口的大小限制
+        // 滑动窗口的大小
         uint32_t maxWindowSize = 5;
+        // 关键帧判断相关阈值
+        uint32_t minKeyframeTrackedFeatureNum = 25;
+        Scalar minKeyframeMeanParallax = 0.2f;
+        Scalar maxKeyframeTranslation = 0.3f;
     public:
         /* 构造函数与析构函数 */
-        FrameManager() {}
-        ~FrameManager() {}
+        FrameManager() = default;
+        virtual ~FrameManager() = default;
     public:
         /* 帧管理器初始化 */
         bool Initialize(const uint32_t maxWindowSize);

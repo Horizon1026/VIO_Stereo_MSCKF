@@ -159,9 +159,50 @@ namespace ESKF_VIO_BACKEND {
         if (frame == nullptr) {
             return false;
         }
-
-        // TODO:
-        return true;
+        // 定位到指定帧的前一帧
+        std::shared_ptr<Frame> preFrame = nullptr;
+        for (auto it = this->frames.rbegin(); it != this->frames.rend(); ++it) {
+            if ((*it) == frame) {
+                ++it;
+                if (it != this->frames.rend()) {
+                    preFrame = *it;
+                    break;
+                } else {
+                    // 最旧帧必定是关键帧
+                    return true;
+                }
+            }
+        }
+        // 找到两帧之间共视的特征点，统计点数和平均视差
+        uint32_t trackedNum = 0;
+        Scalar parallax = 0.0f;
+        for (auto it = frame->features.begin(); it != frame->features.end(); ++it) {
+            auto preIt = preFrame->features.find(it->first);
+            if (preIt != preFrame->features.end()) {
+                // 找到两帧之间 camera 0 的对应观测
+                Vector2 norm;
+                Vector2 preNorm;
+                if (it->second->GetNorm(frame->id, 0, norm) == true &&
+                    preIt->second->GetNorm(preFrame->id, 0, preNorm) == true) {
+                    ++trackedNum;
+                    parallax += (norm - preNorm).norm();
+                }
+            }
+        }
+        parallax /= static_cast<Scalar>(trackedNum);
+        // 计算两帧之间的相对位置
+        Scalar translation = (frame->p_wb - preFrame->p_wb).norm();
+        // 判断 frame 是否为关键帧
+        if (trackedNum < this->minKeyframeTrackedFeatureNum) {
+            return true;
+        }
+        if (translation > this->maxKeyframeTranslation) {
+            return true;
+        }
+        LogDebug("frame " << frame->id << " and preFrame " << preFrame->id << " tracked " << trackedNum <<
+            " features, parallax " << parallax << ", distance " << translation);
+        LogDebug("newest frame is " << this->frames.back()->id);
+        return false;
     }
 
 

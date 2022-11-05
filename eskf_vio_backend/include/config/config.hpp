@@ -23,7 +23,7 @@ namespace ESKF_VIO_BACKEND {
 
         /* 视觉观测相关参数 */
         struct Vision {
-            Scalar sigmaMeasure = 0.0021739f;
+            Scalar sigmaVision = 0.0021739f;
 
             uint32_t maxFrameNum = 6;
             uint32_t maxFeatureNumForUpdate = 30;
@@ -31,7 +31,7 @@ namespace ESKF_VIO_BACKEND {
 
             uint32_t minKeyframeTrackedFeatureNum = 25;
             Scalar minKeyframeMeanParallax = 0.2f;
-            Scalar minKeyframeTranslation = 0.3f;
+            Scalar maxKeyframeTranslation = 0.00f;
 
             std::vector<Quaternion> default_q_bc;
             std::vector<Vector3> default_p_bc;

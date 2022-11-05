@@ -18,6 +18,14 @@ namespace ESKF_VIO_BACKEND {
         FrameManager *frameManager = nullptr;
         Trianglator *trianglator = nullptr;
         PnPSolver *pnpSolver = nullptr;
+        // 量测噪声（使用时默认为对角矩阵 R ）
+        Scalar measureNoise = Scalar(0);
+        // 最多使用多少特征点去 update
+        uint32_t maxUsedFeatures = 20;
+        // 边缘化策略
+        MargPolicy margPolicy = NO_MARG;
+
+    private:
         // 用于构造量测方程的特征点
         std::vector<std::shared_ptr<Feature>> features;
         // propagator 预测的，以及 update 过程输出的 errorState 结果
@@ -36,10 +44,6 @@ namespace ESKF_VIO_BACKEND {
         uint32_t Hx_rows = 0;
         // ESKF 中的卡尔曼增益
         Matrix K;
-        // 量测噪声（使用时默认为对角矩阵 R ）
-        Scalar measureNoise = Scalar(0);
-        // 边缘化策略
-        MargPolicy margPolicy = NO_MARG;
 
     public:
         /* 构造函数与析构函数 */
@@ -61,7 +65,7 @@ namespace ESKF_VIO_BACKEND {
         bool TrianglizeMultiFrame(const std::shared_ptr<Feature> &feature);
         /* 三角测量在最新一帧中被追踪到的特征点。已被测量过的选择迭代法，没被测量过的选择数值法。*/
         /* 更新每一个点的三角测量质量，基于三角测量的质量，选择一定数量的特征点 */
-        bool SelectGoodFeatures(const uint32_t num);
+        bool SelectGoodFeatures(void);
         /* 构造量测方程。其中包括计算雅可比、投影到左零空间、缩减维度、卡尔曼 update 误差和名义状态 */
         bool ConstructMeasurementFunction(void);
         /* 构造一个特征点所有观测的量测方程，投影到左零空间 */

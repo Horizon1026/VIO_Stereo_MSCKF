@@ -14,8 +14,7 @@ namespace ESKF_VIO_BACKEND {
 
     /* 输入配置文件路径，自动搜寻所有配置项并记录在成员变量中 */
     bool Configurator::ReadConfigParams(const std::string &configPath) {
-        Matrix tempMat;
-        std::string configFile;
+        static Matrix tempMat;
 
         // 加载 IMU 输入频率
         if (this->LoadMatrix(configPath + "/imu_frequence.txt", 1, 1, tempMat) == true) {
@@ -60,9 +59,43 @@ namespace ESKF_VIO_BACKEND {
 
         // 加载视觉量测噪声
         if (this->LoadMatrix(configPath + "/vision_measure_noise.txt", 1, 1, tempMat) == true) {
-            this->vision.sigmaMeasure = tempMat(0, 0);
+            this->vision.sigmaVision = tempMat(0, 0);
         }
         return true;
+    }
+
+
+    /* 输出所有配置信息 */
+    void Configurator::Information(void) {
+        LogInfo(">> Config params:");
+
+        LogInfo("   [IMU] sigma bias accel : " << this->imu.sigmaBiasAccel);
+        LogInfo("   [IMU] sigma bias gyro : " << this->imu.sigmaBiasGyro);
+        LogInfo("   [IMU] sigma bias accel random walk : " << this->imu.sigmaBiasAccelRandomWalk);
+        LogInfo("   [IMU] sigma bias gyro random walk : " << this->imu.sigmaBiasGyroRandomWalk);
+        LogInfo("   [IMU] gravity norm : " << this->imu.gravityNorm);
+        LogInfo("   [IMU] default bias accel : " << this->imu.defaultBiasAccel.transpose());
+        LogInfo("   [IMU] default bias gyro : " << this->imu.defaultBiasGyro.transpose());
+        LogInfo("   [IMU] data period : " << this->imu.period << " s");
+
+        LogInfo("   [VISION] sigma vision : " << this->vision.sigmaVision);
+        LogInfo("   [VISION] max frame num : " << this->vision.maxFrameNum);
+        LogInfo("   [VISION] max features num for update : " << this->vision.maxFeatureNumForUpdate);
+        LogInfo("   [VISION] min keyframe tracked features num : " << this->vision.minKeyframeTrackedFeatureNum);
+        LogInfo("   [VISION] min keyframe mean parallax : " << this->vision.minKeyframeMeanParallax);
+        LogInfo("   [VISION] min keyframe traslation : " << this->vision.maxKeyframeTranslation);
+        LogInfo("   [VISION] max cameras num : " << this->vision.maxCameraNum);
+        LogInfo("   [VISION] cameras extrinsic :");
+        for (uint32_t i = 0; i < this->vision.default_p_bc.size(); ++i) {
+            Vector3 &p_bc = this->vision.default_p_bc[i];
+            Quaternion &q_bc = this->vision.default_q_bc[i];
+            LogInfo("      cam " << i << " p_bc : [" << p_bc.transpose() << "], q_bc : [" <<
+                q_bc.w() << ", " << q_bc.x() << ", " << q_bc.y() << ", " << q_bc.z() << "]");
+        }
+
+        LogInfo("   [GENERAL] use vision update : " << this->general.useVisionUpdate);
+
+        return;
     }
 
 
