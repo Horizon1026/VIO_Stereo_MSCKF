@@ -1,6 +1,7 @@
 /[Bb]uild/
 /.vscode/
 .vscode/
+/.cache/
 /output/
 /eskf_vio_backend/[Bb]uild/
 /eskf_vio_backend/output/
