@@ -9,9 +9,9 @@ using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
 /* 测试用相关定义 */
-std::string simPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/simulate/longtime_scenes/";
-std::string configPath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/eskf_vio_backend/config/";
-std::string savePath = "/home/horizon/slam_ws/my_slam_lib/ESKF_Estimator/saved_pose/";
+std::string simPath = "/home/horizon/Desktop/code_space/ESKF_Estimator/simulate/longtime_scenes/";
+std::string configPath = "/home/horizon/Desktop/code_space/ESKF_Estimator/eskf_vio_backend/config/";
+std::string savePath = "/home/horizon/Desktop/code_space/ESKF_Estimator/saved_pose/";
 double maxTimeStamp = 100;
 
 /* 载入 IMU 数据 */

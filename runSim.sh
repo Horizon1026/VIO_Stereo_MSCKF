@@ -5,5 +5,5 @@
 cd output/
 ./test_eskf_vio_backend
 cd ../saved_pose/
-python3.9 draw.py
+python3 draw.py
 cd ..
