@@ -1,4 +1,4 @@
-# VIO_Stereo_msckf
+# VIO_Stereo_MSCKF
 A state estimator for robots using ESKF, which is based on msckf_vio stereo.
 
 # 开发计划
