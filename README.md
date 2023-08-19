@@ -1,12 +1,11 @@
 # VIO_Stereo_MSCKF
-A state estimator for robots using ESKF, which is based on msckf_vio stereo.
+A state estimator for robots using ESKF, which is based on msckf_vio/openvins stereo.
 
 # 开发计划
-编写一个应用于单个IMU与多种不同传感器共同组成的硬件平台的多传感器融合定位代码，要求能够以 IMU 的更新频率来发布最新状态估计结果。
+编写一个应用于单个IMU与多目视觉融合的定位代码，以 IMU 的更新频率来发布最新状态估计结果。
 + 完成 data loader，控制多种不同传感器的数据输入和初步处理
 + 完成 imu propagate 和序列化过程
 + 完成加入多目视觉观测的 VIO 过程
-+ 考虑其他传感器
 
 # 声明
 + 代码基于个人兴趣开发，欢迎参与讨论，禁止商用
@@ -32,3 +31,4 @@ A state estimator for robots using ESKF, which is based on msckf_vio stereo.
 + 【优化】序列化递推器逻辑调整，修改为维护一段时间内的状态
 + 【优化】序列化递推器反向递推
 + 【优化】增加对 square root filter 的支持，需要同时修改 propagater 和 updater
++ 【优化】增加openvins中的FEJ
