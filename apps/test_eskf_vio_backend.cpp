@@ -9,9 +9,9 @@ using namespace ESKF_VIO_BACKEND;
 using Scalar = ESKF_VIO_BACKEND::Scalar;
 
 /* 测试用相关定义 */
-std::string simPath = "/home/horizon/Desktop/code_space/VIO_Stereo_MSCKF/simulate/longtime_scenes/";
-std::string configPath = "/home/horizon/Desktop/code_space/VIO_Stereo_MSCKF/eskf_vio_backend/config/";
-std::string savePath = "/home/horizon/Desktop/code_space/VIO_Stereo_MSCKF/saved_pose/";
+std::string simPath = "/home/horizon_msi_wsl2/code_space/VIO_Stereo_MSCKF/simulate/longtime_scenes/";
+std::string configPath = "/home/horizon_msi_wsl2/code_space/VIO_Stereo_MSCKF/eskf_vio_backend/config/";
+std::string savePath = "/home/horizon_msi_wsl2/code_space/VIO_Stereo_MSCKF/saved_pose/";
 double maxTimeStamp = 100;
 
 /* 载入 IMU 数据 */
