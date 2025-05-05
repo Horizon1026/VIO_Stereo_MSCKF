@@ -25,7 +25,7 @@ namespace ESKF_VIO_BACKEND {
     using fp64 = double;
 
     /* 矩阵类型定义 */
-    using Scalar = double;
+    using Scalar = float;
     using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using Quaternion = Eigen::Quaternion<Scalar>;

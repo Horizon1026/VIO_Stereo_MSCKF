@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
                 break;
             }
 
-            if (lastTimeStamp == timeStamp) {
+            if (lastTimeStamp > timeStamp) {
                 break;
             }
             lastTimeStamp = timeStamp;
