@@ -177,7 +177,7 @@ namespace ESKF_VIO_BACKEND {
         if (this->features.empty()) {
             LogInfo(">> No good features for update.");
         } else {
-            LogInfo(">> Use " << this->features.size() << " features for updata");
+            LogInfo(">> Use " << this->features.size() << " features for update.");
         }
         return true;
     }
@@ -377,7 +377,7 @@ namespace ESKF_VIO_BACKEND {
 
             when camera state is q_wb/p_wb, things become easy
                       p  v  theta   ba  bg  p_bc0  q_bc0  p_bc1  q_bc1  ...  Twb0  Twb1  ...
-            as J is [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb 
+            as J is [ I  0    0     0   0     0      0      0      0    ...    0     0   ...  ]  ->  p_wb
                     [ 0  0    I     0   0     0      0      0      0    ...    0     0   ...  ]  ->  q_wb      */
         uint32_t camExSize = (this->frameManager->extrinsics.size() + this->frameManager->frames.size()) * 6;
         uint32_t size = IMU_STATE_SIZE + camExSize;

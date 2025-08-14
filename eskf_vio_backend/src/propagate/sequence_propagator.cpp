@@ -94,9 +94,10 @@ namespace ESKF_VIO_BACKEND {
         item_1->nominalState.q_wb = item_0->nominalState.q_wb * dq;
         item_1->nominalState.q_wb.normalize();
         // 计算 accel 中值，propagate 速度
-        midAccel = Scalar(0.5) * (item_0->nominalState.q_wb * (item_0->accel - bias_a) +
+        midAccel = Scalar(0.5) * (item_0->accel + item_1->accel) - bias_a;
+        const Vector3 midAccelWorld = Scalar(0.5) * (item_0->nominalState.q_wb * (item_0->accel - bias_a) +
             item_1->nominalState.q_wb * (item_1->accel - bias_a));
-        item_1->nominalState.v_wb = item_0->nominalState.v_wb + (midAccel - gravity_w) * dt;
+        item_1->nominalState.v_wb = item_0->nominalState.v_wb + (midAccelWorld - gravity_w) * dt;
         // propagate 位置
         item_1->nominalState.p_wb = item_0->nominalState.p_wb +
             Scalar(0.5) * (item_0->nominalState.v_wb + item_1->nominalState.v_wb) * dt;
@@ -114,8 +115,6 @@ namespace ESKF_VIO_BACKEND {
         Scalar dt = static_cast<Scalar>(item_1->timeStamp - item_0->timeStamp);
         Matrix33 R_wb_0(item_0->nominalState.q_wb);
         Matrix33 I3_dt = dt * Matrix33::Identity();
-        Scalar sqrt_dt = std::sqrt(dt);
-        Matrix33 I3_sqrt_dt = sqrt_dt * Matrix33::Identity();
 
         // 构造离散过程方程 F 矩阵
         this->F.block<3, 3>(INDEX_P, INDEX_V) = I3_dt;
@@ -125,10 +124,11 @@ namespace ESKF_VIO_BACKEND {
         this->F.block<3, 3>(INDEX_R, INDEX_BG) = - I3_dt;
 
         // 构造离散过程方程 G 矩阵
+        this->G.block<3, 3>(INDEX_P, INDEX_NA) = Scalar(0.5) * dt * dt * R_wb_0;
         this->G.block<3, 3>(INDEX_V, INDEX_NA) = dt * R_wb_0;
         this->G.block<3, 3>(INDEX_R, INDEX_NG) = I3_dt;
-        this->G.block<3, 3>(INDEX_BA, INDEX_NWA) = I3_sqrt_dt;
-        this->G.block<3, 3>(INDEX_BG, INDEX_NWG) = I3_sqrt_dt;
+        this->G.block<3, 3>(INDEX_BA, INDEX_NWA) = I3_dt;
+        this->G.block<3, 3>(INDEX_BG, INDEX_NWG) = I3_dt;
 
         // propagate 误差状态对应的 IMU 协方差矩阵
         item_1->imuCov = this->F * item_0->imuCov * this->F.transpose() + this->G * this->Q * this->G.transpose();
@@ -154,7 +154,7 @@ namespace ESKF_VIO_BACKEND {
 
         cov <- F * cov * F.T + G * Q * G.T  =>  [ F  0 ] * [ A    B ] * [ F.T  0 ]  =  [ F * A * F.T  F * B ]
                                                 [ 0  I ]   [ B.T  C ]   [  0   I ]     [  B.T * F.T     C   ]
-        
+
         */
     }
 
